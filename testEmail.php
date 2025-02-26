@@ -2,11 +2,10 @@
 // Si le formulaire est soumis
 if (isset($_POST['test_email_submit'])) {
     // Journaliser le début du traitement
-    error_log('Tentative d\'envoi d\'email de test à ewan.senergous16@gmail.com
-');
+    error_log('Tentative d\'envoi d\'email de test à ewan16270409@outlook.fr');
     
     // Adresse email de destination (votre adresse email personnelle)
-    $to = 'ewan.senergous16@gmail.com';
+    $to = 'ewan16270409@outlook.fr';
     
     // Récupération des données du formulaire
     $subject = 'Test d\'envoi d\'email';
@@ -46,7 +45,7 @@ if (isset($_POST['test_email_submit'])) {
         <div class="result-message"><?php echo $result_message; ?></div>
         <script>
             console.log("Statut envoi email:", {
-                destinataire: "ewan.senergous16@gmail.com",
+                destinataire: "ewan16270409@outlook.fr",
                 resultat: "<?php echo $mail_sent ? 'Succès' : 'Échec'; ?>",
                 message: "<?php echo $mail_sent ? 'Email envoyé avec succès' : 'Échec de l\'envoi'; ?>"
             });
@@ -68,7 +67,7 @@ if (isset($_POST['test_email_submit'])) {
         <h4>Informations sur la configuration email:</h4>
         <ul>
             <li>Fonction wp_mail() utilisée</li>
-            <li>Destinataire: ewan.senergous16@gmail.com</li>
+            <li>Destinataire: ewan16270409@outlook.fr</li>
             <li>Expéditeur: <?php echo get_bloginfo('name') . ' <' . get_option('admin_email') . '>'; ?></li>
             <li>Email admin WordPress: <?php echo get_option('admin_email'); ?></li>
         </ul>
