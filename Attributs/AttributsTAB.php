@@ -130,65 +130,47 @@ if (!function_exists('renderBearingTable')) {
         
         echo '</table>';
         
-        // Tableau pour Mobile
-        echo '<table class="product-table-3 mobile-table">';
+        // Nouveau tableau pour Mobile - Version compacte du tableau desktop
+        echo '<table class="product-table-3 mobile-table bearing-mobile-table">';
         
-        // En-tête du tableau mobile pour côté accouplement
+        // En-tête du tableau mobile avec taille réduite
         echo '<tr class="product-row-1">';
-        echo '<th class="product-header-1" colspan="2">Côté accouplement</th>';
+        echo '<th class="product-header-1" style="width:30%"></th>';
+        echo '<th class="product-header-1" style="width:35%">Côté accouplement</th>';
+        echo '<th class="product-header-1" style="width:35%">Côté opposé</th>';
         echo '</tr>';
         
-        // Lignes pour le côté accouplement
+        // Corps du tableau mobile - format compact
         $rowIndex = 0;
         foreach ($rowsToDisplay as $row) {
-            if ($row['key'] === 'Graisse des roulements') continue; // On l'affichera à la fin
-
-            $rowClass = ($rowIndex % 2 === 0) ? 'mobile-row-1' : 'mobile-row alternate-1';
+            $rowClass = ($rowIndex % 2 === 0) ? 'product-row-1' : 'product-row alternate-1';
             $cote_accouplement_key = $row['key'] . ' côté accouplement';
-            $value = isset($bearingAttributes['cote_accouplement'][$cote_accouplement_key])
-                ? $bearingAttributes['cote_accouplement'][$cote_accouplement_key]
-                : '-';
-            
-            echo '<tr class="' . $rowClass . '">';
-            echo '<td class="product-cell-1">' . esc_html($row['label']) . '</td>';
-            echo '<td class="product-cell-1"><strong>' . esc_html($value) . '</strong></td>';
-            echo '</tr>';
-            $rowIndex++;
-        }
-        
-        // En-tête du tableau mobile pour côté opposé accouplement
-        echo '<tr class="product-row-1">';
-        echo '<th class="product-header-1" colspan="2">Côté opposé accouplement</th>';
-        echo '</tr>';
-        
-        // Lignes pour le côté opposé accouplement
-        $rowIndex = 0;
-        foreach ($rowsToDisplay as $row) {
-            if ($row['key'] === 'Graisse des roulements') continue; // On l'affichera à la fin
-            
-            $rowClass = ($rowIndex % 2 === 0) ? 'mobile-row-1' : 'mobile-row alternate-1';
             $cote_oppose_key = $row['key'] . ' côté opposé accouplement';
-            $value = isset($bearingAttributes['cote_oppose'][$cote_oppose_key])
-                ? $bearingAttributes['cote_oppose'][$cote_oppose_key]
-                : '-';
             
             echo '<tr class="' . $rowClass . '">';
+            
+            // Utilisation du nom complet au lieu d'un label abrégé
             echo '<td class="product-cell-1">' . esc_html($row['label']) . '</td>';
-            echo '<td class="product-cell-1"><strong>' . esc_html($value) . '</strong></td>';
+            
+            if ($row['key'] === 'Graisse des roulements') {
+                $value = isset($bearingAttributes['general']['Graisse des roulements'])
+                    ? $bearingAttributes['general']['Graisse des roulements']
+                    : '-';
+                echo '<td class="product-cell-1" colspan="2" style="text-align: center !important;"><strong>' . esc_html($value) . '</strong></td>';
+            } else {
+                $cote_accouplement_value = isset($bearingAttributes['cote_accouplement'][$cote_accouplement_key])
+                    ? $bearingAttributes['cote_accouplement'][$cote_accouplement_key]
+                    : '-';
+                $cote_oppose_value = isset($bearingAttributes['cote_oppose'][$cote_oppose_key])
+                    ? $bearingAttributes['cote_oppose'][$cote_oppose_key]
+                    : '-';
+                
+                echo '<td class="product-cell-1"><strong>' . esc_html($cote_accouplement_value) . '</strong></td>';
+                echo '<td class="product-cell-1"><strong>' . esc_html($cote_oppose_value) . '</strong></td>';
+            }
+            
             echo '</tr>';
             $rowIndex++;
-        }
-        
-        // Graisse des roulements - ligne commune
-        if (isset($bearingAttributes['general']['Graisse des roulements'])) {
-            echo '<tr class="product-row-1">';
-            echo '<th class="product-header-1" colspan="2">Graisse</th>';
-            echo '</tr>';
-            
-            echo '<tr class="mobile-row-1">';
-            echo '<td class="product-cell-1">Graisse des roulements</td>';
-            echo '<td class="product-cell-1"><strong>' . esc_html($bearingAttributes['general']['Graisse des roulements']) . '</strong></td>';
-            echo '</tr>';
         }
         
         echo '</table>';
@@ -272,6 +254,11 @@ if (!function_exists('renderAttributesTable')) {
                 ? implode(', ', wc_get_product_terms($product->get_id(), $attribute1->get_name(), ['fields' => 'names']))
                 : implode(', ', $attribute1->get_options());
             
+            // Ajouter l'unité tr/min pour la vitesse de rotation
+            if (strpos($name1, 'Vitesse de rotation') !== false && strpos($value1, 'tr/min') === false) {
+                $value1 .= ' tr/min';
+            }
+            
             $rowClass = ($i / 2 % 2 === 0) ? 'product-row-1' : 'product-row alternate-1';
             echo '<tr class="' . $rowClass . '">';
             echo '<td class="product-cell-1">' . esc_html($name1) . '</td>';
@@ -287,6 +274,11 @@ if (!function_exists('renderAttributesTable')) {
                 $value2 = $attribute2->is_taxonomy()
                     ? implode(', ', wc_get_product_terms($product->get_id(), $attribute2->get_name(), ['fields' => 'names']))
                     : implode(', ', $attribute2->get_options());
+                
+                // Ajouter l'unité tr/min pour la vitesse de rotation
+                if (strpos($name2, 'Vitesse de rotation') !== false && strpos($value2, 'tr/min') === false) {
+                    $value2 .= ' tr/min';
+                }
                 
                 echo '<td class="product-cell-1">' . esc_html($name2) . '</td>';
                 echo '<td class="product-cell-1"><strong>' . esc_html($value2) . '</strong></td>';
@@ -320,6 +312,11 @@ if (!function_exists('renderAttributesTable')) {
             $value = $attribute->is_taxonomy()
                 ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
                 : implode(', ', $attribute->get_options());
+            
+            // Ajouter l'unité tr/min pour la vitesse de rotation
+            if (strpos($name, 'Vitesse de rotation') !== false && strpos($value, 'tr/min') === false) {
+                $value .= ' tr/min';
+            }
             
             // Alternance des couleurs en mobile basée sur l'index (pair/impair)
             $rowClass = ($i % 2 === 0) ? 'mobile-row-1' : 'mobile-row alternate-1';
@@ -422,7 +419,7 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
 <style>
     .error-message { color: red; }
     .warning-message { color: orange; }
-    .tech-specs-container { margin: 0; }
+    .tech-specs-container { margin: 0; margin-bottom: 1.5rem; }
     .tech-specs-title { margin-bottom: 1rem; }
     
     /* Styles pour le tableau responsive */
@@ -549,13 +546,37 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
         .voltage-tabs { flex-direction: column; gap: 5px; }
         .voltage-tabs .tab { width: 100%; text-align: center; }
         
-        /* Styles pour le tableau */
+        /* Styles pour les tableaux */
         .desktop-table {
             display: none !important;
         }
         
         .mobile-table {
             display: table !important;
+        }
+        
+        /* Styles spécifiques pour le tableau de roulements en mobile */
+        .bearing-mobile-table {
+            font-size: 0.9rem !important;
+        }
+        
+        .bearing-mobile-table .product-cell-1 {
+            padding: 6px !important;
+            font-size: 0.8rem !important;
+        }
+
+        .bearing-mobile-table .product-header-1 {
+            font-size: 0.8rem !important;
+        }
+        
+        /* Styles spécifiques pour le tableau des caractéristiques complémentaires en mobile */
+        .complementary-table .product-cell-1 {
+            padding: 5px !important;
+            font-size: 0.8rem !important;
+        }
+
+        .complementary-table .product-header-1 {
+            font-size: 0.8rem !important;
         }
         
         .product-table-2 th, .product-table-2 td,
@@ -680,6 +701,136 @@ if (!function_exists('displayAllProductCouplingAttributes')) {
     }
 }
 
+// Modification de la fonction pour les attributs complémentaires
+if (!function_exists('getComplementaryAttributes')) {
+    function getComplementaryAttributes($product) {
+        $attributes = $product->get_attributes();
+        $complementaryAttributes = [];
+        
+        foreach ($attributes as $attributeKey => $attribute) {
+            $attributeName = wc_attribute_label($attribute->get_name());
+            
+            // Exclure les attributs de roulement et de couplage
+            if (strpos($attributeName, 'n°') === false && 
+                strpos(strtolower($attributeName), 'roulement') === false) {
+                
+                $value = $attribute->is_taxonomy()
+                    ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
+                    : implode(', ', $attribute->get_options());
+                
+                // Ajouter l'unité tr/min pour la vitesse de rotation
+                if (strpos($attributeName, 'Vitesse de rotation') !== false && strpos($value, 'tr/min') === false) {
+                    $value .= ' tr/min';
+                }
+                
+                $complementaryAttributes[$attributeName] = $value;
+            }
+        }
+        
+        return $complementaryAttributes;
+    }
+}
+
+// Fonction pour afficher le tableau des attributs complémentaires
+if (!function_exists('displayComplementaryAttributes')) {
+    function displayComplementaryAttributes() {
+        ob_start();
+        
+        if (!function_exists('is_product') || !is_product() || !($product = wc_get_product(get_the_ID()))) {
+            echo '<p class="error-message">Produit non trouvé ou page invalide.</p>';
+            return ob_get_clean();
+        }
+        
+        if (empty($product->get_attributes())) {
+            echo '<p class="warning-message">Ce produit n\'a pas d\'attributs.</p>';
+            return ob_get_clean();
+        }
+        
+        $complementaryAttributes = getComplementaryAttributes($product);
+        
+        if (empty($complementaryAttributes)) {
+            echo '<p class="warning-message">Ce produit n\'a pas d\'attribut complémentaire.</p>';
+            return ob_get_clean();
+        }
+        
+        echo '<div class="complementary-attributes attributes-hidden-outside-tab" style="display: none;">';
+        renderComplementaryTable($complementaryAttributes);
+        echo '</div>';
+        
+        return ob_get_clean();
+    }
+}
+
+// Fonction pour afficher le tableau des attributs complémentaires
+if (!function_exists('renderComplementaryTable')) {
+    function renderComplementaryTable($complementaryAttributes) {
+        $attributesArray = [];
+        foreach ($complementaryAttributes as $name => $value) {
+            $attributesArray[] = ['name' => $name, 'value' => $value];
+        }
+        $totalAttributes = count($attributesArray);
+        
+        echo '<div class="tech-specs-container">';
+        echo '<h3 class="tech-specs-title">Caractéristiques complémentaires</h3>';
+        
+        // Tableau pour Desktop
+        echo '<table class="product-table-2 desktop-table complementary-table">';
+        
+        // En-tête du tableau desktop
+        echo '<tr class="product-row-1">';
+        echo '<th class="product-header-1 header-name">Nom</th>';
+        echo '<th class="product-header-1 header-value">Valeur</th>';
+        echo '<th class="product-header-1 header-name-2">Nom</th>';
+        echo '<th class="product-header-1 header-value-2">Valeur</th>';
+        echo '</tr>';
+        
+        // Corps du tableau desktop
+        for ($i = 0; $i < $totalAttributes; $i += 2) {
+            $rowClass = ($i / 2 % 2 === 0) ? 'product-row-1' : 'product-row alternate-1';
+            echo '<tr class="' . $rowClass . '">';
+            
+            echo '<td class="product-cell-1">' . esc_html($attributesArray[$i]['name']) . '</td>';
+            echo '<td class="product-cell-1"><strong>' . esc_html($attributesArray[$i]['value']) . '</strong></td>';
+            
+            // Deuxième attribut
+            if ($i + 1 < $totalAttributes) {
+                echo '<td class="product-cell-1">' . esc_html($attributesArray[$i + 1]['name']) . '</td>';
+                echo '<td class="product-cell-1"><strong>' . esc_html($attributesArray[$i + 1]['value']) . '</strong></td>';
+            } else {
+                // Cellules vides si nombre impair d'attributs
+                echo '<td class="product-cell-1"></td>';
+                echo '<td class="product-cell-1"></td>';
+            }
+            
+            echo '</tr>';
+        }
+        
+        echo '</table>';
+        
+        // Tableau pour Mobile (complètement séparé)
+        echo '<table class="product-table-2 mobile-table complementary-table">';
+        
+        // En-tête du tableau mobile
+        echo '<tr class="product-row-1">';
+        echo '<th class="product-header-1 header-name">Nom</th>';
+        echo '<th class="product-header-1 header-value">Valeur</th>';
+        echo '</tr>';
+        
+        // Corps du tableau mobile - un attribut par ligne
+        for ($i = 0; $i < $totalAttributes; $i++) {
+            // Alternance des couleurs en mobile basée sur l'index (pair/impair)
+            $rowClass = ($i % 2 === 0) ? 'mobile-row-1' : 'mobile-row alternate-1';
+            echo '<tr class="' . $rowClass . '">';
+            echo '<td class="product-cell-1">' . esc_html($attributesArray[$i]['name']) . '</td>';
+            echo '<td class="product-cell-1"><strong>' . esc_html($attributesArray[$i]['value']) . '</strong></td>';
+            echo '</tr>';
+        }
+        
+        echo '</table>';
+        echo '</div>';
+    }
+}
+
 // Fonction principale qui combine les deux affichages (issu du fichier 1)
 if (!function_exists('displayProductInfoWithBearings')) {
     function displayProductInfoWithBearings() {
@@ -690,6 +841,9 @@ if (!function_exists('displayProductInfoWithBearings')) {
         
         // Ensuite afficher les informations de couplage
         echo displayProductCouplingAttributesWithTabs();
+        
+        // Enfin afficher les attributs complémentaires
+        echo displayComplementaryAttributes();
         
         return ob_get_clean();
     }

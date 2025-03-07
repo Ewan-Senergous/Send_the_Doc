@@ -254,6 +254,11 @@ if (!function_exists('renderAttributesTable')) {
                 ? implode(', ', wc_get_product_terms($product->get_id(), $attribute1->get_name(), ['fields' => 'names']))
                 : implode(', ', $attribute1->get_options());
             
+            // Ajouter l'unité tr/min pour la vitesse de rotation
+            if (strpos($name1, 'Vitesse de rotation') !== false && strpos($value1, 'tr/min') === false) {
+                $value1 .= ' tr/min';
+            }
+            
             $rowClass = ($i / 2 % 2 === 0) ? 'product-row-1' : 'product-row alternate-1';
             echo '<tr class="' . $rowClass . '">';
             echo '<td class="product-cell-1">' . esc_html($name1) . '</td>';
@@ -269,6 +274,11 @@ if (!function_exists('renderAttributesTable')) {
                 $value2 = $attribute2->is_taxonomy()
                     ? implode(', ', wc_get_product_terms($product->get_id(), $attribute2->get_name(), ['fields' => 'names']))
                     : implode(', ', $attribute2->get_options());
+                
+                // Ajouter l'unité tr/min pour la vitesse de rotation
+                if (strpos($name2, 'Vitesse de rotation') !== false && strpos($value2, 'tr/min') === false) {
+                    $value2 .= ' tr/min';
+                }
                 
                 echo '<td class="product-cell-1">' . esc_html($name2) . '</td>';
                 echo '<td class="product-cell-1"><strong>' . esc_html($value2) . '</strong></td>';
@@ -302,6 +312,11 @@ if (!function_exists('renderAttributesTable')) {
             $value = $attribute->is_taxonomy()
                 ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
                 : implode(', ', $attribute->get_options());
+            
+            // Ajouter l'unité tr/min pour la vitesse de rotation
+            if (strpos($name, 'Vitesse de rotation') !== false && strpos($value, 'tr/min') === false) {
+                $value .= ' tr/min';
+            }
             
             // Alternance des couleurs en mobile basée sur l'index (pair/impair)
             $rowClass = ($i % 2 === 0) ? 'mobile-row-1' : 'mobile-row alternate-1';
@@ -404,7 +419,7 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
 <style>
     .error-message { color: red; }
     .warning-message { color: orange; }
-    .tech-specs-container { margin: 0; }
+    .tech-specs-container { margin: 0; margin-bottom: 1.5rem; }
     .tech-specs-title { margin-bottom: 1rem; }
     
     /* Styles pour le tableau responsive */
@@ -547,11 +562,21 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
         
         .bearing-mobile-table .product-cell-1 {
             padding: 6px !important;
-            font-size: 0.9rem !important;
+            font-size: 0.8rem !important;
         }
 
         .bearing-mobile-table .product-header-1 {
-            font-size: 0.9rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        /* Styles spécifiques pour le tableau des caractéristiques complémentaires en mobile */
+        .complementary-table .product-cell-1 {
+            padding: 5px !important;
+            font-size: 0.8rem !important;
+        }
+
+        .complementary-table .product-header-1 {
+            font-size: 0.8rem !important;
         }
         
         .product-table-2 th, .product-table-2 td,
@@ -676,6 +701,156 @@ if (!function_exists('displayAllProductCouplingAttributes')) {
     }
 }
 
+// Modification de la fonction pour les attributs complémentaires
+if (!function_exists('getComplementaryAttributes')) {
+    function getComplementaryAttributes($product) {
+        $attributes = $product->get_attributes();
+        $complementaryAttributes = [];
+        
+        // Liste des attributs à exclure du tableau complémentaire
+        $excludedAttributes = [
+            'Référence fabriquant',
+            'Indice Energétique',
+            'Taille carcasse',
+            'Norme',
+            'Fréquence',
+            'Nombre de Pôles',
+            'Indice de protection (IP)',
+            'Vitesse de rotation',
+            'Puissance utile nominale',
+            'Type de montage',
+            'Mode de refroidissement du moteur suivant la norme IC411',
+            'Puissance',
+            'Tension 50Hz',
+            'Nombre de phases',
+            'Famille'
+        ];
+        
+        foreach ($attributes as $attributeKey => $attribute) {
+            $attributeName = wc_attribute_label($attribute->get_name());
+            
+            // Exclure les attributs de roulement, de couplage et ceux de la liste d'exclusion
+            if (strpos($attributeName, 'n°') === false && 
+                strpos(strtolower($attributeName), 'roulement') === false &&
+                !in_array(trim($attributeName), $excludedAttributes)) {
+                
+                $value = $attribute->is_taxonomy()
+                    ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
+                    : implode(', ', $attribute->get_options());
+                
+                // Ajouter l'unité tr/min pour la vitesse de rotation
+                if (strpos($attributeName, 'Vitesse de rotation') !== false && strpos($value, 'tr/min') === false) {
+                    $value .= ' tr/min';
+                }
+                
+                $complementaryAttributes[$attributeName] = $value;
+            }
+        }
+        
+        return $complementaryAttributes;
+    }
+}
+
+// Fonction pour afficher le tableau des attributs complémentaires
+if (!function_exists('displayComplementaryAttributes')) {
+    function displayComplementaryAttributes() {
+        ob_start();
+        
+        if (!function_exists('is_product') || !is_product() || !($product = wc_get_product(get_the_ID()))) {
+            echo '<p class="error-message">Produit non trouvé ou page invalide.</p>';
+            return ob_get_clean();
+        }
+        
+        if (empty($product->get_attributes())) {
+            echo '<p class="warning-message">Ce produit n\'a pas d\'attributs.</p>';
+            return ob_get_clean();
+        }
+        
+        $complementaryAttributes = getComplementaryAttributes($product);
+        
+        if (empty($complementaryAttributes)) {
+            echo '<p class="warning-message">Ce produit n\'a pas d\'attribut complémentaire.</p>';
+            return ob_get_clean();
+        }
+        
+        echo '<div class="complementary-attributes attributes-hidden-outside-tab" style="display: none;">';
+        renderComplementaryTable($complementaryAttributes);
+        echo '</div>';
+        
+        return ob_get_clean();
+    }
+}
+
+// Fonction pour afficher le tableau des attributs complémentaires
+if (!function_exists('renderComplementaryTable')) {
+    function renderComplementaryTable($complementaryAttributes) {
+        $attributesArray = [];
+        foreach ($complementaryAttributes as $name => $value) {
+            $attributesArray[] = ['name' => $name, 'value' => $value];
+        }
+        $totalAttributes = count($attributesArray);
+        
+        echo '<div class="tech-specs-container">';
+        echo '<h3 class="tech-specs-title">Caractéristiques complémentaires</h3>';
+        
+        // Tableau pour Desktop
+        echo '<table class="product-table-2 desktop-table complementary-table">';
+        
+        // En-tête du tableau desktop
+        echo '<tr class="product-row-1">';
+        echo '<th class="product-header-1 header-name">Nom</th>';
+        echo '<th class="product-header-1 header-value">Valeur</th>';
+        echo '<th class="product-header-1 header-name-2">Nom</th>';
+        echo '<th class="product-header-1 header-value-2">Valeur</th>';
+        echo '</tr>';
+        
+        // Corps du tableau desktop
+        for ($i = 0; $i < $totalAttributes; $i += 2) {
+            $rowClass = ($i / 2 % 2 === 0) ? 'product-row-1' : 'product-row alternate-1';
+            echo '<tr class="' . $rowClass . '">';
+            
+            echo '<td class="product-cell-1">' . esc_html($attributesArray[$i]['name']) . '</td>';
+            echo '<td class="product-cell-1"><strong>' . esc_html($attributesArray[$i]['value']) . '</strong></td>';
+            
+            // Deuxième attribut
+            if ($i + 1 < $totalAttributes) {
+                echo '<td class="product-cell-1">' . esc_html($attributesArray[$i + 1]['name']) . '</td>';
+                echo '<td class="product-cell-1"><strong>' . esc_html($attributesArray[$i + 1]['value']) . '</strong></td>';
+            } else {
+                // Cellules vides si nombre impair d'attributs
+                echo '<td class="product-cell-1"></td>';
+                echo '<td class="product-cell-1"></td>';
+            }
+            
+            echo '</tr>';
+        }
+        
+        echo '</table>';
+        
+        // Tableau pour Mobile (complètement séparé)
+        echo '<table class="product-table-2 mobile-table complementary-table">';
+        
+        // En-tête du tableau mobile
+        echo '<tr class="product-row-1">';
+        echo '<th class="product-header-1 header-name">Nom</th>';
+        echo '<th class="product-header-1 header-value">Valeur</th>';
+        echo '</tr>';
+        
+        // Corps du tableau mobile - un attribut par ligne
+        for ($i = 0; $i < $totalAttributes; $i++) {
+            // Alternance des couleurs en mobile basée sur l'index (pair/impair)
+            $rowClass = ($i % 2 === 0) ? 'mobile-row-1' : 'mobile-row alternate-1';
+            echo '<tr class="' . $rowClass . '">';
+            echo '<td class="product-cell-1">' . esc_html($attributesArray[$i]['name']) . '</td>';
+            echo '<td class="product-cell-1"><strong>' . esc_html($attributesArray[$i]['value']) . '</strong></td>';
+            echo '</tr>';
+        }
+        
+        echo '</table>';
+        echo '</div>';
+    }
+}
+
 // Fonction principale qui combine les deux affichages (issu du fichier 1)
 if (!function_exists('displayProductInfoWithBearings')) {
     function displayProductInfoWithBearings() {
@@ -686,6 +861,9 @@ if (!function_exists('displayProductInfoWithBearings')) {
         
         // Ensuite afficher les informations de couplage
         echo displayProductCouplingAttributesWithTabs();
+        
+        // Enfin afficher les attributs complémentaires
+        echo displayComplementaryAttributes();
         
         return ob_get_clean();
     }
