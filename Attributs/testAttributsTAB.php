@@ -723,7 +723,8 @@ if (!function_exists('getComplementaryAttributes')) {
             'Puissance',
             'Tension 50Hz',
             'Nombre de phases',
-            'Famille'
+            'Famille',
+            'Sous-sous-Famille'
         ];
         
         foreach ($attributes as $attributeKey => $attribute) {

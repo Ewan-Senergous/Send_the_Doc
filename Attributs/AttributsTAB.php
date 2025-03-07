@@ -707,12 +707,32 @@ if (!function_exists('getComplementaryAttributes')) {
         $attributes = $product->get_attributes();
         $complementaryAttributes = [];
         
+        // Liste des attributs à exclure du tableau complémentaire
+        $excludedAttributes = [
+            'Référence fabriquant',
+            'Indice Energétique',
+            'Taille carcasse',
+            'Norme',
+            'Fréquence',
+            'Nombre de Pôles',
+            'Indice de protection (IP)',
+            'Vitesse de rotation',
+            'Puissance utile nominale',
+            'Type de montage',
+            'Mode de refroidissement du moteur suivant la norme IC411',
+            'Puissance',
+            'Tension 50Hz',
+            'Nombre de phases',
+            'Famille'
+        ];
+        
         foreach ($attributes as $attributeKey => $attribute) {
             $attributeName = wc_attribute_label($attribute->get_name());
             
-            // Exclure les attributs de roulement et de couplage
+            // Exclure les attributs de roulement, de couplage et ceux de la liste d'exclusion
             if (strpos($attributeName, 'n°') === false && 
-                strpos(strtolower($attributeName), 'roulement') === false) {
+                strpos(strtolower($attributeName), 'roulement') === false &&
+                !in_array(trim($attributeName), $excludedAttributes)) {
                 
                 $value = $attribute->is_taxonomy()
                     ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
