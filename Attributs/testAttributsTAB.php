@@ -2,7 +2,6 @@
 if (!function_exists('displayProductCouplingAttributes')) {
     function displayProductCouplingAttributes($couplingNumber) {
         ob_start();
-        $output = '';
         
         if (!function_exists('is_product') || !is_product() || !($product = wc_get_product(get_the_ID()))) {
             echo '<p class="error-message">Produit non trouvé ou page invalide.</p>';
@@ -52,42 +51,93 @@ if (!function_exists('renderAttributesTable')) {
         
         echo '<div class="tech-specs-container">';
         echo '<h3 class="tech-specs-title">Caractéristiques techniques (couplage n°' . $couplingNumber . ')</h3>';
-        echo '<table class="product-table-2">';
-        echo '<tr class="product-row-1"><th class="product-header-1">Nom</th><th class="product-header-1">Valeur</th>';
-        echo '<th class="product-header-1">Nom</th><th class="product-header-1">Valeur</th></tr>';
         
+        // Tableau pour Desktop
+        echo '<table class="product-table-2 desktop-table">';
+        
+        // En-tête du tableau desktop
+        echo '<tr class="product-row-1">';
+        echo '<th class="product-header-1 header-name">Nom</th>';
+        echo '<th class="product-header-1 header-value">Valeur</th>';
+        echo '<th class="product-header-1 header-name-2">Nom</th>';
+        echo '<th class="product-header-1 header-value-2">Valeur</th>';
+        echo '</tr>';
+        
+        // Corps du tableau desktop
         for ($i = 0; $i < $totalAttributes; $i += 2) {
+            $attribute1 = $attributesArray[$i];
+            $originalName1 = wc_attribute_label($attribute1->get_name());
+            $name1 = str_replace($searchStr, '', $originalName1);
+            $name1 = str_replace('(couplage n°' . $couplingNumber . ')', '', $name1);
+            
+            $value1 = $attribute1->is_taxonomy()
+                ? implode(', ', wc_get_product_terms($product->get_id(), $attribute1->get_name(), ['fields' => 'names']))
+                : implode(', ', $attribute1->get_options());
+            
             $rowClass = ($i / 2 % 2 === 0) ? 'product-row-1' : 'product-row alternate-1';
             echo '<tr class="' . $rowClass . '">';
+            echo '<td class="product-cell-1">' . esc_html($name1) . '</td>';
+            echo '<td class="product-cell-1"><strong>' . esc_html($value1) . '</strong></td>';
             
-            for ($j = 0; $j < 2; $j++) {
-                $index = $i + $j;
-                if ($index < $totalAttributes) {
-                    $attribute = $attributesArray[$index];
-                    $originalName = wc_attribute_label($attribute->get_name());
-                    $name = str_replace($searchStr, '', $originalName);
-                    $name = str_replace('(couplage n°' . $couplingNumber . ')', '', $name);
-                    
-                    $value = $attribute->is_taxonomy()
-                        ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
-                        : implode(', ', $attribute->get_options());
-                    
-                    echo '<td class="product-cell-1">' . esc_html($name) . '</td>';
-                    echo '<td class="product-cell-1"><strong>' . esc_html($value) . '</strong></td>';
-                } else {
-                    echo '<td class="product-cell-1"></td><td class="product-cell-1"></td>';
-                }
+            // Deuxième attribut
+            if ($i + 1 < $totalAttributes) {
+                $attribute2 = $attributesArray[$i + 1];
+                $originalName2 = wc_attribute_label($attribute2->get_name());
+                $name2 = str_replace($searchStr, '', $originalName2);
+                $name2 = str_replace('(couplage n°' . $couplingNumber . ')', '', $name2);
+                
+                $value2 = $attribute2->is_taxonomy()
+                    ? implode(', ', wc_get_product_terms($product->get_id(), $attribute2->get_name(), ['fields' => 'names']))
+                    : implode(', ', $attribute2->get_options());
+                
+                echo '<td class="product-cell-1">' . esc_html($name2) . '</td>';
+                echo '<td class="product-cell-1"><strong>' . esc_html($value2) . '</strong></td>';
+            } else {
+                // Cellules vides si nombre impair d'attributs
+                echo '<td class="product-cell-1"></td>';
+                echo '<td class="product-cell-1"></td>';
             }
             
             echo '</tr>';
         }
         
-        echo '</table></div>';
+        echo '</table>';
+        
+        // Tableau pour Mobile (complètement séparé)
+        echo '<table class="product-table-2 mobile-table">';
+        
+        // En-tête du tableau mobile
+        echo '<tr class="product-row-1">';
+        echo '<th class="product-header-1 header-name">Nom</th>';
+        echo '<th class="product-header-1 header-value">Valeur</th>';
+        echo '</tr>';
+        
+        // Corps du tableau mobile - un attribut par ligne
+        for ($i = 0; $i < $totalAttributes; $i++) {
+            $attribute = $attributesArray[$i];
+            $originalName = wc_attribute_label($attribute->get_name());
+            $name = str_replace($searchStr, '', $originalName);
+            $name = str_replace('(couplage n°' . $couplingNumber . ')', '', $name);
+            
+            $value = $attribute->is_taxonomy()
+                ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
+                : implode(', ', $attribute->get_options());
+            
+            // Alternance des couleurs en mobile basée sur l'index (pair/impair)
+            $rowClass = ($i % 2 === 0) ? 'mobile-row-1' : 'mobile-row alternate-1';
+            echo '<tr class="' . $rowClass . '">';
+            echo '<td class="product-cell-1">' . esc_html($name) . '</td>';
+            echo '<td class="product-cell-1"><strong>' . esc_html($value) . '</strong></td>';
+            echo '</tr>';
+        }
+        
+        echo '</table>';
+        echo '</div>';
     }
 }
 
-// Fonctions pour les couplages spécifiques (1-4)
-for ($i = 1; $i <= 4; $i++) {
+// Fonctions pour les couplages spécifiques (1-10 au lieu de 1-4)
+for ($i = 1; $i <= 10; $i++) {
     if (!function_exists('displayProductN' . $i . 'Attributes')) {
         eval('function displayProductN' . $i . 'Attributes() { return displayProductCouplingAttributes(' . $i . '); }');
     }
@@ -105,7 +155,7 @@ if (!function_exists('getVoltageOptions')) {
         foreach ($attributes as $attributeKey => $attribute) {
             $attributeName = wc_attribute_label($attribute->get_name());
             
-            for ($couplingNumber = 1; $couplingNumber <= 4; $couplingNumber++) {
+            for ($couplingNumber = 1; $couplingNumber <= 10; $couplingNumber++) {
                 $searchPattern = 'n°' . $couplingNumber;
                 
                 if (strpos($attributeName, $searchPattern) !== false &&
@@ -177,6 +227,23 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
             .tech-specs-container { margin: 0; }
             .tech-specs-title { margin-bottom: 15px; }
             
+            /* Styles pour le tableau responsive */
+            .product-table-2 {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            
+            .product-table-2 th, .product-table-2 td {
+                padding: 0.5rem;
+                border: 1px solid #ddd;
+            }
+            
+            /* Classes d'affichage conditionnel */
+            .mobile-only {
+                display: none;
+            }
+            
+            /* Styles des onglets */
             .voltage-tabs {
                 display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
             }
@@ -200,9 +267,33 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
             .voltage-tabs-content .tab-content.active { display: block; }
             .attributes-hidden-outside-tab.in-tab-active { display: block !important; }
             
+            /* Media queries */
             @media (max-width: 768px) {
+                /* Styles pour les onglets */
                 .voltage-tabs { flex-direction: column; gap: 5px; }
                 .voltage-tabs .tab { width: 100%; text-align: center; }
+                
+                /* Styles pour le tableau */
+                .desktop-only {
+                    display: none;
+                }
+                
+                .mobile-only {
+                    display: table-row;
+                }
+                
+                .product-table-2 th, .product-table-2 td {
+                    padding: 0.5rem;
+                    text-align: left;
+                }
+                
+                .product-table-2 th:first-child, .product-table-2 td:first-child {
+                    width: 50%;
+                }
+                
+                .product-table-2 th:last-child, .product-table-2 td:last-child {
+                    width: 50%;
+                }
             }
         </style>
         <?php
@@ -293,7 +384,7 @@ if (!function_exists('displayAllProductCouplingAttributes')) {
         ob_start();
         
         $output = '';
-        for ($i = 1; $i <= 4; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $couplingOutput = displayProductCouplingAttributes($i);
             if (strpos($couplingOutput, 'warning-message') === false && strpos($couplingOutput, 'error-message') === false) {
                 $output .= $couplingOutput;
@@ -303,15 +394,6 @@ if (!function_exists('displayAllProductCouplingAttributes')) {
         echo empty($output)
             ? '<p class="warning-message">Aucun attribut de couplage trouvé pour ce produit.</p>'
             : $output;
-        
-        ?>
-        <style>
-            .error-message { color: red; }
-            .warning-message { color: orange; }
-            .tech-specs-container { margin: 20px 0; }
-            .tech-specs-title { margin-bottom: 15px; }
-        </style>
-        <?php
         
         return ob_get_clean();
     }
