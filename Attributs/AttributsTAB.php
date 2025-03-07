@@ -418,86 +418,165 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
                 ?>
             </div>
         </div>
+
+<style>
+    .error-message { color: red; }
+    .warning-message { color: orange; }
+    .tech-specs-container { margin: 0; }
+    .tech-specs-title { margin-bottom: 1rem; }
+    
+    /* Styles pour le tableau responsive */
+    .product-table-2, .product-table-3 {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .product-table-2 th, .product-table-2 td,
+    .product-table-3 th, .product-table-3 td {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+    }
+    
+    /* Classes d'affichage conditionnel */
+    .mobile-table {
+        display: none;
+    }
+    
+    /* Styles des onglets */
+    .voltage-tabs {
+        display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; margin-top: 1.5rem;
+    }
+    
+    .voltage-tabs .tab {
+        padding: 10px 16px; cursor: pointer; font-weight: 500; border-radius: 4px;
+        transition: all 0.2s ease; background: #f3f3f3; border: 1px solid #ddd;
+        color: #444; user-select: none;
+    }
+    
+    .voltage-tabs .tab:hover {
+        background: #f5e5e2; border-color: #de2f19;
+    }
+    
+    .voltage-tabs .tab.active {
+        background: #de2f19; color: white; border-color: #c42815;
+        box-shadow: 0 2px 5px rgba(222, 47, 25, 0.3);
+    }
+    
+    .voltage-tabs-content .tab-content { display: none; }
+    .voltage-tabs-content .tab-content.active { display: block; }
+    .attributes-hidden-outside-tab.in-tab-active { display: block !important; }
+    
+    /* Nouveaux styles de tableaux */
+    .product-table-1 {
+      height: auto !important;
+      width: 100% !important;
+      max-width:.7rem !important;
+      border-collapse: collapse !important;
+      border: 1px solid #000000 !important;
+      margin-top: 1rem !important;
+      font-family: 'Poppins', sans-serif !important;
+      font-size: 16px !important;
+    }
+    .product-table-2 {
+      height: auto !important;
+      width: 100% !important;
+      border-collapse: collapse !important;
+      border: 1px solid #000000 !important;
+      margin-top: 1rem !important;
+      font-family: 'Poppins', sans-serif !important;
+      font-size: 1rem !important;
+    }
+    .product-table-3 {
+      height: auto !important;
+      width: 100% !important;
+      max-width: 55rem !important;
+      border-collapse: collapse !important;
+      border: 1px solid #000000 !important;
+      margin-top: 1rem !important;
+      font-family: 'Poppins', sans-serif !important;
+      font-size: 1rem !important;
+    }
+    .product-row-1 {
+      height: auto !important;
+    }
+    .product-header-1 {
+      height: auto !important;
+      width: 25% !important;
+      text-align: left !important;
+      background-color: #123750 !important;
+      padding: 0.5rem !important;
+      color: #FFFFFF !important;
+      opacity: 0.9 !important;
+      border: 1px solid #000000 !important;
+      font-family: 'Poppins', sans-serif !important;
+      font-size: 1rem !important;
+    }
+    .product-cell-1 {
+      height: auto !important;
+      width: 25% !important;
+      text-align: left !important;
+      padding: 0.5rem !important;
+      border: 1px solid #000000 !important;
+      font-family: 'Poppins', sans-serif !important;
+      font-size: 1rem !important;
+    }
+    .product-row-1:not(.alternate) .product-cell-1 {
+      background-color: #FFFFFF !important;
+    }
+    .product-row.alternate-1 .product-cell-1 {
+      background-color: #f5f5f5 !important;
+    }
+    .product-cell-1:nth-child(2) {
+      font-weight: bold;
+    }
+    .mobile-row-1 .product-cell-1 {
+      background-color: #FFFFFF !important;
+    }
+    .mobile-row.alternate-1 .product-cell-1 {
+      background-color: #f5f5f5 !important;
+    }
+    .mobile-table {
+      display: none;
+    }
+    .cta-section-1 {
+     margin-top: 1rem !important;
+     margin-bottom: 1rem !important;
+    }
+    
+    /* Media queries */
+    @media (max-width: 768px) {
+        /* Styles pour les onglets */
+        .voltage-tabs { flex-direction: column; gap: 5px; }
+        .voltage-tabs .tab { width: 100%; text-align: center; }
         
-        <style>
-            .error-message { color: red; }
-            .warning-message { color: orange; }
-            .tech-specs-container { margin: 0; }
-            .tech-specs-title { margin-bottom: 15px; }
-            
-            /* Styles pour le tableau responsive */
-            .product-table-2, .product-table-3 {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            
-            .product-table-2 th, .product-table-2 td,
-            .product-table-3 th, .product-table-3 td {
-                padding: 0.5rem;
-                border: 1px solid #ddd;
-            }
-            
-            /* Classes d'affichage conditionnel */
-            .mobile-table {
-                display: none;
-            }
-            
-            /* Styles des onglets */
-            .voltage-tabs {
-                display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; margin-top: 1.5rem;
-            }
-            
-            .voltage-tabs .tab {
-                padding: 10px 16px; cursor: pointer; font-weight: 500; border-radius: 4px;
-                transition: all 0.2s ease; background: #f3f3f3; border: 1px solid #ddd;
-                color: #444; user-select: none;
-            }
-            
-            .voltage-tabs .tab:hover {
-                background: #f5e5e2; border-color: #de2f19;
-            }
-            
-            .voltage-tabs .tab.active {
-                background: #de2f19; color: white; border-color: #c42815;
-                box-shadow: 0 2px 5px rgba(222, 47, 25, 0.3);
-            }
-            
-            .voltage-tabs-content .tab-content { display: none; }
-            .voltage-tabs-content .tab-content.active { display: block; }
-            .attributes-hidden-outside-tab.in-tab-active { display: block !important; }
-            
-            /* Media queries */
-            @media (max-width: 768px) {
-                /* Styles pour les onglets */
-                .voltage-tabs { flex-direction: column; gap: 5px; }
-                .voltage-tabs .tab { width: 100%; text-align: center; }
-                
-                /* Styles pour le tableau */
-                .desktop-table {
-                    display: none;
-                }
-                
-                .mobile-table {
-                    display: table;
-                }
-                
-                .product-table-2 th, .product-table-2 td,
-                .product-table-3 th, .product-table-3 td {
-                    padding: 0.5rem;
-                    text-align: left;
-                }
-                
-                .product-table-2 th:first-child, .product-table-2 td:first-child,
-                .product-table-3 th:first-child, .product-table-3 td:first-child {
-                    width: 50%;
-                }
-                
-                .product-table-2 th:last-child, .product-table-2 td:last-child,
-                .product-table-3 th:last-child, .product-table-3 td:last-child {
-                    width: 50%;
-                }
-            }
-        </style>
+        /* Styles pour le tableau */
+        .desktop-table {
+            display: none !important;
+        }
+        
+        .mobile-table {
+            display: table !important;
+        }
+        
+        .product-table-2 th, .product-table-2 td,
+        .product-table-3 th, .product-table-3 td {
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        .product-table-2 th:first-child, .product-table-2 td:first-child,
+        .product-table-3 th:first-child, .product-table-3 td:first-child {
+            width: 50% !important;
+        }
+        
+        .product-table-2 th:last-child, .product-table-2 td:last-child,
+        .product-table-3 th:last-child, .product-table-3 td:last-child {
+            width: 50% !important;
+        }
+        
+        .tech-specs-title { font-size: xx-large !important; }
+    }
+</style>
         <?php
         
         add_action('wp_footer', function() use ($uniqueId) {
