@@ -34,35 +34,39 @@ if (!function_exists('getBearingAttributes')) {
         $attributes = $product->get_attributes();
         $bearingAttributes = [];
         
+        // Définition des attributs par leurs identifiants
         $attributeKeys = [
             'cote_accouplement' => [
-                'Roulement côté accouplement',
-                'Joint roulement côté accouplement',
-                'Intervalle de graissage roulement côté accouplement',
-                'Quantité de graissage roulement côté accouplement'
+                'roulement-cote-acccouplement' => 'Roulement côté accouplement',
+                'joint-roulement-ca' => 'Joint roulement côté accouplement',
+                'att0000116' => 'Intervalle de graissage roulement côté accouplement',
+                'att0000118' => 'Quantité de graissage roulement côté accouplement'
             ],
             'cote_oppose' => [
-                'Roulement côté opposé accouplement',
-                'Joint roulement côté opposé accouplement',
-                'Intervalle de graissage roulement côté opposé accouplement',
-                'Quantité de graissage roulement côté opposé accouplement'
+                'roulement-cote-opa' => 'Roulement côté opposé accouplement',
+                'joint-roulement-cote-opa' => 'Joint roulement côté opposé accouplement',
+                'att0000115' => 'Intervalle de graissage roulement côté opposé accouplement',
+                'att0000117' => 'Quantité de graissage roulement côté opposé accouplement'
             ],
             'general' => [
-                'Graisse des roulements'
+                'graisse-des-roulements' => 'Graisse des roulements'
             ]
         ];
         
         foreach ($attributes as $attributeKey => $attribute) {
-            $attributeName = wc_attribute_label($attribute->get_name());
+            $taxonomyName = $attribute->get_name();
+            
+            // Récupérer l'ID de l'attribut en nettoyant le nom de la taxonomie
+            $attributeId = strtolower(preg_replace('/^pa_/', '', $taxonomyName));
             
             foreach ($attributeKeys as $side => $sideAttributes) {
-                foreach ($sideAttributes as $sideAttribute) {
-                    if (trim($attributeName) === $sideAttribute) {
+                foreach ($sideAttributes as $attrId => $attrLabel) {
+                    if ($attributeId === $attrId) {
                         $value = $attribute->is_taxonomy()
-                            ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
+                            ? implode(', ', wc_get_product_terms($product->get_id(), $taxonomyName, ['fields' => 'names']))
                             : implode(', ', $attribute->get_options());
                         
-                        $bearingAttributes[$side][$sideAttribute] = $value;
+                        $bearingAttributes[$side][$attrLabel] = $value;
                         break;
                     }
                 }
@@ -467,7 +471,7 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
     .product-table-1 {
       height: auto !important;
       width: 100% !important;
-      max-width:.7rem !important;
+      max-width: 27rem !important;
       border-collapse: collapse !important;
       border: 1px solid #000000 !important;
       margin-top: 1rem !important;
@@ -707,35 +711,38 @@ if (!function_exists('getComplementaryAttributes')) {
         $attributes = $product->get_attributes();
         $complementaryAttributes = [];
         
-        // Liste des attributs à exclure du tableau complémentaire
-        $excludedAttributes = [
-            'Référence fabriquant',
-            'Indice Energétique',
-            'Taille carcasse',
-            'Norme',
-            'Fréquence',
-            'Nombre de Pôles',
-            'Indice de protection (IP)',
-            'Vitesse de rotation',
-            'Puissance utile nominale',
-            'Type de montage',
-            'Mode de refroidissement du moteur suivant la norme IC411',
-            'Puissance',
-            'Tension 50Hz',
-            'Nombre de phases',
-            'Famille'
+        // Liste des attributs à exclure du tableau complémentaire (par ID)
+        $excludedAttributeIds = [
+            'reference-fabriquant',
+            'indice-energetique',
+            'taille-carcasse',
+            'norme-moteurs',
+            'frequence',
+            'nombre-de-poles',
+            'indice-de-protection-ip',
+            'vitesse-rotation',
+            'puissance-utile-nominale',
+            'type-de-montage',
+            'att0000122',
+            'puissance',
+            'tension-50hz',
+            'nombre-de-phases',
+            'famille',
+            'sous-sous-famille'
         ];
         
         foreach ($attributes as $attributeKey => $attribute) {
+            $taxonomyName = $attribute->get_name();
+            $attributeId = strtolower(preg_replace('/^pa_/', '', $taxonomyName));
             $attributeName = wc_attribute_label($attribute->get_name());
             
-            // Exclure les attributs de roulement, de couplage et ceux de la liste d'exclusion
+            // Exclure les attributs de roulement, de couplage et ceux de la liste d'exclusion par ID
             if (strpos($attributeName, 'n°') === false && 
                 strpos(strtolower($attributeName), 'roulement') === false &&
-                !in_array(trim($attributeName), $excludedAttributes)) {
+                !in_array($attributeId, $excludedAttributeIds)) {
                 
                 $value = $attribute->is_taxonomy()
-                    ? implode(', ', wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names']))
+                    ? implode(', ', wc_get_product_terms($product->get_id(), $taxonomyName, ['fields' => 'names']))
                     : implode(', ', $attribute->get_options());
                 
                 // Ajouter l'unité tr/min pour la vitesse de rotation
