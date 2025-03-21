@@ -475,8 +475,6 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
       border-collapse: collapse !important;
       border: 1px solid #000000 !important;
       margin-top: 1rem !important;
-      font-family: 'Poppins', sans-serif !important;
-      font-size: 16px !important;
     }
     .product-table-2 {
       height: auto !important;
@@ -484,8 +482,6 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
       border-collapse: collapse !important;
       border: 1px solid #000000 !important;
       margin-top: 1rem !important;
-      font-family: 'Poppins', sans-serif !important;
-      font-size: 1rem !important;
     }
     .product-table-3 {
       height: auto !important;
@@ -494,8 +490,6 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
       border-collapse: collapse !important;
       border: 1px solid #000000 !important;
       margin-top: 1rem !important;
-      font-family: 'Poppins', sans-serif !important;
-      font-size: 1rem !important;
     }
     .product-row-1 {
       height: auto !important;
@@ -509,8 +503,6 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
       color: #FFFFFF !important;
       opacity: 0.9 !important;
       border: 1px solid #000000 !important;
-      font-family: 'Poppins', sans-serif !important;
-      font-size: 1rem !important;
     }
     .product-cell-1 {
       height: auto !important;
@@ -518,8 +510,6 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
       text-align: left !important;
       padding: 0.5rem !important;
       border: 1px solid #000000 !important;
-      font-family: 'Poppins', sans-serif !important;
-      font-size: 1rem !important;
     }
     .product-row-1:not(.alternate) .product-cell-1 {
       background-color: #FFFFFF !important;

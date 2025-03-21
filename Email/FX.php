@@ -358,25 +358,54 @@ $result = cenovContactForm();
 
             <!-- Upload de plaque signalétique (occupe toute la largeur) -->
             <div class="form-row full-width file-upload">
-                <label for="cenov-plaque">* Votre plaque signalétique 📋 :</label>
-                <div class="file-input-container">
-                    <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf" required />
-                    <div class="file-upload-placeholder">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <span id="file-name-display">Choisir un fichier ou glisser-déposer</span>
-                    </div>
-                </div>
-                <div class="file-formats">
-                    <div class="format-item"><span class="format-icon"></span> JPG</div>
-                    <div class="format-item"><span class="format-icon"></span> PNG</div>
-                    <div class="format-item"><span class="format-icon"></span> PDF</div>
-                    <div class="format-item"><span class="format-icon"></span> Max: 10 Mo</div>
-                </div>
+    <label for="cenov-plaque">* Votre plaque signalétique 📋 :</label>
+    <div class="file-input-container">
+        <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf" required />
+        <div class="file-upload-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span id="file-name-display">Choisir un fichier ou glisser-déposer</span>
+        </div>
+    </div>
+    
+    <!-- Zone de prévisualisation du fichier -->
+    <div id="file-preview" class="file-preview-container" style="display: none;">
+        <div class="preview-header">
+            <span class="preview-title">Aperçu du fichier</span>
+            <button type="button" id="remove-file" class="remove-file-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="preview-content">
+            <!-- Pour les images -->
+            <img id="image-preview" src="#" alt="Aperçu de l'image" />
+            <!-- Pour les PDF -->
+            <div id="pdf-preview">
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-type-pdf">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <path d="M9 13v-1h6v1"/>
+                    <path d="M11 15v4"/>
+                    <path d="M9 19h4"/>
+                </svg>
+                <p id="pdf-name"></p>
             </div>
+        </div>
+    </div>
+    
+    <div class="file-formats">
+        <div class="format-item"><span class="format-icon"></span> JPG</div>
+        <div class="format-item"><span class="format-icon"></span> PNG</div>
+        <div class="format-item"><span class="format-icon"></span> PDF</div>
+        <div class="format-item"><span class="format-icon"></span> Max: 10 Mo</div>
+    </div>
+</div>
 
             <!-- RGPD (occupe toute la largeur) -->
             <div class="form-row full-width">
@@ -627,6 +656,79 @@ $result = cenovContactForm();
     font-weight: 500;
     border-left: 4px solid #ef4444;
   }
+
+  .file-preview-container {
+        margin-top: 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .preview-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #4b5563;
+    }
+
+    .remove-file-btn {
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .remove-file-btn:hover {
+        background-color: #f3f4f6;
+        color: #ef4444;
+    }
+
+    .preview-content {
+        padding: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-height: 300px;
+        overflow: auto;
+    }
+
+    #image-preview {
+        max-width: 100%;
+        max-height: 270px;
+        object-fit: contain;
+    }
+
+    #pdf-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+    }
+
+    #pdf-name {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #4b5563;
+        word-break: break-all;
+    }
   
   /* Responsive */
   @media (max-width: 768px) {
@@ -643,25 +745,78 @@ $result = cenovContactForm();
 <script src="https://www.google.com/recaptcha/api.js?render=6LcXl_sqAAAAAP5cz7w1iul0Bu18KnGqQ6u2DZ7W"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Code existant pour le fichier...
+    // Références aux éléments DOM
     const fileInput = document.getElementById('cenov-plaque');
     const fileNameDisplay = document.getElementById('file-name-display');
+    const filePreview = document.getElementById('file-preview');
+    const imagePreview = document.getElementById('image-preview');
+    const pdfPreview = document.getElementById('pdf-preview');
+    const pdfName = document.getElementById('pdf-name');
+    const removeFileButton = document.getElementById('remove-file');
     
-    if (fileInput && fileNameDisplay) {
-        fileInput.addEventListener('change', function() {
-            if (fileInput.files.length > 0) {
-                fileNameDisplay.textContent = fileInput.files[0].name;
-            } else {
-                fileNameDisplay.textContent = 'Choisir un fichier ou glisser-déposer';
+    // Fonction pour afficher la prévisualisation du fichier
+    function handleFileSelect(event) {
+        if (fileInput.files.length > 0) {
+            const selectedFile = fileInput.files[0];
+            const fileSize = (selectedFile.size / 1024 / 1024).toFixed(2); // Taille en MB
+            
+            // Mettre à jour le nom du fichier affiché
+            fileNameDisplay.textContent = selectedFile.name + ' (' + fileSize + ' MB)';
+            
+            // Vérifier le type de fichier
+            const fileType = selectedFile.type;
+            
+            // Réinitialiser les prévisualisations
+            imagePreview.style.display = 'none';
+            pdfPreview.style.display = 'none';
+            
+            if (fileType.startsWith('image/')) {
+                // Pour les images
+                const fileURL = URL.createObjectURL(selectedFile);
+                imagePreview.src = fileURL;
+                imagePreview.style.display = 'block';
+                filePreview.style.display = 'block';
+            } else if (fileType === 'application/pdf') {
+                // Pour les PDF
+                pdfName.textContent = selectedFile.name;
+                pdfPreview.style.display = 'flex';
+                filePreview.style.display = 'block';
             }
-        });
+        } else {
+            // Réinitialiser si aucun fichier n'est sélectionné
+            fileNameDisplay.textContent = 'Choisir un fichier ou glisser-déposer';
+            filePreview.style.display = 'none';
+        }
     }
+    
+    // Fonction pour supprimer le fichier sélectionné
+    function removeFile() {
+        fileInput.value = ''; // Vider l'input de fichier
+        fileNameDisplay.textContent = 'Choisir un fichier ou glisser-déposer';
+        filePreview.style.display = 'none';
+        
+        // Révoquer les URLs d'objets pour libérer la mémoire
+        if (imagePreview.src && imagePreview.src.startsWith('blob:')) {
+            URL.revokeObjectURL(imagePreview.src);
+        }
+    }
+    
+    // Attacher les écouteurs d'événements
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileSelect);
+    }
+    
+    if (removeFileButton) {
+        removeFileButton.addEventListener('click', removeFile);
+    }
+    
+    // Vider le champ honeypot
     const honeypotField = document.getElementById('cenov_website');
     if (honeypotField) {
         honeypotField.value = '';
     }
     
-    // Nouveau code pour reCAPTCHA
+    // Configuration reCAPTCHA
     grecaptcha.ready(function() {
         // Ajouter un écouteur d'événement pour le formulaire
         const form = document.querySelector('.cenov-form-container form');
@@ -676,6 +831,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('g-recaptcha-response').value = token;
                     
                     // Soumettre le formulaire
+                    form.submit();
+                }).catch(function(error) {
+                    console.error('Erreur reCAPTCHA:', error);
+                    // En cas d'erreur, permettre quand même la soumission
                     form.submit();
                 });
             });
