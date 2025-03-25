@@ -283,6 +283,16 @@ if (!function_exists('renderAttributesTable')) {
                 if (strpos($name2, 'Vitesse de rotation') !== false && strpos($value2, 'tr/min') === false) {
                     $value2 .= ' tr/min';
                 }
+
+                // Ajouter l'unité Hz pour la fréquence
+if (strpos($name1, 'Fréquence') !== false && strpos($value1, 'Hz') === false) {
+    $value1 .= ' Hz';
+}
+
+// Et pour le deuxième attribut également
+if (isset($name2) && strpos($name2, 'Fréquence') !== false && strpos($value2, 'Hz') === false) {
+    $value2 .= ' Hz';
+}
                 
                 echo '<td class="product-cell-1">' . esc_html($name2) . '</td>';
                 echo '<td class="product-cell-1"><strong>' . esc_html($value2) . '</strong></td>';
@@ -350,7 +360,60 @@ if (!function_exists('getVoltageOptions')) {
         
         $voltageOptions = [];
         $attributes = $product->get_attributes();
+        $frequencyValues = []; // Stocker les fréquences par couplage
         
+        // Chercher d'abord les fréquences par couplage
+        foreach ($attributes as $attributeKey => $attribute) {
+            $attributeName = wc_attribute_label($attribute->get_name());
+            
+            for ($couplingNumber = 1; $couplingNumber <= 10; $couplingNumber++) {
+                $searchPattern = '(couplage n°' . $couplingNumber . ')';
+                
+                if (strpos($attributeName, $searchPattern) !== false &&
+                    (strpos(strtolower($attributeName), 'fréquence') !== false ||
+                     strpos(strtolower($attributeName), 'frequence') !== false)) {
+                    
+                    $values = $attribute->is_taxonomy()
+                        ? wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names'])
+                        : $attribute->get_options();
+                    
+                    if (!empty($values)) {
+                        $frequencyValue = is_array($values) ? $values[0] : $values;
+                        // Ajouter Hz si nécessaire
+                        if (strpos($frequencyValue, 'Hz') === false) {
+                            $frequencyValue .= ' Hz';
+                        }
+                        $frequencyValues[$couplingNumber] = $frequencyValue;
+                    }
+                }
+            }
+        }
+        
+        // Chercher une fréquence globale (backup)
+        $globalFrequency = '';
+        foreach ($attributes as $attributeKey => $attribute) {
+            $attributeName = wc_attribute_label($attribute->get_name());
+            if ((strpos(strtolower($attributeName), 'fréquence') !== false || 
+                 strpos(strtolower($attributeName), 'frequence') !== false) &&
+                 strpos($attributeName, 'couplage') === false) {
+                
+                $values = $attribute->is_taxonomy()
+                    ? wc_get_product_terms($product->get_id(), $attribute->get_name(), ['fields' => 'names'])
+                    : $attribute->get_options();
+                
+                if (!empty($values)) {
+                    $frequencyValue = is_array($values) ? $values[0] : $values;
+                    // Ajouter Hz si nécessaire
+                    if (strpos($frequencyValue, 'Hz') === false) {
+                        $frequencyValue .= ' Hz';
+                    }
+                    $globalFrequency = $frequencyValue;
+                    break;
+                }
+            }
+        }
+        
+        // Ensuite chercher les tensions par couplage
         foreach ($attributes as $attributeKey => $attribute) {
             $attributeName = wc_attribute_label($attribute->get_name());
             
@@ -367,11 +430,19 @@ if (!function_exists('getVoltageOptions')) {
                     
                     if (!empty($values)) {
                         $voltageValue = is_array($values) ? $values[0] : $values;
+                        
+                        // Utiliser la fréquence spécifique au couplage si disponible, sinon la fréquence globale
+                        $frequencyToUse = isset($frequencyValues[$couplingNumber]) ? 
+                                          $frequencyValues[$couplingNumber] : 
+                                          $globalFrequency;
+                        
+                        // Combiner tension et fréquence
+                        $displayValue = $voltageValue . ($frequencyToUse ? ' - ' . $frequencyToUse : '');
                         $voltageOptions[$couplingNumber] = [
-                            'value' => $voltageValue,
-                            'label' => $voltageValue . ' ' . ($couplingNumber > 1 ? '(Couplage ' . $couplingNumber . ')' : '')
+                            'value' => $displayValue,
+                            'label' => $displayValue . ' ' . ($couplingNumber > 1 ? '(Couplage ' . $couplingNumber . ')' : '')
                         ];
-                        break; // Une fois trouvé pour ce couplage, on passe au suivant
+                        break;
                     }
                 }
             }
@@ -424,7 +495,7 @@ if (!function_exists('displayProductCouplingAttributesWithTabs')) {
     .error-message { color: red; }
     .warning-message { color: orange; }
     .tech-specs-container { margin: 0; margin-bottom: 1.5rem; }
-    .tech-specs-title { margin-bottom: 1rem; }
+    .tech-specs-title { margin-bottom: 1rem; margin-top: 1rem; }
     
     /* Styles pour le tableau responsive */
     .product-table-2, .product-table-3 {

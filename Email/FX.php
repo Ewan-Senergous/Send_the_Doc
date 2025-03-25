@@ -136,9 +136,9 @@ $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
                 }
                 
                 // Vérification du type de fichier
-                $allowed_types = array('image/jpeg', 'image/png', 'application/pdf');
+                $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
                 if (!in_array($file['type'], $allowed_types)) {
-                    return '<div class="error-message">Format de fichier non supporté. Formats acceptés : JPG, PNG, PDF</div>';
+                    return '<div class="error-message">Format de fichier non supporté. Formats acceptés : JPG, JPEG, PNG, PDF, HEIC, WEBP</div>';
                 }
                 
                 // Vérification de la taille
@@ -293,44 +293,44 @@ $result = cenovContactForm();
 
             <!-- Troisième ligne: Société (occupe toute la largeur) -->
             <div class="form-row full-width">
-                <label for="cenov-societe">Nom de ma société :</label>
+                <label for="cenov-societe">* Nom de ma société :</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-factory"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
                     </span>
-                    <input type="text" id="cenov-societe" name="cenov_societe" placeholder="Nom de votre société" />
+                    <input type="text" id="cenov-societe" name="cenov_societe" placeholder="Nom de ma société" required />
                 </div>
             </div>
 
             <!-- Quatrième ligne: Adresse (occupe toute la largeur) -->
             <div class="form-row full-width">
-                <label for="cenov-adresse">Adresse :</label>
+                <label for="cenov-adresse">* Adresse :</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
                     </span>
-                    <input type="text" id="cenov-adresse" name="cenov_adresse" placeholder="Adresse" />
+                    <input type="text" id="cenov-adresse" name="cenov_adresse" placeholder="Adresse" required />
                 </div>
             </div>
 
             <!-- Cinquième ligne: Code Postal et Ville côte à côte -->
             <div class="form-row">
-                <label for="cenov-codepostal">Code Postal :</label>
+                <label for="cenov-codepostal">* Code Postal :</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
                     </span>
-                    <input type="text" id="cenov-codepostal" name="cenov_codepostal" placeholder="Code Postal" />
+                    <input type="text" id="cenov-codepostal" name="cenov_codepostal" placeholder="Code Postal" required  />
                 </div>
             </div>
 
             <div class="form-row">
-                <label for="cenov-ville">Ville :</label>
+                <label for="cenov-ville">* Ville :</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
                     </span>
-                    <input type="text" id="cenov-ville" name="cenov_ville" placeholder="Ville" />
+                    <input type="text" id="cenov-ville" name="cenov_ville" placeholder="Ville" required  />
                 </div>
             </div>
 
@@ -360,7 +360,7 @@ $result = cenovContactForm();
             <div class="form-row full-width file-upload">
     <label for="cenov-plaque">* Votre plaque signalétique 📋 :</label>
     <div class="file-input-container">
-        <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf" required />
+    <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf, .heic, .webp" required />
         <div class="file-upload-placeholder">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -401,8 +401,11 @@ $result = cenovContactForm();
     
     <div class="file-formats">
         <div class="format-item"><span class="format-icon"></span> JPG</div>
+        <div class="format-item"><span class="format-icon"></span> JPEG</div>
         <div class="format-item"><span class="format-icon"></span> PNG</div>
         <div class="format-item"><span class="format-icon"></span> PDF</div>
+        <div class="format-item"><span class="format-icon"></span> HEIC</div>
+        <div class="format-item"><span class="format-icon"></span> WEBP</div>
         <div class="format-item"><span class="format-icon"></span> Max: 10 Mo</div>
     </div>
 </div>
