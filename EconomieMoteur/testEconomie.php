@@ -130,7 +130,12 @@ $simulateurId = 'simulateur_' . uniqid();
     .simulateur-grid {
         display: grid;
         gap: 1.5rem;
+        grid-template-columns: repeat(2, 1fr);
     }
+
+    .simulateur-full-width {
+    grid-column: 1 / -1;
+}
 
     .simulateur-input:focus,
     .simulateur-select:focus {
@@ -158,6 +163,52 @@ $simulateurId = 'simulateur_' . uniqid();
     text-align: center;
     border-top: 1px solid #e5e7eb;
    }
+
+/* Grille pour les conditions d'exploitation */
+.simulateur-conditions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+/* Grille pour les résultats détaillés */
+.simulateur-results-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.simulateur-analysis-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .simulateur-moteurs-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .simulateur-conditions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 992px) {
+    .simulateur-results-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .simulateur-analysis-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 1200px) {
+    .simulateur-analysis-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
     
     @media (min-width: 768px) {
         .simulateur-grid {
@@ -502,7 +553,6 @@ $simulateurId = 'simulateur_' . uniqid();
         <div class="simulateur-content">
             <div class="simulateur-grid">
                 <!-- COLONNE 1 - Paramètres d'entrée -->
-                <div class="simulateur-column">
                     <!-- Moteur actuel -->
                     <div class="simulateur-section">
                         <h3 class="text-bold-black">Moteur actuel</h3>
@@ -634,10 +684,12 @@ $simulateurId = 'simulateur_' . uniqid();
                     </div>
                     
                     <!-- Conditions d'exploitation -->
+                    <div class="simulateur-full-width">
                     <div class="simulateur-section">
                         <h3>Conditions d'exploitation</h3>
                         
                         <div class="simulateur-inputs">
+                        <div class="simulateur-conditions-grid">
                             <div class="simulateur-input-group">
                                 <label for="coutEnergie_<?php echo $simulateurId; ?>" class="text-bold-black">Prix unitaire de l'électricité (€/kWh)</label>
                                 <input
@@ -680,7 +732,8 @@ $simulateurId = 'simulateur_' . uniqid();
                 
                 
                 <!-- COLONNE 2 - Résultats -->
-                <div class="simulateur-column">
+                <div class="simulateur-full-width">
+                <div class="simulateur-section">
                     <h3 class="text-bold-black">Résultats</h3>
                     
                     <div class="simulateur-results">
@@ -711,11 +764,14 @@ $simulateurId = 'simulateur_' . uniqid();
                             </div>
                         </div>
                         
+                        <div class="simulateur-results-details">
+                        <div class="simulateur-results-grid">
                         <div class="simulateur-chart-container">
                             <h4 class="text-bold-black">Évolution des coûts sur 10 ans</h4>
                             <canvas id="chartCouts_<?php echo $simulateurId; ?>"></canvas>
                         </div>
                         
+                        <div class="simulateur-analysis-grid">
                         <div class="simulateur-analysis">
                             <h4 class="text-bold-black">Analyse</h4>
                             <p id="analyseText_<?php echo $simulateurId; ?>">Veuillez ajuster les paramètres pour obtenir une analyse.</p>

@@ -137,6 +137,7 @@ $simulateurId = 'simulateur_' . uniqid();
     outline: none;
     border-color: #000;
     box-shadow: 0 0 0 1px #000;
+    color: #000;
     }
 
     .analyse-icon {
@@ -174,9 +175,10 @@ $simulateurId = 'simulateur_' . uniqid();
     
     .simulateur-section h3 {
         margin-top: 0;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
         font-size: 1.25rem;
-        font-weight: 600;
+        font-weight: bold;
+        color: #000;
     }
     
     .simulateur-inputs {
@@ -199,7 +201,7 @@ $simulateurId = 'simulateur_' . uniqid();
     
     .simulateur-value {
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: bold;
     }
     
     .simulateur-button {
@@ -256,10 +258,10 @@ $simulateurId = 'simulateur_' . uniqid();
     }
     
     .simulateur-select {
-        padding: 0.5rem 1rem;
+        padding: 0.5rem;
         border: 1px solid #e5e7eb;
         border-radius: 0.25rem;
-        background-color: white;
+        background-color: #FFF;
         width: 100%;
     }
     
@@ -364,7 +366,7 @@ $simulateurId = 'simulateur_' . uniqid();
     
     .simulateur-chart-container h4 {
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: bold;
         margin-bottom: 0.5rem;
     }
     
@@ -384,7 +386,7 @@ $simulateurId = 'simulateur_' . uniqid();
     .simulateur-savings h4,
     .simulateur-environmental h4 {
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: bold;
         margin-top: 0;
         margin-bottom: 0.5rem;
     }
@@ -477,18 +479,16 @@ $simulateurId = 'simulateur_' . uniqid();
     font-weight: 500;
 }
 
-
-.simulateur-category-selector {
-    margin-top: 10px;
+.text-bold {
+    font-weight: bold;
 }
 
-.simulateur-select {
-    width: 100%;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #d1d5db;
-    background-color: #FFF;
-    margin-bottom: 10px;
+.text-bold-black {
+    font-weight: bold;
+    color: #000;
+}
+.text-black {
+    color: #000;
 }
 
 </style>
@@ -505,14 +505,14 @@ $simulateurId = 'simulateur_' . uniqid();
                 <div class="simulateur-column">
                     <!-- Moteur actuel -->
                     <div class="simulateur-section">
-                        <h3>Moteur actuel</h3>
+                        <h3 class="text-bold-black">Moteur actuel</h3>
                         
                         <div class="simulateur-inputs">
                             <!-- Puissance accordéon -->
                             <div class="simulateur-input-group">
                                 <div class="simulateur-input-header">
-                                    <label for="puissanceActuelle_<?php echo $simulateurId; ?>">Puissance du moteur actuel (kW)</label>
-                                    <span class="simulateur-value" id="puissanceActuelleValue_<?php echo $simulateurId; ?>">11 kW</span>
+                                    <label for="puissanceActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">Puissance du moteur actuel (kW)</label>
+                                    <span class="simulateur-value text-bold-black" id="puissanceActuelleValue_<?php echo $simulateurId; ?>">11 kW</span>
                                 </div>
                                 <div class="simulateur-category-selector">
         <select id="puissanceCategoryActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
@@ -530,7 +530,7 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Nombre de pôles -->
                             <div class="simulateur-input-group">
-                                <label for="polesActuel_<?php echo $simulateurId; ?>">Nombre de pôles (vitesse)</label>
+                                <label for="polesActuel_<?php echo $simulateurId; ?>" class="text-bold-black">Nombre de pôles (vitesse)</label>
                                 <select id="polesActuel_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="2">2 pôles (3000 tr/min)</option>
                                     <option value="4" selected>4 pôles (1500 tr/min)</option>
@@ -541,7 +541,7 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Classe d'efficience -->
                             <div class="simulateur-input-group">
-                                <label for="classeActuelle_<?php echo $simulateurId; ?>">Classe d'efficience</label>
+                                <label for="classeActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">Classe d'efficience</label>
                                 <select id="classeActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="IE1">IE1 (Standard)</option>
                                     <option value="IE2" selected>IE2 (Haut rendement)</option>
@@ -549,6 +549,17 @@ $simulateurId = 'simulateur_' . uniqid();
                                     <option value="IE4">IE4 (Super Premium)</option>
                                     <option value="IE5">IE5 (Ultra Premium)</option>
                                 </select>
+                            </div>
+                            <div class="simulateur-input-group">
+                                <label for="efficaciteMoteurActuel_<?php echo $simulateurId; ?>" class="text-bold-black">Efficacité du moteur (%)</label>
+                                <input
+                                    id="efficaciteMoteurActuel_<?php echo $simulateurId; ?>"
+                                    type="number"
+                                    min="10"
+                                    max="100"
+                                    value="75"
+                                    class="simulateur-input"
+                                />
                             </div>
                         </div>
                     </div>
@@ -561,8 +572,8 @@ $simulateurId = 'simulateur_' . uniqid();
                             <!-- Puissance sélecteur cible -->
                             <div class="simulateur-input-group">
                                 <div class="simulateur-input-header">
-                                    <label for="puissanceCible_<?php echo $simulateurId; ?>">Puissance du moteur cible (kW)</label>
-                                    <span class="simulateur-value" id="puissanceCibleValue_<?php echo $simulateurId; ?>">11 kW</span>
+                                    <label for="puissanceCible_<?php echo $simulateurId; ?>" class="text-bold-black">Puissance du moteur cible (kW)</label>
+                                    <span class="simulateur-value text-bold-black" id="puissanceCibleValue_<?php echo $simulateurId; ?>">11 kW</span>
                                 </div>
                                 <div class="simulateur-category-selector">
                                     <select id="puissanceCategoryCible_<?php echo $simulateurId; ?>" class="simulateur-select">
@@ -579,7 +590,7 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Nombre de pôles cible -->
                             <div class="simulateur-input-group">
-                                <label for="polesCible_<?php echo $simulateurId; ?>">Nombre de pôles (vitesse)</label>
+                                <label for="polesCible_<?php echo $simulateurId; ?>" class="text-bold-black">Nombre de pôles (vitesse)</label>
                                 <select id="polesCible_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="2">2 pôles (3000 tr/min)</option>
                                     <option value="4" selected>4 pôles (1500 tr/min)</option>
@@ -590,7 +601,7 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Classe d'efficience cible -->
                             <div class="simulateur-input-group">
-                                <label for="classeCible_<?php echo $simulateurId; ?>">Classe d'efficience</label>
+                                <label for="classeCible_<?php echo $simulateurId; ?>" class="text-bold-black">Classe d'efficience</label>
                                 <select id="classeCible_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="IE2">IE2 (Haut rendement)</option>
                                     <option value="IE3">IE3 (Premium)</option>
@@ -598,10 +609,22 @@ $simulateurId = 'simulateur_' . uniqid();
                                     <option value="IE5">IE5 (Ultra Premium)</option>
                                 </select>
                             </div>
+
+                            <div class="simulateur-input-group">
+                                <label for="efficaciteMoteurCible_<?php echo $simulateurId; ?>" class="text-bold-black">Efficacité du moteur (%)</label>
+                                <input
+                                    id="efficaciteMoteurCible_<?php echo $simulateurId; ?>"
+                                    type="number"
+                                    min="10"
+                                    max="100"
+                                    value="75"
+                                    class="simulateur-input"
+                                />
+                            </div>
                             
                             <!-- Variateur de vitesse -->
                             <div class="simulateur-input-group switch-group">
-                                <label for="vitesseVariable_<?php echo $simulateurId; ?>">Variateur de vitesse</label>
+                                <label for="vitesseVariable_<?php echo $simulateurId; ?>" class="text-bold-black">Variateur de vitesse</label>
                                 <div class="switch-container">
                                     <input type="checkbox" id="vitesseVariable_<?php echo $simulateurId; ?>" class="switch-input">
                                     <label for="vitesseVariable_<?php echo $simulateurId; ?>" class="switch-label" aria-label="Vitesse variable"></label>
@@ -616,7 +639,7 @@ $simulateurId = 'simulateur_' . uniqid();
                         
                         <div class="simulateur-inputs">
                             <div class="simulateur-input-group">
-                                <label for="coutEnergie_<?php echo $simulateurId; ?>">Prix unitaire de l'électricité (€/kWh)</label>
+                                <label for="coutEnergie_<?php echo $simulateurId; ?>" class="text-bold-black">Prix unitaire de l'électricité (€/kWh)</label>
                                 <input
                                     id="coutEnergie_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -629,7 +652,7 @@ $simulateurId = 'simulateur_' . uniqid();
                             </div>
                             
                             <div class="simulateur-input-group">
-                                <label for="joursFonctionnement_<?php echo $simulateurId; ?>">Combien de jours de fonctionnement par an ? (j)</label>
+                                <label for="joursFonctionnement_<?php echo $simulateurId; ?>" class="text-bold-black">Combien de jours de fonctionnement par an ? (J)</label>
                                 <input
                                     id="joursFonctionnement_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -641,25 +664,13 @@ $simulateurId = 'simulateur_' . uniqid();
                             </div>
                             
                             <div class="simulateur-input-group">
-                                <label for="heuresFonctionnementParJour_<?php echo $simulateurId; ?>">Combien d'heures de fonctionnement par jour ? (h)</label>
+                                <label for="heuresFonctionnementParJour_<?php echo $simulateurId; ?>" class="text-bold-black">Combien d'heures de fonctionnement par jour ? (H)</label>
                                 <input
                                     id="heuresFonctionnementParJour_<?php echo $simulateurId; ?>"
                                     type="number"
                                     min="1"
                                     max="24"
                                     value="16"
-                                    class="simulateur-input"
-                                />
-                            </div>
-                            
-                            <div class="simulateur-input-group">
-                                <label for="chargeMoteur_<?php echo $simulateurId; ?>">Charge du moteur (%)</label>
-                                <input
-                                    id="chargeMoteur_<?php echo $simulateurId; ?>"
-                                    type="number"
-                                    min="10"
-                                    max="100"
-                                    value="75"
                                     class="simulateur-input"
                                 />
                             </div>
@@ -670,48 +681,48 @@ $simulateurId = 'simulateur_' . uniqid();
                 
                 <!-- COLONNE 2 - Résultats -->
                 <div class="simulateur-column">
-                    <h3>Résultats</h3>
+                    <h3 class="text-bold-black">Résultats</h3>
                     
                     <div class="simulateur-results">
                         <div class="simulateur-results-summary">
                             <div class="simulateur-result-row">
                                 <div class="simulateur-result-label">Consommation annuelle actuelle:</div>
-                                <div class="simulateur-result-value" id="consommationActuelle_<?php echo $simulateurId; ?>">0 kWh/an</div>
+                                <div class="simulateur-result-value text-bold-black" id="consommationActuelle_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
                                 <div class="simulateur-result-label">Consommation annuelle après optimisation:</div>
-                                <div class="simulateur-result-value" id="consommationCible_<?php echo $simulateurId; ?>">0 kWh/an</div>
+                                <div class="simulateur-result-value text-bold-black" id="consommationCible_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
                                 <div class="simulateur-result-label">Économie annuelle:</div>
-                                <div class="simulateur-result-value positive" id="economieAnnuelle_<?php echo $simulateurId; ?>">0 €/an</div>
+                                <div class="simulateur-result-value positive text-bold-black" id="economieAnnuelle_<?php echo $simulateurId; ?>">0 €/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
                                 <div class="simulateur-result-label">Coût d'investissement:</div>
-                                <div class="simulateur-result-value" id="coutInvestissement_<?php echo $simulateurId; ?>">0 €</div>
+                                <div class="simulateur-result-value text-bold-black" id="coutInvestissement_<?php echo $simulateurId; ?>">0 €</div>
                             </div>
                             
                             <div class="simulateur-result-row">
                                 <div class="simulateur-result-label">Retour sur investissement:</div>
-                                <div class="simulateur-result-value" id="retourInvestissement_<?php echo $simulateurId; ?>">0 ans</div>
+                                <div class="simulateur-result-value text-bold-black" id="retourInvestissement_<?php echo $simulateurId; ?>">0 ans</div>
                             </div>
                         </div>
                         
                         <div class="simulateur-chart-container">
-                            <h4>Évolution des coûts sur 10 ans</h4>
+                            <h4 class="text-bold-black">Évolution des coûts sur 10 ans</h4>
                             <canvas id="chartCouts_<?php echo $simulateurId; ?>"></canvas>
                         </div>
                         
                         <div class="simulateur-analysis">
-                            <h4>Analyse</h4>
+                            <h4 class="text-bold-black">Analyse</h4>
                             <p id="analyseText_<?php echo $simulateurId; ?>">Veuillez ajuster les paramètres pour obtenir une analyse.</p>
                         </div>
                         
                         <div class="simulateur-savings">
-                            <h4>Économies estimées</h4>
+                            <h4 class="text-bold-black">Économies estimées</h4>
                             <div class="simulateur-savings-grid">
                                 <div class="simulateur-savings-item">
                                     <div class="simulateur-savings-label">Sur 5 ans</div>
@@ -729,15 +740,15 @@ $simulateurId = 'simulateur_' . uniqid();
                         </div>
                         
                         <div class="simulateur-environmental">
-                            <h4>Impact environnemental</h4>
+                            <h4 class="text-bold-black">Impact environnemental</h4>
                             <div class="simulateur-environmental-grid">
                                 <div class="simulateur-environmental-row">
                                     <div class="simulateur-environmental-label">Réduction annuelle de CO2:</div>
-                                    <div class="simulateur-environmental-value" id="reductionCO2_<?php echo $simulateurId; ?>">0 kg CO2/an</div>
+                                    <div class="simulateur-environmental-value text-bold-black" id="reductionCO2_<?php echo $simulateurId; ?>">0 kg CO2/an</div>
                                 </div>
                                 <div class="simulateur-environmental-row">
                                     <div class="simulateur-environmental-label">Économie d'énergie annuelle:</div>
-                                    <div class="simulateur-environmental-value" id="economieEnergie_<?php echo $simulateurId; ?>">0 kWh/an</div>
+                                    <div class="simulateur-environmental-value text-bold-black" id="economieEnergie_<?php echo $simulateurId; ?>">0 kWh/an</div>
                                 </div>
                             </div>
                         </div>
@@ -897,7 +908,8 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         const coutEnergie = parseFloat(document.getElementById(`coutEnergie_${simulateurId}`).value);
         const joursFonctionnement = parseInt(document.getElementById(`joursFonctionnement_${simulateurId}`).value);
         const heuresFonctionnementParJour = parseInt(document.getElementById(`heuresFonctionnementParJour_${simulateurId}`).value);
-        const chargeMoteur = parseInt(document.getElementById(`chargeMoteur_${simulateurId}`).value) / 100;
+        const efficaciteMoteurActuel = parseInt(document.getElementById(`efficaciteMoteurActuel_${simulateurId}`).value) / 100;
+        const efficaciteMoteurCible = parseInt(document.getElementById(`efficaciteMoteurCible_${simulateurId}`).value) / 100;
         
         // Calculer les rendements ajustés
         const rendementActuel = simulateurData.rendements[classeActuelle][puissanceActuelle] * simulateurData.adjustPoleFactors[polesActuel];
@@ -907,11 +919,12 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         const heuresAnnuelles = joursFonctionnement * heuresFonctionnementParJour;
         
         // Calculer les consommations
-        const puissanceUtile = puissanceActuelle * chargeMoteur;
-        const consommationActuelle = puissanceUtile / rendementActuel * heuresAnnuelles;
-        
-        // Calculer la consommation avec le moteur cible
-        let consommationCible = puissanceUtile / rendementCible * heuresAnnuelles;
+        const puissanceUtileActuelle = puissanceActuelle * efficaciteMoteurActuel;
+        const consommationActuelle = puissanceUtileActuelle / rendementActuel * heuresAnnuelles;
+
+// Calculer la consommation avec le moteur cible
+        const puissanceUtileCible = puissanceCible * efficaciteMoteurCible;
+        let consommationCible = puissanceUtileCible / rendementCible * heuresAnnuelles;
         
         // Ajuster la consommation si un variateur est utilisé (exemple: réduction de 15%)
         if (vitesseVariable) {
@@ -1028,7 +1041,7 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
     // Ajouter des écouteurs d'événements pour les autres champs
     const champs = [
         'polesActuel', 'classeActuelle', 'polesCible', 'classeCible',
-        'coutEnergie', 'joursFonctionnement', 'heuresFonctionnementParJour', 'chargeMoteur'
+        'coutEnergie', 'joursFonctionnement', 'heuresFonctionnementParJour', 'efficaciteMoteurActuel', 'efficaciteMoteurCible'
     ];
     
     champs.forEach(champ => {
