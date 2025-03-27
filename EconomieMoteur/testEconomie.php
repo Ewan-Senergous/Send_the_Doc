@@ -132,6 +132,7 @@ $simulateurId = 'simulateur_' . uniqid();
         gap: 1.5rem;
         grid-template-columns: repeat(2, 1fr);
     }
+    
 
     .simulateur-full-width {
     grid-column: 1 / -1;
@@ -184,11 +185,27 @@ $simulateurId = 'simulateur_' . uniqid();
     gap: 1.5rem;
 }
 
+.simulateur-results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.simulateur-results-header {
+    margin-bottom: 1rem;
+}
+
+.simulateur-results-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
 @media (max-width: 768px) {
-    .simulateur-moteurs-row {
+    .simulateur-results-columns {
         grid-template-columns: 1fr;
     }
-    
     .simulateur-conditions-grid {
         grid-template-columns: 1fr;
     }
@@ -200,6 +217,9 @@ $simulateurId = 'simulateur_' . uniqid();
     }
     
     .simulateur-analysis-grid {
+        grid-template-columns: 1fr;
+    }
+    .simulateur-results-columns {
         grid-template-columns: 1fr;
     }
 }
@@ -223,6 +243,14 @@ $simulateurId = 'simulateur_' . uniqid();
         padding: 1rem;
         margin-bottom: 1.5rem;
     }
+
+    .simulateur-section-special {
+    margin-top: -1.5rem;
+}
+
+.simulateur-section-last {
+    margin-bottom: 0;
+}
     
     .simulateur-section h3 {
         margin-top: 0;
@@ -237,6 +265,13 @@ $simulateurId = 'simulateur_' . uniqid();
         flex-direction: column;
         gap: 1rem;
     }
+
+    .simulateur-chart-fullwidth {
+    grid-column: 1 / -1;
+    margin-bottom: 1.5rem;
+    height: 20rem;
+    position: relative;
+}
     
     .simulateur-input-group {
         display: flex;
@@ -381,17 +416,21 @@ $simulateurId = 'simulateur_' . uniqid();
     }
     
     .simulateur-results-summary {
-        background-color: #f3f4f6;
+        background-color: #fff;
+        border: 1px solid #000;
         border-radius: 0.5rem;
         padding: 1rem;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 0.75rem;
+        text-align: center;
+        max-width: 690px;
+        margin: 0 auto;
     }
     
     .simulateur-result-row {
         display: grid;
-        grid-template-columns: 60% 40%;
+        grid-template-columns: 1fr;
         gap: 0.5rem;
     }
     
@@ -403,7 +442,8 @@ $simulateurId = 'simulateur_' . uniqid();
     .simulateur-result-value {
         font-size: 0.875rem;
         font-weight: 500;
-        text-align: right;
+        text-align: center;
+        margin-bottom: 0.75rem;
     }
     
     .simulateur-result-value.positive {
@@ -449,6 +489,13 @@ $simulateurId = 'simulateur_' . uniqid();
     
     .simulateur-savings {
         background-color: #ecfdf5;
+        border: 1px solid #000;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        width: 30rem;
+        max-width: 690px;
+        margin: 0 auto;
     }
     
     .simulateur-savings-grid {
@@ -469,7 +516,14 @@ $simulateurId = 'simulateur_' . uniqid();
     }
     
     .simulateur-environmental {
-        background-color: #f9fafb;
+        background-color: #fff;
+        border: 1px solid #000;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        width: 30rem;
+        max-width: 690px;
+        margin: 0 auto;
     }
     
     .simulateur-environmental-grid {
@@ -506,6 +560,8 @@ $simulateurId = 'simulateur_' . uniqid();
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
     margin-top: 10px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 .simulateur-puissance-btn {
@@ -542,6 +598,28 @@ $simulateurId = 'simulateur_' . uniqid();
     color: #000;
 }
 
+.simulateur-input-header label svg,
+.simulateur-input-group label svg {
+    vertical-align: middle;
+    margin-right: 0.3rem;
+}
+
+.simulateur-input-group label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    margin-left: 0.1rem;
+}
+
+.simulateur-input-group label svg.variateur-icon {
+    margin-left: 0.5rem;
+    margin-right: 0;
+}
+
+.simulateur-input-group.switch-group label {
+    margin-bottom: 0;
+}
+
 </style>
 
 <div class="simulateur-economie-energie">
@@ -561,15 +639,17 @@ $simulateurId = 'simulateur_' . uniqid();
                             <!-- Puissance accordéon -->
                             <div class="simulateur-input-group">
                                 <div class="simulateur-input-header">
-                                    <label for="puissanceActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">Puissance du moteur actuel (kW)</label>
+                                    <label for="puissanceActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                    <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
+                                        Puissance du moteur actuel (kW)</label>
                                     <span class="simulateur-value text-bold-black" id="puissanceActuelleValue_<?php echo $simulateurId; ?>">11 kW</span>
                                 </div>
                                 <div class="simulateur-category-selector">
         <select id="puissanceCategoryActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
-            <option value="micro">Micro-moteurs (0.12 - 0.75 kW)</option>
-            <option value="petit" selected>Petits moteurs (1.1 - 11 kW)</option>
-            <option value="moyen">Moteurs moyens (15 - 75 kW)</option>
-            <option value="grand">Grands moteurs (90 - 1000 kW)</option>
+            <option value="micro">Micro-moteurs (0.1 kW - 0.75 kW)</option>
+            <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
+            <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
+            <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
         </select>
         <div class="simulateur-puissance-grid" id="puissanceActuelleGrid_<?php echo $simulateurId; ?>">
                                         <!-- Rempli dynamiquement par JavaScript -->
@@ -580,7 +660,9 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Nombre de pôles -->
                             <div class="simulateur-input-group">
-                                <label for="polesActuel_<?php echo $simulateurId; ?>" class="text-bold-black">Nombre de pôles (vitesse)</label>
+                                <label for="polesActuel_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cog-icon lucide-cog"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
+                                    Nombre de pôles (vitesse)</label>
                                 <select id="polesActuel_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="2">2 pôles (3000 tr/min)</option>
                                     <option value="4" selected>4 pôles (1500 tr/min)</option>
@@ -591,7 +673,9 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Classe d'efficience -->
                             <div class="simulateur-input-group">
-                                <label for="classeActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">Classe d'efficience</label>
+                                <label for="classeActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg width="24px" height="24px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-chart-column" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>872</title> <defs> </defs> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g transform="translate(0.000000, 1.000000)" fill="#434343"> <path d="M16,13.031 L0.984,13.031 L0.984,0.016 L0.027,0.016 L0,13.95 L0.027,13.95 L0.027,13.979 L16,13.95 L16,13.031 Z" class="si-glyph-fill"> </path> <path d="M4.958,7.021 L2.016,7.021 L2.016,11.985 L4.958,11.985 L4.958,7.021 L4.958,7.021 Z" class="si-glyph-fill"> </path> <path d="M9.969,5.047 L7.016,5.047 L7.016,11.969 L9.969,11.969 L9.969,5.047 L9.969,5.047 Z" class="si-glyph-fill"> </path> <path d="M14.953,3.031 L12,3.031 L12,11.978 L14.953,11.978 L14.953,3.031 L14.953,3.031 Z" class="si-glyph-fill"> </path> </g> </g> </g></svg>
+                                    Classe d'efficience</label>
                                 <select id="classeActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="IE1">IE1 (Standard)</option>
                                     <option value="IE2" selected>IE2 (Haut rendement)</option>
@@ -601,7 +685,9 @@ $simulateurId = 'simulateur_' . uniqid();
                                 </select>
                             </div>
                             <div class="simulateur-input-group">
-                                <label for="efficaciteMoteurActuel_<?php echo $simulateurId; ?>" class="text-bold-black">Efficacité du moteur (%)</label>
+                                <label for="efficaciteMoteurActuel_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
+                                    Efficacité du moteur (%)</label>
                                 <input
                                     id="efficaciteMoteurActuel_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -622,15 +708,17 @@ $simulateurId = 'simulateur_' . uniqid();
                             <!-- Puissance sélecteur cible -->
                             <div class="simulateur-input-group">
                                 <div class="simulateur-input-header">
-                                    <label for="puissanceCible_<?php echo $simulateurId; ?>" class="text-bold-black">Puissance du moteur cible (kW)</label>
+                                    <label for="puissanceCible_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                    <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
+                                        Puissance du moteur cible (kW)</label>
                                     <span class="simulateur-value text-bold-black" id="puissanceCibleValue_<?php echo $simulateurId; ?>">11 kW</span>
                                 </div>
                                 <div class="simulateur-category-selector">
                                     <select id="puissanceCategoryCible_<?php echo $simulateurId; ?>" class="simulateur-select">
-                                        <option value="micro">Micro-moteurs (0.12 - 0.75 kW)</option>
-                                        <option value="petit" selected>Petits moteurs (1.1 - 11 kW)</option>
-                                        <option value="moyen">Moteurs moyens (15 - 75 kW)</option>
-                                        <option value="grand">Grands moteurs (90 - 1000 kW)</option>
+                                        <option value="micro">Micro-moteurs (0.12 kW - 0.75 kW)</option>
+                                        <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
+                                        <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
+                                        <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
                                     </select>
                                     <div class="simulateur-puissance-grid" id="puissanceCibleGrid_<?php echo $simulateurId; ?>">
                                         <!-- Rempli dynamiquement par JavaScript -->
@@ -640,7 +728,24 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Nombre de pôles cible -->
                             <div class="simulateur-input-group">
-                                <label for="polesCible_<?php echo $simulateurId; ?>" class="text-bold-black">Nombre de pôles (vitesse)</label>
+                                <label for="polesCible_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/>
+        <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+        <path d="M12 2v2"/>
+        <path d="M12 22v-2"/>
+        <path d="m17 20.66-1-1.73"/>
+        <path d="M11 10.27 7 3.34"/>
+        <path d="m20.66 17-1.73-1"/>
+        <path d="m3.34 7 1.73 1"/>
+        <path d="M14 12h8"/>
+        <path d="M2 12h2"/>
+        <path d="m20.66 7-1.73 1"/>
+        <path d="m3.34 17 1.73-1"/>
+        <path d="m17 3.34-1 1.73"/>
+        <path d="m11 13.73-4 6.93"/>
+    </svg>
+                                    Nombre de pôles (vitesse)</label>
                                 <select id="polesCible_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="2">2 pôles (3000 tr/min)</option>
                                     <option value="4" selected>4 pôles (1500 tr/min)</option>
@@ -651,7 +756,9 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Classe d'efficience cible -->
                             <div class="simulateur-input-group">
-                                <label for="classeCible_<?php echo $simulateurId; ?>" class="text-bold-black">Classe d'efficience</label>
+                                <label for="classeCible_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg width="24px" height="24px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-chart-column" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>872</title> <defs> </defs> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g transform="translate(0.000000, 1.000000)" fill="#434343"> <path d="M16,13.031 L0.984,13.031 L0.984,0.016 L0.027,0.016 L0,13.95 L0.027,13.95 L0.027,13.979 L16,13.95 L16,13.031 Z" class="si-glyph-fill"> </path> <path d="M4.958,7.021 L2.016,7.021 L2.016,11.985 L4.958,11.985 L4.958,7.021 L4.958,7.021 Z" class="si-glyph-fill"> </path> <path d="M9.969,5.047 L7.016,5.047 L7.016,11.969 L9.969,11.969 L9.969,5.047 L9.969,5.047 Z" class="si-glyph-fill"> </path> <path d="M14.953,3.031 L12,3.031 L12,11.978 L14.953,11.978 L14.953,3.031 L14.953,3.031 Z" class="si-glyph-fill"> </path> </g> </g> </g></svg>
+                                Classe d'efficience</label>
                                 <select id="classeCible_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="IE2">IE2 (Haut rendement)</option>
                                     <option value="IE3">IE3 (Premium)</option>
@@ -661,7 +768,9 @@ $simulateurId = 'simulateur_' . uniqid();
                             </div>
 
                             <div class="simulateur-input-group">
-                                <label for="efficaciteMoteurCible_<?php echo $simulateurId; ?>" class="text-bold-black">Efficacité du moteur (%)</label>
+                                <label for="efficaciteMoteurCible_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
+                                    Efficacité du moteur (%)</label>
                                 <input
                                     id="efficaciteMoteurCible_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -674,7 +783,9 @@ $simulateurId = 'simulateur_' . uniqid();
                             
                             <!-- Variateur de vitesse -->
                             <div class="simulateur-input-group switch-group">
-                                <label for="vitesseVariable_<?php echo $simulateurId; ?>" class="text-bold-black">Variateur de vitesse</label>
+                                <label for="vitesseVariable_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12M22 12C22 6.47715 17.5228 2 12 2M22 12H19.5M2 12C2 6.47715 6.47715 2 12 2M2 12H4.5M12 2V4.5M19.0784 5L13.4999 10.5M19.0784 19.0784L18.8745 18.8745C18.1827 18.1827 17.8368 17.8368 17.4331 17.5894C17.0753 17.3701 16.6851 17.2085 16.2769 17.1105C15.8166 17 15.3274 17 14.349 17L9.65096 17C8.6726 17 8.18342 17 7.72307 17.1106C7.31493 17.2086 6.92475 17.3702 6.56686 17.5895C6.1632 17.8369 5.8173 18.1828 5.12549 18.8746L4.92163 19.0784M4.92163 5L6.65808 6.73645M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                    Variateur de vitesse</label>
                                 <div class="switch-container">
                                     <input type="checkbox" id="vitesseVariable_<?php echo $simulateurId; ?>" class="switch-input">
                                     <label for="vitesseVariable_<?php echo $simulateurId; ?>" class="switch-label" aria-label="Vitesse variable"></label>
@@ -685,13 +796,15 @@ $simulateurId = 'simulateur_' . uniqid();
                     
                     <!-- Conditions d'exploitation -->
                     <div class="simulateur-full-width">
-                    <div class="simulateur-section">
+                    <div class="simulateur-section simulateur-section-special">
                         <h3>Conditions d'exploitation</h3>
                         
                         <div class="simulateur-inputs">
                         <div class="simulateur-conditions-grid">
                             <div class="simulateur-input-group">
-                                <label for="coutEnergie_<?php echo $simulateurId; ?>" class="text-bold-black">Prix unitaire de l'électricité (€/kWh)</label>
+                                <label for="coutEnergie_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg fill="#000000" width="24px" height="24px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18.605 2.022v0zM18.605 2.022l-2.256 11.856 8.174 0.027-11.127 16.072 2.257-13.043-8.174-0.029zM18.606 0.023c-0.054 0-0.108 0.002-0.161 0.006-0.353 0.028-0.587 0.147-0.864 0.333-0.154 0.102-0.295 0.228-0.419 0.373-0.037 0.043-0.071 0.088-0.103 0.134l-11.207 14.832c-0.442 0.607-0.508 1.407-0.168 2.076s1.026 1.093 1.779 1.099l5.773 0.042-1.815 10.694c-0.172 0.919 0.318 1.835 1.18 2.204 0.257 0.11 0.527 0.163 0.793 0.163 0.629 0 1.145-0.294 1.533-0.825l11.22-16.072c0.442-0.607 0.507-1.408 0.168-2.076-0.34-0.669-1.026-1.093-1.779-1.098l-5.773-0.010 1.796-9.402c0.038-0.151 0.057-0.308 0.057-0.47 0-1.082-0.861-1.964-1.939-1.999-0.024-0.001-0.047-0.001-0.071-0.001v0z"></path> </g></svg>
+                                    Prix unitaire de l'électricité (€/kWh)</label>
                                 <input
                                     id="coutEnergie_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -704,7 +817,14 @@ $simulateurId = 'simulateur_' . uniqid();
                             </div>
                             
                             <div class="simulateur-input-group">
-                                <label for="joursFonctionnement_<?php echo $simulateurId; ?>" class="text-bold-black">Combien de jours de fonctionnement par an ? (J)</label>
+                                <label for="joursFonctionnement_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 2v4"/>
+        <path d="M16 2v4"/>
+        <rect width="18" height="18" x="3" y="4" rx="2"/>
+        <path d="M3 10h18"/>
+    </svg>
+                                Combien de jours de fonctionnement par an ? (J)</label>
                                 <input
                                     id="joursFonctionnement_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -716,7 +836,12 @@ $simulateurId = 'simulateur_' . uniqid();
                             </div>
                             
                             <div class="simulateur-input-group">
-                                <label for="heuresFonctionnementParJour_<?php echo $simulateurId; ?>" class="text-bold-black">Combien d'heures de fonctionnement par jour ? (H)</label>
+                                <label for="heuresFonctionnementParJour_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+    </svg>
+                                    Combien d'heures de fonctionnement par jour ? (H)</label>
                                 <input
                                     id="heuresFonctionnementParJour_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -733,52 +858,50 @@ $simulateurId = 'simulateur_' . uniqid();
                 
                 <!-- COLONNE 2 - Résultats -->
                 <div class="simulateur-full-width">
-                <div class="simulateur-section">
-                    <h3 class="text-bold-black">Résultats</h3>
+                <div class="simulateur-section simulateur-section-last">
+                    <h3 class="text-bold-black simulateur-results-header">Résultats :</h3>
                     
-                    <div class="simulateur-results">
+                    <div class="simulateur-results-container">
                         <div class="simulateur-results-summary">
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Consommation annuelle actuelle:</div>
+                                <div class="simulateur-result-label">Consommation annuelle actuelle :</div>
                                 <div class="simulateur-result-value text-bold-black" id="consommationActuelle_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Consommation annuelle après optimisation:</div>
+                                <div class="simulateur-result-label">Consommation annuelle cible :</div>
                                 <div class="simulateur-result-value text-bold-black" id="consommationCible_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Économie annuelle:</div>
+                                <div class="simulateur-result-label">Économie annuelle :</div>
                                 <div class="simulateur-result-value positive text-bold-black" id="economieAnnuelle_<?php echo $simulateurId; ?>">0 €/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Coût d'investissement:</div>
+                                <div class="simulateur-result-label">Coût investissement :</div>
                                 <div class="simulateur-result-value text-bold-black" id="coutInvestissement_<?php echo $simulateurId; ?>">0 €</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Retour sur investissement:</div>
+                                <div class="simulateur-result-label">Retour sur investissement :</div>
                                 <div class="simulateur-result-value text-bold-black" id="retourInvestissement_<?php echo $simulateurId; ?>">0 ans</div>
                             </div>
                         </div>
                         
-                        <div class="simulateur-results-details">
-                        <div class="simulateur-results-grid">
-                        <div class="simulateur-chart-container">
+                        <div class="simulateur-chart-fullwidth">
                             <h4 class="text-bold-black">Évolution des coûts sur 10 ans</h4>
                             <canvas id="chartCouts_<?php echo $simulateurId; ?>"></canvas>
                         </div>
                         
-                        <div class="simulateur-analysis-grid">
+                        <div class="simulateur-results-columns">
                         <div class="simulateur-analysis">
                             <h4 class="text-bold-black">Analyse</h4>
                             <p id="analyseText_<?php echo $simulateurId; ?>">Veuillez ajuster les paramètres pour obtenir une analyse.</p>
                         </div>
                         
                         <div class="simulateur-savings">
-                            <h4 class="text-bold-black">Économies estimées</h4>
+                            <h4 class="text-bold-black">Économies estimées :</h4>
                             <div class="simulateur-savings-grid">
                                 <div class="simulateur-savings-item">
                                     <div class="simulateur-savings-label">Sur 5 ans</div>
@@ -796,7 +919,7 @@ $simulateurId = 'simulateur_' . uniqid();
                         </div>
                         
                         <div class="simulateur-environmental">
-                            <h4 class="text-bold-black">Impact environnemental</h4>
+                            <h4 class="text-bold-black">Impact environnemental :</h4>
                             <div class="simulateur-environmental-grid">
                                 <div class="simulateur-environmental-row">
                                     <div class="simulateur-environmental-label">Réduction annuelle de CO2:</div>

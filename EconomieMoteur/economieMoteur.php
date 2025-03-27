@@ -130,7 +130,13 @@ $simulateurId = 'simulateur_' . uniqid();
     .simulateur-grid {
         display: grid;
         gap: 1.5rem;
+        grid-template-columns: repeat(2, 1fr);
     }
+    
+
+    .simulateur-full-width {
+    grid-column: 1 / -1;
+}
 
     .simulateur-input:focus,
     .simulateur-select:focus {
@@ -158,6 +164,71 @@ $simulateurId = 'simulateur_' . uniqid();
     text-align: center;
     border-top: 1px solid #e5e7eb;
    }
+
+/* Grille pour les conditions d'exploitation */
+.simulateur-conditions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+/* Grille pour les résultats détaillés */
+.simulateur-results-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.simulateur-analysis-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.simulateur-results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.simulateur-results-header {
+    margin-bottom: 1rem;
+}
+
+.simulateur-results-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .simulateur-results-columns {
+        grid-template-columns: 1fr;
+    }
+    .simulateur-conditions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 992px) {
+    .simulateur-results-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .simulateur-analysis-grid {
+        grid-template-columns: 1fr;
+    }
+    .simulateur-results-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 1200px) {
+    .simulateur-analysis-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
     
     @media (min-width: 768px) {
         .simulateur-grid {
@@ -172,6 +243,14 @@ $simulateurId = 'simulateur_' . uniqid();
         padding: 1rem;
         margin-bottom: 1.5rem;
     }
+
+    .simulateur-section-special {
+    margin-top: -1.5rem;
+}
+
+.simulateur-section-last {
+    margin-bottom: 0;
+}
     
     .simulateur-section h3 {
         margin-top: 0;
@@ -186,6 +265,13 @@ $simulateurId = 'simulateur_' . uniqid();
         flex-direction: column;
         gap: 1rem;
     }
+
+    .simulateur-chart-fullwidth {
+    grid-column: 1 / -1;
+    margin-bottom: 1.5rem;
+    height: 20rem;
+    position: relative;
+}
     
     .simulateur-input-group {
         display: flex;
@@ -330,17 +416,21 @@ $simulateurId = 'simulateur_' . uniqid();
     }
     
     .simulateur-results-summary {
-        background-color: #f3f4f6;
+        background-color: #fff;
+        border: 1px solid #000;
         border-radius: 0.5rem;
         padding: 1rem;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 0.75rem;
+        text-align: center;
+        max-width: 690px;
+        margin: 0 auto;
     }
     
     .simulateur-result-row {
         display: grid;
-        grid-template-columns: 60% 40%;
+        grid-template-columns: 1fr;
         gap: 0.5rem;
     }
     
@@ -352,7 +442,8 @@ $simulateurId = 'simulateur_' . uniqid();
     .simulateur-result-value {
         font-size: 0.875rem;
         font-weight: 500;
-        text-align: right;
+        text-align: center;
+        margin-bottom: 0.75rem;
     }
     
     .simulateur-result-value.positive {
@@ -398,6 +489,13 @@ $simulateurId = 'simulateur_' . uniqid();
     
     .simulateur-savings {
         background-color: #ecfdf5;
+        border: 1px solid #000;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        width: 30rem;
+        max-width: 690px;
+        margin: 0 auto;
     }
     
     .simulateur-savings-grid {
@@ -418,7 +516,14 @@ $simulateurId = 'simulateur_' . uniqid();
     }
     
     .simulateur-environmental {
-        background-color: #f9fafb;
+        background-color: #fff;
+        border: 1px solid #000;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        width: 30rem;
+        max-width: 690px;
+        margin: 0 auto;
     }
     
     .simulateur-environmental-grid {
@@ -455,6 +560,8 @@ $simulateurId = 'simulateur_' . uniqid();
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
     margin-top: 10px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 .simulateur-puissance-btn {
@@ -502,7 +609,6 @@ $simulateurId = 'simulateur_' . uniqid();
         <div class="simulateur-content">
             <div class="simulateur-grid">
                 <!-- COLONNE 1 - Paramètres d'entrée -->
-                <div class="simulateur-column">
                     <!-- Moteur actuel -->
                     <div class="simulateur-section">
                         <h3 class="text-bold-black">Moteur actuel</h3>
@@ -516,10 +622,10 @@ $simulateurId = 'simulateur_' . uniqid();
                                 </div>
                                 <div class="simulateur-category-selector">
         <select id="puissanceCategoryActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
-            <option value="micro">Micro-moteurs (0.12 - 0.75 kW)</option>
-            <option value="petit" selected>Petits moteurs (1.1 - 11 kW)</option>
-            <option value="moyen">Moteurs moyens (15 - 75 kW)</option>
-            <option value="grand">Grands moteurs (90 - 1000 kW)</option>
+            <option value="micro">Micro-moteurs (0.1 kW - 0.75 kW)</option>
+            <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
+            <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
+            <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
         </select>
         <div class="simulateur-puissance-grid" id="puissanceActuelleGrid_<?php echo $simulateurId; ?>">
                                         <!-- Rempli dynamiquement par JavaScript -->
@@ -577,10 +683,10 @@ $simulateurId = 'simulateur_' . uniqid();
                                 </div>
                                 <div class="simulateur-category-selector">
                                     <select id="puissanceCategoryCible_<?php echo $simulateurId; ?>" class="simulateur-select">
-                                        <option value="micro">Micro-moteurs (0.12 - 0.75 kW)</option>
-                                        <option value="petit" selected>Petits moteurs (1.1 - 11 kW)</option>
-                                        <option value="moyen">Moteurs moyens (15 - 75 kW)</option>
-                                        <option value="grand">Grands moteurs (90 - 1000 kW)</option>
+                                        <option value="micro">Micro-moteurs (0.12 kW - 0.75 kW)</option>
+                                        <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
+                                        <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
+                                        <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
                                     </select>
                                     <div class="simulateur-puissance-grid" id="puissanceCibleGrid_<?php echo $simulateurId; ?>">
                                         <!-- Rempli dynamiquement par JavaScript -->
@@ -634,10 +740,12 @@ $simulateurId = 'simulateur_' . uniqid();
                     </div>
                     
                     <!-- Conditions d'exploitation -->
-                    <div class="simulateur-section">
+                    <div class="simulateur-full-width">
+                    <div class="simulateur-section simulateur-section-special">
                         <h3>Conditions d'exploitation</h3>
                         
                         <div class="simulateur-inputs">
+                        <div class="simulateur-conditions-grid">
                             <div class="simulateur-input-group">
                                 <label for="coutEnergie_<?php echo $simulateurId; ?>" class="text-bold-black">Prix unitaire de l'électricité (€/kWh)</label>
                                 <input
@@ -680,49 +788,51 @@ $simulateurId = 'simulateur_' . uniqid();
                 
                 
                 <!-- COLONNE 2 - Résultats -->
-                <div class="simulateur-column">
-                    <h3 class="text-bold-black">Résultats</h3>
+                <div class="simulateur-full-width">
+                <div class="simulateur-section simulateur-section-last">
+                    <h3 class="text-bold-black simulateur-results-header">Résultats :</h3>
                     
-                    <div class="simulateur-results">
+                    <div class="simulateur-results-container">
                         <div class="simulateur-results-summary">
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Consommation annuelle actuelle:</div>
+                                <div class="simulateur-result-label">Consommation annuelle actuelle :</div>
                                 <div class="simulateur-result-value text-bold-black" id="consommationActuelle_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Consommation annuelle après optimisation:</div>
+                                <div class="simulateur-result-label">Consommation annuelle cible :</div>
                                 <div class="simulateur-result-value text-bold-black" id="consommationCible_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Économie annuelle:</div>
+                                <div class="simulateur-result-label">Économie annuelle :</div>
                                 <div class="simulateur-result-value positive text-bold-black" id="economieAnnuelle_<?php echo $simulateurId; ?>">0 €/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Coût d'investissement:</div>
+                                <div class="simulateur-result-label">Coût investissement :</div>
                                 <div class="simulateur-result-value text-bold-black" id="coutInvestissement_<?php echo $simulateurId; ?>">0 €</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Retour sur investissement:</div>
+                                <div class="simulateur-result-label">Retour sur investissement :</div>
                                 <div class="simulateur-result-value text-bold-black" id="retourInvestissement_<?php echo $simulateurId; ?>">0 ans</div>
                             </div>
                         </div>
                         
-                        <div class="simulateur-chart-container">
+                        <div class="simulateur-chart-fullwidth">
                             <h4 class="text-bold-black">Évolution des coûts sur 10 ans</h4>
                             <canvas id="chartCouts_<?php echo $simulateurId; ?>"></canvas>
                         </div>
                         
+                        <div class="simulateur-results-columns">
                         <div class="simulateur-analysis">
                             <h4 class="text-bold-black">Analyse</h4>
                             <p id="analyseText_<?php echo $simulateurId; ?>">Veuillez ajuster les paramètres pour obtenir une analyse.</p>
                         </div>
                         
                         <div class="simulateur-savings">
-                            <h4 class="text-bold-black">Économies estimées</h4>
+                            <h4 class="text-bold-black">Économies estimées :</h4>
                             <div class="simulateur-savings-grid">
                                 <div class="simulateur-savings-item">
                                     <div class="simulateur-savings-label">Sur 5 ans</div>
@@ -740,7 +850,7 @@ $simulateurId = 'simulateur_' . uniqid();
                         </div>
                         
                         <div class="simulateur-environmental">
-                            <h4 class="text-bold-black">Impact environnemental</h4>
+                            <h4 class="text-bold-black">Impact environnemental :</h4>
                             <div class="simulateur-environmental-grid">
                                 <div class="simulateur-environmental-row">
                                     <div class="simulateur-environmental-label">Réduction annuelle de CO2:</div>
