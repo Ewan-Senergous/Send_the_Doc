@@ -360,7 +360,6 @@ $simulateurId = 'simulateur_' . uniqid();
     
     .switch-group {
         flex-direction: row;
-        justify-content: space-between;
         align-items: center;
     }
     
@@ -947,14 +946,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const accordionActuel = document.getElementById(`accordionActuel_${simulateurId}`);
     const accordionIconActuel = document.getElementById(`accordionIconActuel_${simulateurId}`);
     const puissancesActuelContainer = document.getElementById(`puissancesActuel_${simulateurId}`);
-    const puissanceActuelleValue = document.getElementById(`puissanceActuelleValue_${simulateurId}`);
     
     // Éléments DOM pour l'accordéon cible
     const toggleAccordionCible = document.getElementById(`toggleAccordionCible_${simulateurId}`);
     const accordionCible = document.getElementById(`accordionCible_${simulateurId}`);
     const accordionIconCible = document.getElementById(`accordionIconCible_${simulateurId}`);
     const puissancesCibleContainer = document.getElementById(`puissancesCible_${simulateurId}`);
-    const puissanceCibleValue = document.getElementById(`puissanceCibleValue_${simulateurId}`);
+   
 
     const puissanceCategories = {
     micro: [0.12, 0.18, 0.20, 0.25, 0.37, 0.4, 0.55, 0.75],
@@ -967,6 +965,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let puissanceActuelle = 11;
     let puissanceCible = 11;
 
+    function normalizeNumber(value) {
+        if (typeof value === 'string') {
+            value = value.replace(',', '.');
+        }
+        return parseFloat(value);
+    }
 
     
     function generatePuissanceButtons(category, containerId) {
@@ -985,7 +989,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Formater l'affichage pour les petites puissances
             const displayValue = puissance < 1 ? puissance.toFixed(2).replace('0.', '.') : puissance;
-            button.textContent = `${displayValue} kW`;
+            button.textContent = `${parseFloat(puissance).toFixed(puissance % 1 === 0 ? 0 : 2)} kW`;
             button.dataset.value = puissance;
             
             // Ajouter l'écouteur d'événements pour la sélection
@@ -1013,17 +1017,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fonction de sélection pour le moteur actuel
     function selectPuissanceActuelle(puissance) {
-        puissanceActuelle = puissance;
-        document.getElementById(`puissanceActuelleValue_${simulateurId}`).textContent = puissance + ' kW';
-        calculerResultats();
-    }
+    // Convertir explicitement en nombre flottant
+    puissanceActuelle = parseFloat(puissance);
+    document.getElementById(`puissanceActuelleValue_${simulateurId}`).textContent = puissance + ' kW';
+    console.log("Nouvelle puissance actuelle:", puissanceActuelle); // Pour le débogage
+    calculerResultats();
+}
 
-    // Fonction de sélection pour le moteur cible
-    function selectPuissanceCible(puissance) {
-        puissanceCible = puissance;
-        document.getElementById(`puissanceCibleValue_${simulateurId}`).textContent = puissance + ' kW';
-        calculerResultats();
-    }
+function selectPuissanceCible(puissance) {
+    // Convertir explicitement en nombre flottant
+    puissanceCible = parseFloat(puissance);
+    document.getElementById(`puissanceCibleValue_${simulateurId}`).textContent = puissance + ' kW';
+    console.log("Nouvelle puissance cible:", puissanceCible); // Pour le débogage
+    calculerResultats();
+}
+
 
     const categorySelectActuel = document.getElementById(`puissanceCategoryActuelle_${simulateurId}`);
     generatePuissanceButtons(categorySelectActuel.value, `puissanceActuelleGrid_${simulateurId}`);
@@ -1089,20 +1097,46 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         const heuresFonctionnementParJour = parseInt(document.getElementById(`heuresFonctionnementParJour_${simulateurId}`).value);
         const efficaciteMoteurActuel = parseInt(document.getElementById(`efficaciteMoteurActuel_${simulateurId}`).value) / 100;
         const efficaciteMoteurCible = parseInt(document.getElementById(`efficaciteMoteurCible_${simulateurId}`).value) / 100;
+
+        function findClosestPower(targetPower, rendements, classe) {
+        if (rendements[classe][targetPower] !== undefined) {
+            return targetPower; // La valeur existe déjà
+        }
         
+        // Convertir les clés en nombres pour la comparaison
+        const powers = Object.keys(rendements[classe]).map(Number);
+        
+        // Trouver la valeur la plus proche
+        let closestPower = powers[0];
+        let minDiff = Math.abs(targetPower - closestPower);
+        
+        for (let i = 1; i < powers.length; i++) {
+            const diff = Math.abs(targetPower - powers[i]);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestPower = powers[i];
+            }
+        }
+        
+        console.log(`Puissance ${targetPower} non trouvée, utilisation de ${closestPower} à la place`);
+        return closestPower;
+    }
+
+         const puissanceActuelleAjustee = findClosestPower(puissanceActuelle, simulateurData.rendements, classeActuelle);
+         const puissanceCibleAjustee = findClosestPower(puissanceCible, simulateurData.rendements, classeCible);
         // Calculer les rendements ajustés
-        const rendementActuel = simulateurData.rendements[classeActuelle][puissanceActuelle] * simulateurData.adjustPoleFactors[polesActuel];
-        const rendementCible = simulateurData.rendements[classeCible][puissanceCible] * simulateurData.adjustPoleFactors[polesCible];
+        const rendementActuel = simulateurData.rendements[classeActuelle][puissanceActuelleAjustee] * simulateurData.adjustPoleFactors[polesActuel];
+        const rendementCible = simulateurData.rendements[classeCible][puissanceCibleAjustee] * simulateurData.adjustPoleFactors[polesCible];
         
         // Calculer les heures de fonctionnement annuelles
         const heuresAnnuelles = joursFonctionnement * heuresFonctionnementParJour;
         
         // Calculer les consommations
-        const puissanceUtileActuelle = puissanceActuelle * efficaciteMoteurActuel;
+        const puissanceUtileActuelle = puissanceActuelleAjustee * efficaciteMoteurActuel;
         const consommationActuelle = puissanceUtileActuelle / rendementActuel * heuresAnnuelles;
 
 // Calculer la consommation avec le moteur cible
-        const puissanceUtileCible = puissanceCible * efficaciteMoteurCible;
+        const puissanceUtileCible = puissanceCibleAjustee * efficaciteMoteurCible;
         let consommationCible = puissanceUtileCible / rendementCible * heuresAnnuelles;
         
         // Ajuster la consommation si un variateur est utilisé (exemple: réduction de 15%)
