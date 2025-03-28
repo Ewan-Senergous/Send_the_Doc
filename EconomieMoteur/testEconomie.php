@@ -203,13 +203,187 @@ $simulateurId = 'simulateur_' . uniqid();
 }
 
 @media (max-width: 768px) {
-    .simulateur-results-columns {
-        grid-template-columns: 1fr;
+    /* Structure principale avec réduction dimensionnelle complète */
+    .simulateur-economie-energie {
+        margin: 0.5rem auto;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: 0;
     }
-    .simulateur-conditions-grid {
-        grid-template-columns: 1fr;
+    
+    .simulateur-card {
+        border-radius: 0.25rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
     }
+    
+    .simulateur-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .simulateur-section {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Forcer la largeur maximale sur tous les conteneurs */
+    .simulateur-section,
+    .simulateur-results-summary,
+    .simulateur-savings,
+    .simulateur-environmental,
+    .simulateur-chart-container,
+    .simulateur-input,
+    .simulateur-select,
+    .simulateur-input-group,
+    .simulateur-inputs {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Éviter tout débordement de texte */
+    .simulateur-economie-energie * {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    /* Ajustement de la grille de puissance */
+    .simulateur-puissance-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+        width: 100%;
+        margin-top: 5px;
+        padding: 0;
+    }
+    
+    .simulateur-puissance-btn {
+        font-size: 0.8rem;
+        padding: 6px 2px;
+        min-width: auto;
+    }
+    
+    /* Correction des colonnes partout */
+    .simulateur-conditions-grid,
+    .simulateur-results-columns,
+    .simulateur-analysis-grid,
+    .simulateur-savings-grid,
+    .simulateur-environmental-grid,
+    .simulateur-results-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+        width: 100%;
+    }
+    
+    /* Réduire les marges et padding partout */
+    .simulateur-input-group {
+        margin-bottom: 0.5rem;
+    }
+    
+    .simulateur-section h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .simulateur-results-summary {
+        flex-direction: column !important;
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+    
+    /* Assurer que les graphiques s'adaptent */
+    .simulateur-chart-container,
+    .simulateur-chart-fullwidth {
+        height: auto;
+        min-height: 200px;
+        width: 100%;
+    }
+    
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Forcer les tableaux à s'adapter */
+    table {
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+    
+    /* Réduire la taille de la police partout */
+    .simulateur-result-label,
+    .simulateur-result-value {
+        font-size: 0.8rem;
+    }
+
+    /* Correction header */
+    .simulateur-header {
+        padding: 1rem;
+    }
+    
+    .simulateur-header h2 {
+        font-size: 1.25rem;
+    }
+
+    /* Styles pour assurer que le contenu reste confiné */
+    .simulateur-section-special,
+    .simulateur-section-last {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .simulateur-section
+     {
+        max-width: 64% !important;
+    }
+
+    .simulateur-savings,
+    .simulateur-environmental {
+        max-width: 62% !important;
+        margin: 0 !important;
+    }
+
+    .simulateur-analysis {
+        max-width: 62% !important;
+        margin: 0 !important;
+        margin-top: 1rem !important;
+    }
+
+    .simulateur-input-header {
+        flex-direction: column;
+    }
+.simulateur-input-group:first-child label,
+.simulateur-input-group:first-of-type label {
+    margin-bottom: 0;
 }
+
+.simulateur-grid,
+.simulateur-result-row,
+.simulateur-results-summary {
+gap: 0rem !important;
+}
+.simulateur-result-value {
+    margin-bottom: 0rem !important;
+}
+.simulateur-content {
+    padding: 1.3rem !important;
+}
+.simulateur-section-special {
+    margin-top: 0rem !important;
+}
+}
+
 
 @media (min-width: 992px) {
     .simulateur-results-grid {
@@ -582,7 +756,8 @@ $simulateurId = 'simulateur_' . uniqid();
 
 .simulateur-puissance-btn.selected {
     background-color: #38bdf8;
-    font-weight: 500;
+    font-weight: bold;
+    color: #000;
 }
 
 .text-bold {
@@ -692,9 +867,19 @@ $simulateurId = 'simulateur_' . uniqid();
                                     type="number"
                                     min="10"
                                     max="100"
-                                    value="75"
+                                    value="89"
                                     class="simulateur-input"
                                 />
+                            </div>
+                            <!-- Variateur de vitesse -->
+                            <div class="simulateur-input-group switch-group">
+                                <label for="vitesseVariableActuel_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12M22 12C22 6.47715 17.5228 2 12 2M22 12H19.5M2 12C2 6.47715 6.47715 2 12 2M2 12H4.5M12 2V4.5M19.0784 5L13.4999 10.5M19.0784 19.0784L18.8745 18.8745C18.1827 18.1827 17.8368 17.8368 17.4331 17.5894C17.0753 17.3701 16.6851 17.2085 16.2769 17.1105C15.8166 17 15.3274 17 14.349 17L9.65096 17C8.6726 17 8.18342 17 7.72307 17.1106C7.31493 17.2086 6.92475 17.3702 6.56686 17.5895C6.1632 17.8369 5.8173 18.1828 5.12549 18.8746L4.92163 19.0784M4.92163 5L6.65808 6.73645M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                    Variateur de vitesse</label>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="vitesseVariableActuel_<?php echo $simulateurId; ?>" class="switch-input">
+                                    <label for="vitesseVariableActuel_<?php echo $simulateurId; ?>" class="switch-label" aria-label="Vitesse variable"></label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -775,19 +960,19 @@ $simulateurId = 'simulateur_' . uniqid();
                                     type="number"
                                     min="10"
                                     max="100"
-                                    value="75"
+                                    value="93"
                                     class="simulateur-input"
                                 />
                             </div>
                             
                             <!-- Variateur de vitesse -->
                             <div class="simulateur-input-group switch-group">
-                                <label for="vitesseVariable_<?php echo $simulateurId; ?>" class="text-bold-black">
+                                <label for="vitesseVariableCible_<?php echo $simulateurId; ?>" class="text-bold-black">
                                 <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12M22 12C22 6.47715 17.5228 2 12 2M22 12H19.5M2 12C2 6.47715 6.47715 2 12 2M2 12H4.5M12 2V4.5M19.0784 5L13.4999 10.5M19.0784 19.0784L18.8745 18.8745C18.1827 18.1827 17.8368 17.8368 17.4331 17.5894C17.0753 17.3701 16.6851 17.2085 16.2769 17.1105C15.8166 17 15.3274 17 14.349 17L9.65096 17C8.6726 17 8.18342 17 7.72307 17.1106C7.31493 17.2086 6.92475 17.3702 6.56686 17.5895C6.1632 17.8369 5.8173 18.1828 5.12549 18.8746L4.92163 19.0784M4.92163 5L6.65808 6.73645M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                                     Variateur de vitesse</label>
                                 <div class="switch-container">
-                                    <input type="checkbox" id="vitesseVariable_<?php echo $simulateurId; ?>" class="switch-input">
-                                    <label for="vitesseVariable_<?php echo $simulateurId; ?>" class="switch-label" aria-label="Vitesse variable"></label>
+                                    <input type="checkbox" id="vitesseVariableCible_<?php echo $simulateurId; ?>" class="switch-input">
+                                    <label for="vitesseVariableCible_<?php echo $simulateurId; ?>" class="switch-label" aria-label="Vitesse variable"></label>
                                 </div>
                             </div>
                         </div>
@@ -918,14 +1103,15 @@ $simulateurId = 'simulateur_' . uniqid();
                         </div>
                         
                         <div class="simulateur-environmental">
-                            <h4 class="text-bold-black">Impact environnemental :</h4>
+                            <h4 class="text-bold-black">
+                                Impact environnemental :</h4>
                             <div class="simulateur-environmental-grid">
                                 <div class="simulateur-environmental-row">
-                                    <div class="simulateur-environmental-label">Réduction annuelle de CO2:</div>
+                                    <div class="simulateur-environmental-label">Réduction annuelle de CO2 :</div>
                                     <div class="simulateur-environmental-value text-bold-black" id="reductionCO2_<?php echo $simulateurId; ?>">0 kg CO2/an</div>
                                 </div>
                                 <div class="simulateur-environmental-row">
-                                    <div class="simulateur-environmental-label">Économie d'énergie annuelle:</div>
+                                    <div class="simulateur-environmental-label">Économie d'énergie annuelle :</div>
                                     <div class="simulateur-environmental-value text-bold-black" id="economieEnergie_<?php echo $simulateurId; ?>">0 kWh/an</div>
                                 </div>
                             </div>
@@ -1053,7 +1239,7 @@ function selectPuissanceCible(puissance) {
 
 
     // Modification de la génération d'analyse textuelle
-function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible, puissanceCible, vitesseVariable) {
+function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible, puissanceCible, vitesseVariableCible) {
     let analyseTexte = '';
     let analyseIcon = '';
     
@@ -1077,7 +1263,7 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
     // Ajouter les détails techniques
     if (economieAnnuelle > 0) {
         analyseTexte += ` L'investissement dans un moteur ${classeCible} de ${puissanceCible} kW`;
-        analyseTexte += vitesseVariable ? ' avec variateur de vitesse' : '';
+        analyseTexte += vitesseVariableCible ? ' avec variateur de vitesse' : '';
         analyseTexte += ` est une solution technique adaptée pour ce cas d'usage.`;
     }
     
@@ -1091,12 +1277,14 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         const classeCible = document.getElementById(`classeCible_${simulateurId}`).value;
         const polesActuel = parseInt(document.getElementById(`polesActuel_${simulateurId}`).value);
         const polesCible = parseInt(document.getElementById(`polesCible_${simulateurId}`).value);
-        const vitesseVariable = document.getElementById(`vitesseVariable_${simulateurId}`).checked;
+        const vitesseVariableActuel = document.getElementById(`vitesseVariableActuel_${simulateurId}`).checked;
+        const vitesseVariableCible = document.getElementById(`vitesseVariableCible_${simulateurId}`).checked;
         const coutEnergie = parseFloat(document.getElementById(`coutEnergie_${simulateurId}`).value);
         const joursFonctionnement = parseInt(document.getElementById(`joursFonctionnement_${simulateurId}`).value);
         const heuresFonctionnementParJour = parseInt(document.getElementById(`heuresFonctionnementParJour_${simulateurId}`).value);
         const efficaciteMoteurActuel = parseInt(document.getElementById(`efficaciteMoteurActuel_${simulateurId}`).value) / 100;
         const efficaciteMoteurCible = parseInt(document.getElementById(`efficaciteMoteurCible_${simulateurId}`).value) / 100;
+        
 
         function findClosestPower(targetPower, rendements, classe) {
         if (rendements[classe][targetPower] !== undefined) {
@@ -1133,14 +1321,18 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         
         // Calculer les consommations
         const puissanceUtileActuelle = puissanceActuelleAjustee * efficaciteMoteurActuel;
-        const consommationActuelle = puissanceUtileActuelle / rendementActuel * heuresAnnuelles;
+        let consommationActuelle = puissanceUtileActuelle / rendementActuel * heuresAnnuelles;
+
+        if (vitesseVariableActuel) {
+            consommationActuelle *= 0.85; // Réduction de 15% grâce au variateur
+        }
 
 // Calculer la consommation avec le moteur cible
         const puissanceUtileCible = puissanceCibleAjustee * efficaciteMoteurCible;
         let consommationCible = puissanceUtileCible / rendementCible * heuresAnnuelles;
         
         // Ajuster la consommation si un variateur est utilisé (exemple: réduction de 15%)
-        if (vitesseVariable) {
+        if (vitesseVariableCible) {
             consommationCible *= 0.85; // Réduction de 15% grâce au variateur
         }
         
@@ -1151,11 +1343,20 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         const economieAnnuelle = economieEnergie * coutEnergie;
         
         // Coût d'investissement
+        // Coût d'investissement
         let coutInvestissement = simulateurData.coutMoteurs[classeCible][puissanceCible];
-        if (vitesseVariable) {
-            coutInvestissement += simulateurData.coutVSD[puissanceCible];
-        }
-        
+if (vitesseVariableCible && !vitesseVariableActuel) {
+    if (simulateurData.coutVSD[puissanceCible] !== undefined) {
+        coutInvestissement += simulateurData.coutVSD[puissanceCible];
+    } else {
+        // Utiliser une valeur par défaut ou la plus proche
+        const puissances = Object.keys(simulateurData.coutVSD).map(Number);
+        const puissanceProche = puissances.reduce((a, b) => {
+            return Math.abs(b - puissanceCible) < Math.abs(a - puissanceCible) ? b : a;
+        });
+        coutInvestissement += simulateurData.coutVSD[puissanceProche];
+    }
+}
         // Retour sur investissement
         const retourInvestissement = economieAnnuelle > 0 ? coutInvestissement / economieAnnuelle : 0;
         
@@ -1180,15 +1381,25 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         document.getElementById(`reductionCO2_${simulateurId}`).textContent = Math.round(reductionCO2).toLocaleString() + ' kg CO2/an';
         document.getElementById(`economieEnergie_${simulateurId}`).textContent = Math.round(economieEnergie).toLocaleString() + ' kWh/an';
         
-        
+       
+const economieAnnuelleElement = document.getElementById(`economieAnnuelle_${simulateurId}`);
+if (economieAnnuelle < 0) {
+    economieAnnuelleElement.style.color = '#e31206';
+} else if (economieAnnuelle === 0) {
+    economieAnnuelleElement.style.color = '#000000';
+} else {
+    economieAnnuelleElement.style.color = '#16a34a';
+}
         
         document.getElementById(`analyseText_${simulateurId}`).innerHTML = genererAnalyseTexte(
     economieAnnuelle,
     retourInvestissement,
     classeCible,
     puissanceCible,
-    vitesseVariable
+    vitesseVariableCible
 );
+
+
         
         // Mettre à jour le graphique
         updateChart(economieAnnuelle, coutInvestissement);
@@ -1265,14 +1476,18 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
     });
     
     // Gérer le variateur de vitesse
-    const vitesseVariable = document.getElementById(`vitesseVariable_${simulateurId}`);
-    if (vitesseVariable) {
-        vitesseVariable.addEventListener('change', calculerResultats);
-    }
+   // Gérer les variateurs de vitesse
+const vitesseVariableActuelElement = document.getElementById(`vitesseVariableActuel_${simulateurId}`);
+if (vitesseVariableActuelElement) {
+    vitesseVariableActuelElement.addEventListener('change', calculerResultats);
+}
 
-    
-    
+const vitesseVariableCibleElement = document.getElementById(`vitesseVariableCible_${simulateurId}`);
+if (vitesseVariableCibleElement) {
+    vitesseVariableCibleElement.addEventListener('change', calculerResultats);
+}
     // Calculer les résultats initiaux
     calculerResultats();
 });
+
 </script>
