@@ -107,7 +107,7 @@ function impactIndicator($pourcentage) {
         $texte = 'Économies faibles';
     }
     
-    return '<span style="display:inline-flex; align-items:center; margin-left:0.5rem;">
+    return '<span style="display:inline-flex; align-items:center; margin-left:0.1rem;">
         <span style="display:inline-block; width:16px; height:16px; border-radius:50%; background-color:' . $couleur . ';"></span>
         <span style="margin-left:5px; color:#000; font-size: 12px; font-weight: bold">' . $texte . '</span>
     </span>';
@@ -547,7 +547,6 @@ gap: 0rem !important;
     }
     
     .switch-group {
-        flex-direction: row;
         align-items: center;
     }
     
@@ -789,7 +788,7 @@ gap: 0rem !important;
 .simulateur-input-header label svg,
 .simulateur-input-group label svg {
     vertical-align: middle;
-    margin-right: 0.3rem;
+    margin-right: 0.3rem ;
 }
 
 .simulateur-input-group label {
@@ -816,6 +815,76 @@ gap: 0rem !important;
     gap: 0.3rem;
 }
 
+.help-icon {
+      width: 24px;
+      padding: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #555555; /* Noir léger par défaut */
+      transition: color 0.2s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.3rem !important;
+    }
+
+    .switch-group .help-icon {
+  margin-right: 0.3rem !important;
+}
+    
+    .help-icon:not(.active):hover {
+      color: #2563eb;
+      transform: scale(1.15);
+    }
+    
+    
+    .help-icon.active {
+      color: #2563eb;
+      transform: scale(1.15);
+    }
+    
+    
+    .help-icon.active:hover {
+      color: #2563eb;
+    }
+    
+    .help-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .help-content {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      margin: 0;
+    }
+    
+    .help-content.visible {
+      max-height: 500px;
+      opacity: 1;
+      margin: 15px 0;
+    }
+    
+    .info-box {
+      background-color: #f8f8f8;
+      border-left: 4px solid #2563eb;
+      border-radius: 0 4px 4px 0;
+      padding: 12px 15px;
+      color: #000;
+    }
+    
+    .info-box p {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .info-box p:last-child {
+      margin-bottom: 0;
+    }
 
 </style>
 
@@ -838,9 +907,22 @@ gap: 0rem !important;
                                 <div class="simulateur-input-header">
                                     <label for="puissanceActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">
                                     <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
-                                        Puissance du moteur actuel (kW) <?php echo impactIndicator(60); ?></label>
+                                        Puissance du moteur actuel (kW) <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button> <?php echo impactIndicator(60); ?></label>
+                                        
                                     <span class="simulateur-value text-bold-black" id="puissanceActuelleValue_<?php echo $simulateurId; ?>">11 kW</span>
                                 </div>
+
+                                <div class="help-content">
+                                    <div class="info-box">
+                                        <p>Dimensionner correctement la puissance du moteur permet d'économiser entre 5% et 15% sur les coûts d'électricité annuels.</p>
+                                    </div>
+                                </div>
+
                                 <div class="simulateur-category-selector">
         <select id="puissanceCategoryActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
             <option value="micro">Micro-moteurs (0.1 kW - 0.75 kW)</option>
@@ -859,7 +941,20 @@ gap: 0rem !important;
                             <div class="simulateur-input-group">
                                 <label for="polesActuel_<?php echo $simulateurId; ?>" class="text-bold-black">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cog-icon lucide-cog"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
-                                    Nombre de pôles (vitesse) <?php echo impactIndicator(30); ?></label>
+                                    Nombre de pôles (vitesse)  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button> <?php echo impactIndicator(30); ?></label>
+
+                                    <div class="help-content">
+                                    <div class="info-box">
+                                        <p>Détermine la vitesse de rotation du moteur : plus le nombre de pôles est élevé, plus la vitesse est faible. Les moteurs à vitesse réduite (6-8 pôles) permettent de faire des économies d'argent et d'énergie, durent plus longtemps, sont moins bruyants et nécessitent moins d'entretien mais coûtent plus cher à l'achat.</p>
+                                        <p>Un 4 pôles (1500 tr/min) offre souvent le meilleur compromis entre performance et rapport qualité-prix et convient à la majorité des applications industrielles.</p>
+                                    </div>
+                                </div>
+
                                 <select id="polesActuel_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="2">2 pôles (3000 tr/min)</option>
                                     <option value="4" selected>4 pôles (1500 tr/min)</option>
@@ -872,7 +967,18 @@ gap: 0rem !important;
                             <div class="simulateur-input-group">
                                 <label for="classeActuelle_<?php echo $simulateurId; ?>" class="text-bold-black">
                                 <svg width="24px" height="24px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-chart-column" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>872</title> <defs> </defs> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g transform="translate(0.000000, 1.000000)" fill="#434343"> <path d="M16,13.031 L0.984,13.031 L0.984,0.016 L0.027,0.016 L0,13.95 L0.027,13.95 L0.027,13.979 L16,13.95 L16,13.031 Z" class="si-glyph-fill"> </path> <path d="M4.958,7.021 L2.016,7.021 L2.016,11.985 L4.958,11.985 L4.958,7.021 L4.958,7.021 Z" class="si-glyph-fill"> </path> <path d="M9.969,5.047 L7.016,5.047 L7.016,11.969 L9.969,11.969 L9.969,5.047 L9.969,5.047 Z" class="si-glyph-fill"> </path> <path d="M14.953,3.031 L12,3.031 L12,11.978 L14.953,11.978 L14.953,3.031 L14.953,3.031 Z" class="si-glyph-fill"> </path> </g> </g> </g></svg>
-                                    Classe d'efficience <?php echo impactIndicator(85); ?></label>
+                                    Classe d'efficience  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button> <?php echo impactIndicator(85); ?></label>
+
+                                    <div class="help-content">
+                                    <div class="info-box">
+                                     <p>Chaque niveau d'amélioration de classe d'efficience (par exemple, passer d'IE2 à IE3) génère des économies d'argent et d'énergie annuelles de 2% à 4%.</p>
+                                    </div>
+                                    </div>
                                 <select id="classeActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="IE1">IE1 (Standard)</option>
                                     <option value="IE2" selected>IE2 (Haut rendement)</option>
@@ -884,7 +990,17 @@ gap: 0rem !important;
                             <div class="simulateur-input-group">
                                 <label for="efficaciteMoteurActuel_<?php echo $simulateurId; ?>" class="text-bold-black">
                                 <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
-                                    Efficacité du moteur (%)  <?php echo impactIndicator(85); ?></label>
+                                    Efficacité du moteur (%)  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button>  <?php echo impactIndicator(85); ?></label>
+    <div class="help-content">
+  <div class="info-box">
+    <p>Une augmentation de 1% d'efficacité moteur réduit génère des économies d'argent er d'énergie annuelles de 1% à 1,2%. Les moteurs industriels modernes présentent généralement une efficacité entre 80% et 97%.</p>
+  </div>
+</div>
                                 <input
                                     id="efficaciteMoteurActuel_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -904,8 +1020,20 @@ gap: 0rem !important;
                                     <input type="checkbox" id="vitesseVariableActuel_<?php echo $simulateurId; ?>" class="switch-input">
                                     <label for="vitesseVariableActuel_<?php echo $simulateurId; ?>" class="switch-label" aria-label="Vitesse variable"></label>
                                 </div>
-                                <?php echo impactIndicator(85); ?>
+                                <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button> <?php echo impactIndicator(85); ?>
                             </div>
+                            <div class="help-content">
+  <div class="info-box">
+    <p>Permet d'ajuster la vitesse du moteur en fonction des besoins, évitant le fonctionnement constant à pleine puissance.</p>
+    <p>Représente l'investissement le plus rentable pour les applications à charge variable comme les pompes générant des d'économies d'argent et d'énergies de 10% à 20% avec un retour sur investissement en 1 à 3 ans.</p>
+    <p>À éviter: Pour les applications à charge constante fonctionnant toujours à pleine puissance, un variateur peut réduire légèrement l'efficacité globale (1% à 3%).</p>
+  </div>
+</div>
                             </div>
                         </div>
                     </div>
@@ -920,8 +1048,18 @@ gap: 0rem !important;
                                 <div class="simulateur-input-header">
                                     <label for="puissanceCible_<?php echo $simulateurId; ?>" class="text-bold-black">
                                     <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
-                                        Puissance du moteur cible (kW) <?php echo impactIndicator(60); ?></label>
+                                        Puissance du moteur cible (kW)  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button> <?php echo impactIndicator(60); ?></label>
                                     <span class="simulateur-value text-bold-black" id="puissanceCibleValue_<?php echo $simulateurId; ?>">11 kW</span>
+                                </div>
+                                <div class="help-content">
+                                    <div class="info-box">
+                                        <p>Dimensionner correctement la puissance du moteur permet d'économiser entre 5% et 15% sur les coûts d'électricité annuels.</p>
+                                    </div>
                                 </div>
                                 <div class="simulateur-category-selector">
                                     <select id="puissanceCategoryCible_<?php echo $simulateurId; ?>" class="simulateur-select">
@@ -955,7 +1093,18 @@ gap: 0rem !important;
         <path d="m17 3.34-1 1.73"/>
         <path d="m11 13.73-4 6.93"/>
     </svg>
-                                    Nombre de pôles (vitesse) <?php echo impactIndicator(30); ?></label>
+                                    Nombre de pôles (vitesse)  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button> <?php echo impactIndicator(30); ?></label>
+                                    <div class="help-content">
+  <div class="info-box">
+    <p>Détermine la vitesse de rotation du moteur : plus le nombre de pôles est élevé, plus la vitesse est faible. Les moteurs à vitesse réduite (6-8 pôles) permettent de faire des économies d'argent et d'énergie, durent plus longtemps, sont moins bruyants et nécessitent moins d'entretien mais coûtent plus cher à l'achat.</p>
+    <p>Un 4 pôles (1500 tr/min) offre souvent le meilleur compromis entre performance et rapport qualité-prix et convient à la majorité des applications industrielles.</p>
+  </div>
+</div>
                                 <select id="polesCible_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="2">2 pôles (3000 tr/min)</option>
                                     <option value="4" selected>4 pôles (1500 tr/min)</option>
@@ -968,7 +1117,17 @@ gap: 0rem !important;
                             <div class="simulateur-input-group">
                                 <label for="classeCible_<?php echo $simulateurId; ?>" class="text-bold-black">
                                 <svg width="24px" height="24px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-chart-column" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>872</title> <defs> </defs> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g transform="translate(0.000000, 1.000000)" fill="#434343"> <path d="M16,13.031 L0.984,13.031 L0.984,0.016 L0.027,0.016 L0,13.95 L0.027,13.95 L0.027,13.979 L16,13.95 L16,13.031 Z" class="si-glyph-fill"> </path> <path d="M4.958,7.021 L2.016,7.021 L2.016,11.985 L4.958,11.985 L4.958,7.021 L4.958,7.021 Z" class="si-glyph-fill"> </path> <path d="M9.969,5.047 L7.016,5.047 L7.016,11.969 L9.969,11.969 L9.969,5.047 L9.969,5.047 Z" class="si-glyph-fill"> </path> <path d="M14.953,3.031 L12,3.031 L12,11.978 L14.953,11.978 L14.953,3.031 L14.953,3.031 Z" class="si-glyph-fill"> </path> </g> </g> </g></svg>
-                                Classe d'efficience  <?php echo impactIndicator(85); ?></label>
+                                Classe d'efficience  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button>  <?php echo impactIndicator(85); ?></label>
+                                <div class="help-content">
+  <div class="info-box">
+    <p>Chaque niveau d'amélioration de classe d'efficience (par exemple, passer d'IE2 à IE3) génère des économies d'argent et d'énergie annuelles de 2% à 4%.</p>
+  </div>
+</div>
                                 <select id="classeCible_<?php echo $simulateurId; ?>" class="simulateur-select">
                                     <option value="IE1">IE1 (Standard)</option>
                                     <option value="IE2">IE2 (Haut rendement)</option>
@@ -981,7 +1140,17 @@ gap: 0rem !important;
                             <div class="simulateur-input-group">
                                 <label for="efficaciteMoteurCible_<?php echo $simulateurId; ?>" class="text-bold-black">
                                 <svg fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 491.52 491.52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M471.04,163.84h-32.768c-8.192,0-16.384,6.144-20.48,14.336l-18.432,81.92l-14.336-40.96 c0-8.192-8.192-14.336-16.384-14.336h-40.96v-20.48c0-12.288-8.192-20.48-20.48-20.48H81.92c-10.24,0-20.48,8.192-20.48,20.48 v163.84c0,2.048,0,6.144,2.048,8.192l28.672,61.44c4.096,8.192,10.24,12.288,18.432,12.288H358.4 c8.192,0,14.336-4.096,18.432-10.24l18.432-30.72h6.144l18.432,49.152c4.096,8.192,10.24,12.288,18.432,12.288h32.768 c12.288,0,20.48-8.192,20.48-20.48V184.32C491.52,172.032,483.328,163.84,471.04,163.84z M458.752,421.888l-24.576-61.44 c-4.096-6.144-10.24-12.288-20.48-12.288h-32.768c-8.192,0-14.336,4.096-18.432,10.24l-16.384,30.72H124.928L102.4,344.064V204.8 h184.32v20.48c0,12.288,8.192,20.48,20.48,20.48h47.104l8.192,26.624c2.048,8.192,10.24,14.336,18.432,14.336h32.768 c8.192,0,16.384-6.144,20.48-14.336l24.576-81.92V421.888z"></path> </g> </g> <g> <g> <path d="M81.92,266.24H20.48C8.192,266.24,0,274.432,0,286.72c0,12.288,10.24,20.48,20.48,20.48h61.44 c12.288,0,20.48-8.192,20.48-20.48C102.4,274.432,94.208,266.24,81.92,266.24z"></path> </g> </g> <g> <g> <path d="M20.48,225.28C8.192,225.28,0,233.472,0,245.76v81.92c0,12.288,8.192,20.48,20.48,20.48c12.288,0,20.48-8.192,20.48-20.48 v-81.92C40.96,233.472,32.768,225.28,20.48,225.28z"></path> </g> </g> <g> <g> <path d="M245.76,102.4h-81.92c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h81.92 c12.288,0,20.48-8.192,20.48-20.48v-61.44C266.24,110.592,258.048,102.4,245.76,102.4z M225.28,163.84h-40.96v-20.48h40.96V163.84 z"></path> </g> </g> <g> <g> <path d="M286.72,40.96H122.88c-10.24,0-20.48,8.192-20.48,20.48v61.44c0,12.288,10.24,20.48,20.48,20.48h163.84 c12.288,0,20.48-8.192,20.48-20.48V61.44C307.2,49.152,299.008,40.96,286.72,40.96z M266.24,102.4H143.36V81.92h122.88V102.4z"></path> </g> </g> </g></svg>
-                                    Efficacité du moteur (%)  <?php echo impactIndicator(85); ?></label>
+                                    Efficacité du moteur (%)  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button>  <?php echo impactIndicator(85); ?></label>
+                                    <div class="help-content">
+  <div class="info-box">
+    <p>Une augmentation de 1% d'efficacité moteur réduit génère des économies d'argent er d'énergie annuelles de 1% à 1,2%. Les moteurs industriels modernes présentent généralement une efficacité entre 80% et 97%.</p>
+  </div>
+</div>
                                 <input
                                     id="efficaciteMoteurCible_<?php echo $simulateurId; ?>"
                                     type="number"
@@ -1002,8 +1171,21 @@ gap: 0rem !important;
                                     <input type="checkbox" id="vitesseVariableCible_<?php echo $simulateurId; ?>" class="switch-input">
                                     <label for="vitesseVariableCible_<?php echo $simulateurId; ?>" class="switch-label" aria-label="Vitesse variable"></label>
                                 </div>
+                                <button type="button" class="help-icon" aria-label="Afficher l'aide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+        </svg>
+    </button>
                                 <?php echo impactIndicator(85); ?>
                             </div>
+                            <div class="help-content">
+  <div class="info-box">
+    <p>Permet d'ajuster la vitesse du moteur en fonction des besoins, évitant le fonctionnement constant à pleine puissance.</p>
+    <p>Représente l'investissement le plus rentable pour les applications à charge variable comme les pompes générant des d'économies d'argent et d'énergies de 10% à 20% avec un retour sur investissement en 1 à 3 ans.</p>
+    <p>À éviter: Pour les applications à charge constante fonctionnant toujours à pleine puissance, un variateur peut réduire légèrement l'efficacité globale (1% à 3%).</p>
+  </div>
+</div>
                             </div>
                         </div>
                     </div>
@@ -1580,5 +1762,21 @@ if (vitesseVariableCibleElement) {
     calculerResultats();
 });
 
+// Gestion des infobulles
+const helpIcons = document.querySelectorAll('.help-icon');
+    
+// Ajouter un gestionnaire d'événement à chaque bouton d'aide
+helpIcons.forEach(icon => {
+  icon.addEventListener('click', function() {
+    // Trouver le contenu d'aide correspondant
+    const helpContent = this.closest('.simulateur-input-group').querySelector('.help-content');
+    
+    // Basculer la classe 'visible' pour afficher/masquer le contenu
+    if (helpContent) {
+      helpContent.classList.toggle('visible');
+      this.classList.toggle('active');
+    }
+  });
+});
 
 </script>
