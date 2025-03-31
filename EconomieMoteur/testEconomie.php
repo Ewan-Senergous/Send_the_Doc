@@ -1567,21 +1567,41 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         
         // Coût d'investissement
         // Coût d'investissement
-        let coutInvestissement = simulateurData.coutMoteurs[classeCible][puissanceCible];
+        let coutInvestissement = 0;
+
+// Vérifier si la puissance exacte existe dans le tableau des coûts
+if (simulateurData.coutMoteurs[classeCible][puissanceCible] !== undefined) {
+    coutInvestissement = simulateurData.coutMoteurs[classeCible][puissanceCible];
+} else {
+    // Sinon, trouver la puissance la plus proche
+    const puissances = Object.keys(simulateurData.coutMoteurs[classeCible]).map(Number);
+    const puissanceProche = puissances.reduce((a, b) => {
+        return Math.abs(b - puissanceCible) < Math.abs(a - puissanceCible) ? b : a;
+    });
+    coutInvestissement = simulateurData.coutMoteurs[classeCible][puissanceProche];
+}
+
+// Ajouter le coût du variateur si nécessaire
 if (vitesseVariableCible && !vitesseVariableActuel) {
     if (simulateurData.coutVSD[puissanceCible] !== undefined) {
         coutInvestissement += simulateurData.coutVSD[puissanceCible];
     } else {
-        // Utiliser une valeur par défaut ou la plus proche
-        const puissances = Object.keys(simulateurData.coutVSD).map(Number);
-        const puissanceProche = puissances.reduce((a, b) => {
+        // Utiliser la puissance la plus proche disponible
+        const puissancesVSD = Object.keys(simulateurData.coutVSD).map(Number);
+        const puissanceVSDProche = puissancesVSD.reduce((a, b) => {
             return Math.abs(b - puissanceCible) < Math.abs(a - puissanceCible) ? b : a;
         });
-        coutInvestissement += simulateurData.coutVSD[puissanceProche];
+        coutInvestissement += simulateurData.coutVSD[puissanceVSDProche];
     }
 }
-        // Retour sur investissement
-        const retourInvestissement = economieAnnuelle > 0 ? coutInvestissement / economieAnnuelle : 0;
+
+// Retour sur investissement
+let retourInvestissement = 0;
+if (economieAnnuelle > 0) {
+    retourInvestissement = coutInvestissement / economieAnnuelle;
+} else {
+    retourInvestissement = Infinity; // ou une grande valeur pour indiquer l'absence de retour
+}
         
         // Économies sur plusieurs années
         const economie5Ans = economieAnnuelle * 5;
@@ -1597,7 +1617,8 @@ if (vitesseVariableCible && !vitesseVariableActuel) {
         document.getElementById(`consommationCible_${simulateurId}`).textContent = Math.round(consommationCible).toLocaleString() + ' kWh/an';
         document.getElementById(`economieAnnuelle_${simulateurId}`).textContent = Math.round(economieAnnuelle).toLocaleString() + ' €/an';
         document.getElementById(`coutInvestissement_${simulateurId}`).textContent = Math.round(coutInvestissement).toLocaleString() + ' €';
-        document.getElementById(`retourInvestissement_${simulateurId}`).textContent = retourInvestissement.toFixed(1) + ' ans';
+        document.getElementById(`retourInvestissement_${simulateurId}`).textContent =
+    isFinite(retourInvestissement) ? retourInvestissement.toFixed(1) + ' ans' : 'N/A';
         document.getElementById(`economie5Ans_${simulateurId}`).textContent = Math.round(economie5Ans).toLocaleString() + ' €';
         document.getElementById(`economie10Ans_${simulateurId}`).textContent = Math.round(economie10Ans).toLocaleString() + ' €';
         document.getElementById(`economie15Ans_${simulateurId}`).textContent = Math.round(economie15Ans).toLocaleString() + ' €';

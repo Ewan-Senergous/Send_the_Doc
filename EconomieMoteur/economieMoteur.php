@@ -340,9 +340,9 @@ function impactIndicator($pourcentage) {
     }
     
     /* Réduire la taille de la police partout */
-    .simulateur-result-label,
-    .simulateur-result-value {
-        font-size: 0.8rem;
+    .simulateur-environmental-label,
+    .simulateur-environmental-value {
+        font-size: 0.8rem !important;
     }
 
     /* Correction header */
@@ -403,8 +403,13 @@ gap: 0rem !important;
 .simulateur-section-special {
     margin-top: 0rem !important;
 }
+.simulateur-input-group label {
+    flex-wrap: wrap;
 }
-
+.switch-wrap {
+    flex-wrap: wrap;
+}
+}
 
 @media (min-width: 992px) {
     .simulateur-results-grid {
@@ -832,6 +837,10 @@ gap: 0rem !important;
     .switch-group .help-icon {
   margin-right: 0.3rem !important;
 }
+
+.switch-wrap {
+    display: flex; align-items: center; width: 100%
+}
     
     .help-icon:not(.active):hover {
       color: #2563eb;
@@ -996,9 +1005,11 @@ gap: 0rem !important;
             <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
         </svg>
     </button>  <?php echo impactIndicator(85); ?></label>
-    <div class="help-content">
+                                    <div class="help-content">
   <div class="info-box">
-    <p>Une augmentation de 1% d'efficacité moteur réduit génère des économies d'argent er d'énergie annuelles de 1% à 1,2%. Les moteurs industriels modernes présentent généralement une efficacité entre 80% et 97%.</p>
+    <p>Permet d'ajuster la vitesse du moteur en fonction des besoins, évitant le fonctionnement constant à pleine puissance.</p>
+    <p>Représente l'investissement le plus rentable pour les applications à charge variable comme les pompes générant des d'économies d'argent et d'énergies de 10% à 20% avec un retour sur investissement en 1 à 3 ans.</p>
+    <p>À éviter: Pour les applications à charge constante fonctionnant toujours à pleine puissance, un variateur peut réduire légèrement l'efficacité globale (1% à 3%).</p>
   </div>
 </div>
                                 <input
@@ -1012,7 +1023,7 @@ gap: 0rem !important;
                             </div>
                             <!-- Variateur de vitesse -->
                             <div class="simulateur-input-group switch-group">
-                            <div style="display: flex; align-items: center; width: 100%;">
+                            <div class="switch-wrap">
                             <span class="text-bold-black simulateur-label">
                                 <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12M22 12C22 6.47715 17.5228 2 12 2M22 12H19.5M2 12C2 6.47715 6.47715 2 12 2M2 12H4.5M12 2V4.5M19.0784 5L13.4999 10.5M19.0784 19.0784L18.8745 18.8745C18.1827 18.1827 17.8368 17.8368 17.4331 17.5894C17.0753 17.3701 16.6851 17.2085 16.2769 17.1105C15.8166 17 15.3274 17 14.349 17L9.65096 17C8.6726 17 8.18342 17 7.72307 17.1106C7.31493 17.2086 6.92475 17.3702 6.56686 17.5895C6.1632 17.8369 5.8173 18.1828 5.12549 18.8746L4.92163 19.0784M4.92163 5L6.65808 6.73645M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                                     Variateur de vitesse</span>
@@ -1163,7 +1174,7 @@ gap: 0rem !important;
                             
                             <!-- Variateur de vitesse -->
                             <div class="simulateur-input-group switch-group">
-                            <div style="display: flex; align-items: center; width: 100%;">
+                            <div class="switch-wrap">
                             <span class="text-bold-black simulateur-label">
                                 <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12M22 12C22 6.47715 17.5228 2 12 2M22 12H19.5M2 12C2 6.47715 6.47715 2 12 2M2 12H4.5M12 2V4.5M19.0784 5L13.4999 10.5M19.0784 19.0784L18.8745 18.8745C18.1827 18.1827 17.8368 17.8368 17.4331 17.5894C17.0753 17.3701 16.6851 17.2085 16.2769 17.1105C15.8166 17 15.3274 17 14.349 17L9.65096 17C8.6726 17 8.18342 17 7.72307 17.1106C7.31493 17.2086 6.92475 17.3702 6.56686 17.5895C6.1632 17.8369 5.8173 18.1828 5.12549 18.8746L4.92163 19.0784M4.92163 5L6.65808 6.73645M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                                     Variateur de vitesse</span>
@@ -1533,7 +1544,7 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         
         // Calculer les consommations
         const puissanceUtileActuelle = puissanceActuelleAjustee * efficaciteMoteurActuel;
-        let consommationActuelle = puissanceUtileActuelle / rendementActuel * heuresAnnuelles;
+        const consommationActuelle = puissanceActuelleAjustee * heuresAnnuelles / efficaciteMoteurActuel;
 
         if (vitesseVariableActuel) {
             consommationActuelle *= 0.85; // Réduction de 15% grâce au variateur
@@ -1541,7 +1552,7 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
 
 // Calculer la consommation avec le moteur cible
         const puissanceUtileCible = puissanceCibleAjustee * efficaciteMoteurCible;
-        let consommationCible = puissanceUtileCible / rendementCible * heuresAnnuelles;
+        const consommationCible = puissanceCibleAjustee * heuresAnnuelles / efficaciteMoteurCible;
         
         // Ajuster la consommation si un variateur est utilisé (exemple: réduction de 15%)
         if (vitesseVariableCible) {
@@ -1556,21 +1567,41 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         
         // Coût d'investissement
         // Coût d'investissement
-        let coutInvestissement = simulateurData.coutMoteurs[classeCible][puissanceCible];
+        let coutInvestissement = 0;
+
+// Vérifier si la puissance exacte existe dans le tableau des coûts
+if (simulateurData.coutMoteurs[classeCible][puissanceCible] !== undefined) {
+    coutInvestissement = simulateurData.coutMoteurs[classeCible][puissanceCible];
+} else {
+    // Sinon, trouver la puissance la plus proche
+    const puissances = Object.keys(simulateurData.coutMoteurs[classeCible]).map(Number);
+    const puissanceProche = puissances.reduce((a, b) => {
+        return Math.abs(b - puissanceCible) < Math.abs(a - puissanceCible) ? b : a;
+    });
+    coutInvestissement = simulateurData.coutMoteurs[classeCible][puissanceProche];
+}
+
+// Ajouter le coût du variateur si nécessaire
 if (vitesseVariableCible && !vitesseVariableActuel) {
     if (simulateurData.coutVSD[puissanceCible] !== undefined) {
         coutInvestissement += simulateurData.coutVSD[puissanceCible];
     } else {
-        // Utiliser une valeur par défaut ou la plus proche
-        const puissances = Object.keys(simulateurData.coutVSD).map(Number);
-        const puissanceProche = puissances.reduce((a, b) => {
+        // Utiliser la puissance la plus proche disponible
+        const puissancesVSD = Object.keys(simulateurData.coutVSD).map(Number);
+        const puissanceVSDProche = puissancesVSD.reduce((a, b) => {
             return Math.abs(b - puissanceCible) < Math.abs(a - puissanceCible) ? b : a;
         });
-        coutInvestissement += simulateurData.coutVSD[puissanceProche];
+        coutInvestissement += simulateurData.coutVSD[puissanceVSDProche];
     }
 }
-        // Retour sur investissement
-        const retourInvestissement = economieAnnuelle > 0 ? coutInvestissement / economieAnnuelle : 0;
+
+// Retour sur investissement
+let retourInvestissement = 0;
+if (economieAnnuelle > 0) {
+    retourInvestissement = coutInvestissement / economieAnnuelle;
+} else {
+    retourInvestissement = Infinity; // ou une grande valeur pour indiquer l'absence de retour
+}
         
         // Économies sur plusieurs années
         const economie5Ans = economieAnnuelle * 5;
@@ -1586,7 +1617,8 @@ if (vitesseVariableCible && !vitesseVariableActuel) {
         document.getElementById(`consommationCible_${simulateurId}`).textContent = Math.round(consommationCible).toLocaleString() + ' kWh/an';
         document.getElementById(`economieAnnuelle_${simulateurId}`).textContent = Math.round(economieAnnuelle).toLocaleString() + ' €/an';
         document.getElementById(`coutInvestissement_${simulateurId}`).textContent = Math.round(coutInvestissement).toLocaleString() + ' €';
-        document.getElementById(`retourInvestissement_${simulateurId}`).textContent = retourInvestissement.toFixed(1) + ' ans';
+        document.getElementById(`retourInvestissement_${simulateurId}`).textContent =
+    isFinite(retourInvestissement) ? retourInvestissement.toFixed(1) + ' ans' : 'N/A';
         document.getElementById(`economie5Ans_${simulateurId}`).textContent = Math.round(economie5Ans).toLocaleString() + ' €';
         document.getElementById(`economie10Ans_${simulateurId}`).textContent = Math.round(economie10Ans).toLocaleString() + ' €';
         document.getElementById(`economie15Ans_${simulateurId}`).textContent = Math.round(economie15Ans).toLocaleString() + ' €';
