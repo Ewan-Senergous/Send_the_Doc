@@ -308,12 +308,16 @@ function impactIndicator($pourcentage) {
     grid-column: 1 / -1;
 }
 
+
     .simulateur-input:focus,
     .simulateur-select:focus {
     outline: none;
     border-color: #2563eb !important;
     box-shadow: 0 0 0 1px #2563eb !important;
     color: #000 !important;
+    width: calc(100% + 10px);
+    margin-left: -5px !important;
+    margin-right: -5px !important;
     }
 
     .analyse-icon {
@@ -570,12 +574,6 @@ gap: 0rem !important;
     }
     .simulateur-results-columns {
         grid-template-columns: 1fr;
-    }
-    .simulateur-input:focus,
-    .simulateur-select:focus {
-    width: calc(100% + 10px);
-    margin-left: -5px !important;
-    margin-right: -5px !important;
     }
 }
     
@@ -1985,6 +1983,20 @@ helpIcons.forEach(icon => {
     if (helpContent) {
       helpContent.classList.toggle('visible');
       this.classList.toggle('active');
+    }
+  });
+});
+
+// Empêcher le focus automatique sur les inputs quand on clique sur les labels et autres éléments
+document.querySelectorAll('.simulateur-input-group label, .simulateur-input-group .help-icon, .simulateur-input-group span').forEach(element => {
+  element.addEventListener('click', function(e) {
+    // Empêcher la propagation du clic aux parents
+    e.stopPropagation();
+    
+    // Empêcher le comportement par défaut (qui peut inclure la mise au focus d'un input associé)
+    // Si c'est un bouton ou un élément qui a besoin de son comportement par défaut, conditionnez ceci
+    if (!this.classList.contains('help-icon')) {
+      e.preventDefault();
     }
   });
 });
