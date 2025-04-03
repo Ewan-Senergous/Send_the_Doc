@@ -1000,10 +1000,6 @@ gap: 0rem !important;
       margin-left: 0.3rem !important;
     }
 
-    .switch-group .help-icon {
-  margin-right: 0.3rem !important;
-}
-
 .switch-wrap {
     display: flex; align-items: center; width: 100%
 }
@@ -1027,6 +1023,7 @@ gap: 0rem !important;
     .help-icon svg {
       width: 100%;
       height: 100%;
+      margin-right: 0.3rem !important;
     }
     
     .help-content {
@@ -1075,7 +1072,7 @@ gap: 0rem !important;
   height: 24px;
 }
 
-.form-field input, 
+.form-field input,
 .form-field select {
   padding-left: 40px; /* Espace pour l'icône */
 }
