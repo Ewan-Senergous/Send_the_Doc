@@ -1201,8 +1201,6 @@ gap: 0rem !important;
                                     max="100"
                                     value="89"
                                     class="simulateur-input"
-                                    readonly="readonly"
-                                    style="background-color: #fff; cursor: default; opacity: 0.4;"
                                 />
                             </div>
                             <!-- Variateur de vitesse -->
@@ -1353,8 +1351,6 @@ gap: 0rem !important;
                                     max="100"
                                     value="93"
                                     class="simulateur-input"
-                                    readonly="readonly"
-                                    style="background-color: #fff; cursor: default; opacity: 0.4;"
                                 />
                             </div>
                             
@@ -1618,21 +1614,71 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Fonction de sélection pour le moteur actuel
-    function selectPuissanceActuelle(puissance) {
-    // Convertir explicitement en nombre flottant
+    function determinerEfficaciteMoteur(poles, classeEfficience, puissance, simulateurData) {
+    // Déterminer la plage de vitesse en fonction du nombre de pôles
+    let plageVitesse;
+    switch(parseInt(poles)) {
+        case 2: plageVitesse = '1801_6000'; break; // 3000 tr/min
+        case 4: plageVitesse = '1201_1800'; break; // 1500 tr/min
+        case 6: plageVitesse = '901_1200';  break; // 1000 tr/min
+        case 8: plageVitesse = '600_900';   break; // 750 tr/min
+        default: plageVitesse = '1201_1800'; // Par défaut 4 pôles
+    }
+    
+    // Trouver la puissance la plus proche si la puissance exacte n'existe pas
+    function trouverPuissanceProche(puissance, classeEfficience) {
+        const puissances = Object.keys(simulateurData.rendements[classeEfficience]).map(Number);
+        return puissances.reduce((a, b) => {
+            return Math.abs(b - puissance) < Math.abs(a - puissance) ? b : a;
+        });
+    }
+    
+    // Récupérer la puissance exacte ou la plus proche
+    let puissanceMoteur = parseFloat(puissance);
+    if (!simulateurData.rendements[classeEfficience][puissanceMoteur]) {
+        puissanceMoteur = trouverPuissanceProche(puissanceMoteur, classeEfficience);
+    }
+    
+    // Récupérer le rendement
+    const efficacite = simulateurData.rendements[classeEfficience][puissanceMoteur][plageVitesse];
+    
+    // Convertir en pourcentage (arrondi à 1 décimale)
+    return (efficacite * 100).toFixed(1);
+}
+
+// Fonction à appeler lors des changements de paramètres pour mettre à jour l'efficacité
+function mettreAJourEfficaciteMoteur() {
+    // Pour le moteur actuel
+    const polesActuel = document.getElementById(`polesActuel_${simulateurId}`).value;
+    const classeActuelle = document.getElementById(`classeActuelle_${simulateurId}`).value;
+    const efficaciteActuelle = determinerEfficaciteMoteur(polesActuel, classeActuelle, puissanceActuelle, simulateurData);
+    document.getElementById(`efficaciteMoteurActuel_${simulateurId}`).value = efficaciteActuelle;
+    
+    // Pour le moteur cible
+    const polesCible = document.getElementById(`polesCible_${simulateurId}`).value;
+    const classeCible = document.getElementById(`classeCible_${simulateurId}`).value;
+    const efficaciteCible = determinerEfficaciteMoteur(polesCible, classeCible, puissanceCible, simulateurData);
+    document.getElementById(`efficaciteMoteurCible_${simulateurId}`).value = efficaciteCible;
+}
+
+// Ajouter des événements d'écoute pour mettre à jour l'efficacité
+document.getElementById(`polesActuel_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+document.getElementById(`classeActuelle_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+document.getElementById(`polesCible_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+document.getElementById(`classeCible_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+
+// Également mettre à jour lors des changements de puissance
+function selectPuissanceActuelle(puissance) {
     puissanceActuelle = parseFloat(puissance);
     document.getElementById(`puissanceActuelleValue_${simulateurId}`).textContent = puissance + ' kW';
-    console.log("Nouvelle puissance actuelle:", puissanceActuelle); // Pour le débogage
-    updateEfficaciteMoteur();
+    mettreAJourEfficaciteMoteur(); // Mettre à jour l'efficacité
     calculerResultats();
 }
 
 function selectPuissanceCible(puissance) {
-    // Convertir explicitement en nombre flottant
     puissanceCible = parseFloat(puissance);
     document.getElementById(`puissanceCibleValue_${simulateurId}`).textContent = puissance + ' kW';
-    console.log("Nouvelle puissance cible:", puissanceCible); // Pour le débogage
-    updateEfficaciteMoteur();
+    mettreAJourEfficaciteMoteur(); // Mettre à jour l'efficacité
     calculerResultats();
 }
 
@@ -1700,8 +1746,8 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         const coutEnergie = parseFloat(document.getElementById(`coutEnergie_${simulateurId}`).value);
         const joursFonctionnement = parseInt(document.getElementById(`joursFonctionnement_${simulateurId}`).value);
         const heuresFonctionnementParJour = parseInt(document.getElementById(`heuresFonctionnementParJour_${simulateurId}`).value);
-        const efficaciteMoteurActuelField = document.getElementById(`efficaciteMoteurActuel_${simulateurId}`);
-        const efficaciteMoteurCibleField = document.getElementById(`efficaciteMoteurCible_${simulateurId}`);
+        const efficaciteMoteurActuel = parseInt(document.getElementById(`efficaciteMoteurActuel_${simulateurId}`).value) / 100;
+        const efficaciteMoteurCible = parseInt(document.getElementById(`efficaciteMoteurCible_${simulateurId}`).value) / 100;
         
 
         function findClosestPower(targetPower, rendements, classe) {
@@ -1737,54 +1783,6 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         default: return '1201_1800'; // Par défaut 4 pôles
     }
 }
-
-// Fonction pour mettre à jour l'efficacité du moteur en fonction des paramètres
-
-// Ajouter l'attribut readonly
-efficaciteMoteurActuelField.setAttribute('readonly', 'readonly');
-efficaciteMoteurCibleField.setAttribute('readonly', 'readonly');
-
-// Ajouter un style pour indiquer visuellement qu'ils sont en lecture seule
-efficaciteMoteurActuelField.style.backgroundColor = '#fff';
-efficaciteMoteurActuelField.style.cursor = 'default';
-efficaciteMoteurCibleField.style.backgroundColor = '#fff';
-efficaciteMoteurCibleField.style.cursor = 'default';
-
-// Fonction pour mettre à jour l'efficacité du moteur en fonction des paramètres
-function updateEfficaciteMoteur() {
-    const classeActuelle = document.getElementById(`classeActuelle_${simulateurId}`).value;
-    const classeCible = document.getElementById(`classeCible_${simulateurId}`).value;
-    const polesActuel = parseInt(document.getElementById(`polesActuel_${simulateurId}`).value);
-    const polesCible = parseInt(document.getElementById(`polesCible_${simulateurId}`).value);
-    
-    // Obtenir la plage de vitesse en fonction du nombre de pôles
-    const plageVitesseActuelle = getVitesseRange(polesActuel);
-    const plageVitesseCible = getVitesseRange(polesCible);
-    
-    // Trouver la puissance la plus proche dans les données de rendement
-    const puissanceActuelleAjustee = findClosestPower(puissanceActuelle, simulateurData.rendements, classeActuelle);
-    const puissanceCibleAjustee = findClosestPower(puissanceCible, simulateurData.rendements, classeCible);
-    
-    // Récupérer l'efficacité correspondante
-    const rendementActuel = simulateurData.rendements[classeActuelle][puissanceActuelleAjustee][plageVitesseActuelle];
-    const rendementCible = simulateurData.rendements[classeCible][puissanceCibleAjustee][plageVitesseCible];
-    
-    // Mettre à jour les champs d'efficacité (multiplier par 100 pour afficher en pourcentage)
-    efficaciteMoteurActuelField.value = Math.round(rendementActuel * 100);
-    efficaciteMoteurCibleField.value = Math.round(rendementCible * 100);
-    
-    console.log("Mise à jour de l'efficacité moteur actuel:", Math.round(rendementActuel * 100) + "%");
-    console.log("Mise à jour de l'efficacité moteur cible:", Math.round(rendementCible * 100) + "%");
-}
-
-// PARTIE IMPORTANTE: Ajouter des écouteurs pour les classes et pôles
-document.getElementById(`classeActuelle_${simulateurId}`).addEventListener('change', updateEfficaciteMoteur);
-document.getElementById(`classeCible_${simulateurId}`).addEventListener('change', updateEfficaciteMoteur);
-document.getElementById(`polesActuel_${simulateurId}`).addEventListener('change', updateEfficaciteMoteur);
-document.getElementById(`polesCible_${simulateurId}`).addEventListener('change', updateEfficaciteMoteur);
-
-// Initialiser les efficacités au chargement de la page
-updateEfficaciteMoteur();
 
          const puissanceActuelleAjustee = findClosestPower(puissanceActuelle, simulateurData.rendements, classeActuelle);
          const puissanceCibleAjustee = findClosestPower(puissanceCible, simulateurData.rendements, classeCible);
@@ -2063,6 +2061,7 @@ if (vitesseVariableCibleElement) {
     vitesseVariableCibleElement.addEventListener('change', calculerResultats);
 }
     // Calculer les résultats initiaux
+    mettreAJourEfficaciteMoteur();
     calculerResultats();
 });
 
