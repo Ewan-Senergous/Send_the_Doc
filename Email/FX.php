@@ -6,7 +6,7 @@ if (!function_exists('cenovContactForm')) {
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cenov_prenom']) && isset($_POST['g-recaptcha-response'])) {
             // Protection contre les attaques de force brute
-            if (!cenov_check_submission_rate()) {
+            if (!cenovCheckSubmissionRate()) {
                 return '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
             }
             // Vérification du nonce CSRF
@@ -100,6 +100,11 @@ $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
                 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
                 'Reply-To: ' . $nom . ' <' . $email . '>'
             ];
+
+            $fileWarning = '';
+if (empty($_FILES['cenov_plaque']['name'])) {
+    $fileWarning = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
+}
             
             // Gestion du fichier uploadé
             $attachments = array();
@@ -169,6 +174,10 @@ $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
                     return '<div class="error-message">Erreur lors du téléchargement du fichier. Veuillez réessayer.</div>';
                 }
             }
+
+            if (empty($_FILES['cenov_plaque']['name'])) {
+                $content .= "\r\n\r\nAucune plaque signalétique n'a été jointe à ce message.";
+            }
             
             // Envoi de l'email
             $sent = wp_mail($to, $subject, $content, $headers, $attachments);
@@ -183,7 +192,7 @@ $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
             }
             
             if ($sent) {
-                return '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+                return $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
             } else {
                 return '<div class="error-message">Une erreur est survenue lors de l\'envoi de votre message. Veuillez nous contacter par téléphone.</div>';
             }
@@ -193,7 +202,7 @@ $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
     }
 }
 
-function cenov_check_submission_rate() {
+function cenovCheckSubmissionRate() {
     // Récupération de l'adresse IP du visiteur
     $ip = $_SERVER['REMOTE_ADDR'];
     
@@ -358,9 +367,9 @@ $result = cenovContactForm();
 
             <!-- Upload de plaque signalétique (occupe toute la largeur) -->
             <div class="form-row full-width file-upload">
-    <label for="cenov-plaque">* Votre plaque signalétique 📋 :</label>
+    <label for="cenov-plaque">Votre plaque signalétique 📋 :</label>
     <div class="file-input-container">
-    <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf, .heic, .webp" required />
+    <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf, .heic, .webp"/>
         <div class="file-upload-placeholder">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -384,7 +393,7 @@ $result = cenovContactForm();
         </div>
         <div class="preview-content">
             <!-- Pour les images -->
-            <img id="image-preview" src="#" alt="Aperçu de l'image" />
+            <img id="image-preview" src="#" alt="Aperçu de l'img" />
             <!-- Pour les PDF -->
             <div id="pdf-preview">
                 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-type-pdf">
@@ -427,6 +436,15 @@ $result = cenovContactForm();
 </div>
 
 <style>
+    .warning-message {
+    background-color: #fff7ed;
+    color: #9a3412;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    border-left: 4px solid #f97316;
+}
      .honeypot-field {
         opacity: 0;
         position: absolute;

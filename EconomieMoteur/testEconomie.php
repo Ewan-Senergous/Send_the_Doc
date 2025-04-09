@@ -237,6 +237,8 @@ $simulateurData = array(
     )
 );
 
+
+
 // Inclusion de Chart.js
 wp_enqueue_script('chart-js', 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js', array('jquery'), '3.7.1', true);
 wp_enqueue_script('chart-js-annotation', 'https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.1.0/chartjs-plugin-annotation.min.js', array('chart-js'), '2.1.0', true);
@@ -1201,6 +1203,8 @@ gap: 0rem !important;
                                     max="100"
                                     value="89"
                                     class="simulateur-input"
+                                    readonly="readonly"
+                                    style="background-color: #fff; cursor: default; opacity: 0.4;"
                                 />
                             </div>
                             <!-- Variateur de vitesse -->
@@ -1351,6 +1355,8 @@ gap: 0rem !important;
                                     max="100"
                                     value="93"
                                     class="simulateur-input"
+                                    readonly="readonly"
+                                    style="background-color: #fff; cursor: default; opacity: 0.4;"
                                 />
                             </div>
                             
@@ -1751,28 +1757,36 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         
 
         function findClosestPower(targetPower, rendements, classe) {
-        if (rendements[classe][targetPower] !== undefined) {
-            return targetPower; // La valeur existe déjà
-        }
-        
-        // Convertir les clés en nombres pour la comparaison
-        const powers = Object.keys(rendements[classe]).map(Number);
-        
-        // Trouver la valeur la plus proche
-        let closestPower = powers[0];
-        let minDiff = Math.abs(targetPower - closestPower);
-        
-        for (let i = 1; i < powers.length; i++) {
-            const diff = Math.abs(targetPower - powers[i]);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closestPower = powers[i];
-            }
-        }
-        
-        console.log(`Puissance ${targetPower} non trouvée, utilisation de ${closestPower} à la place`);
-        return closestPower;
+  // Convertir targetPower en nombre
+  targetPower = parseFloat(targetPower);
+  
+  // Convertir les clés en nombres pour la comparaison
+  const powers = Object.keys(rendements[classe]).map(key => parseFloat(key)).sort((a, b) => a - b);
+  
+  // Voir si la valeur exacte existe (avec une petite tolérance)
+  for (let power of powers) {
+    if (Math.abs(power - targetPower) < 0.0001) {
+      return power.toString(); // Retourne la clé d'origine
     }
+  }
+  
+  // Trouver la puissance la plus proche
+  let closestPower = powers[0];
+  let minDiff = Math.abs(targetPower - closestPower);
+  
+  for (let i = 1; i < powers.length; i++) {
+    const diff = Math.abs(targetPower - powers[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestPower = powers[i];
+    }
+  }
+  
+  console.log(`Puissance ${targetPower} non trouvée, utilisation de ${closestPower} à la place`);
+  return closestPower.toString(); // Retourne la clé d'origine
+}
+
+
 
     function getVitesseRange(poles) {
     switch(poles) {
@@ -1784,7 +1798,7 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
     }
 }
 
-         const puissanceActuelleAjustee = findClosestPower(puissanceActuelle, simulateurData.rendements, classeActuelle);
+         const puissanceActuelleAjustee = Number(findClosestPower(Number(puissanceActuelle), simulateurData.rendements, classeActuelle));
          const puissanceCibleAjustee = findClosestPower(puissanceCible, simulateurData.rendements, classeCible);
          
          const plageVitesseActuelle = getVitesseRange(polesActuel);
@@ -1792,6 +1806,12 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         // Calculer les rendements ajustés
         const rendementActuel = simulateurData.rendements[classeActuelle][puissanceActuelleAjustee][plageVitesseActuelle];
         const rendementCible = simulateurData.rendements[classeCible][puissanceCibleAjustee][plageVitesseCible];
+
+        console.log("Puissance recherchée:", puissanceActuelle);
+console.log("Puissance utilisée:", puissanceActuelleAjustee);
+console.log("Plage de vitesse:", plageVitesseActuelle);
+console.log("Rendement trouvé:", rendementActuel);
+console.log("Classe d'efficience:", classeActuelle);
         
         // Calculer les heures de fonctionnement annuelles
         const heuresAnnuelles = joursFonctionnement * heuresFonctionnementParJour;

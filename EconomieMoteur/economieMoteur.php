@@ -237,6 +237,8 @@ $simulateurData = array(
     )
 );
 
+
+
 // Inclusion de Chart.js
 wp_enqueue_script('chart-js', 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js', array('jquery'), '3.7.1', true);
 wp_enqueue_script('chart-js-annotation', 'https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.1.0/chartjs-plugin-annotation.min.js', array('chart-js'), '2.1.0', true);
@@ -1201,6 +1203,8 @@ gap: 0rem !important;
                                     max="100"
                                     value="89"
                                     class="simulateur-input"
+                                    readonly="readonly"
+                                    style="background-color: #fff; cursor: default; opacity: 0.4;"
                                 />
                             </div>
                             <!-- Variateur de vitesse -->
@@ -1351,6 +1355,8 @@ gap: 0rem !important;
                                     max="100"
                                     value="93"
                                     class="simulateur-input"
+                                    readonly="readonly"
+                                    style="background-color: #fff; cursor: default; opacity: 0.4;"
                                 />
                             </div>
                             
@@ -1614,19 +1620,71 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Fonction de sélection pour le moteur actuel
-    function selectPuissanceActuelle(puissance) {
-    // Convertir explicitement en nombre flottant
+    function determinerEfficaciteMoteur(poles, classeEfficience, puissance, simulateurData) {
+    // Déterminer la plage de vitesse en fonction du nombre de pôles
+    let plageVitesse;
+    switch(parseInt(poles)) {
+        case 2: plageVitesse = '1801_6000'; break; // 3000 tr/min
+        case 4: plageVitesse = '1201_1800'; break; // 1500 tr/min
+        case 6: plageVitesse = '901_1200';  break; // 1000 tr/min
+        case 8: plageVitesse = '600_900';   break; // 750 tr/min
+        default: plageVitesse = '1201_1800'; // Par défaut 4 pôles
+    }
+    
+    // Trouver la puissance la plus proche si la puissance exacte n'existe pas
+    function trouverPuissanceProche(puissance, classeEfficience) {
+        const puissances = Object.keys(simulateurData.rendements[classeEfficience]).map(Number);
+        return puissances.reduce((a, b) => {
+            return Math.abs(b - puissance) < Math.abs(a - puissance) ? b : a;
+        });
+    }
+    
+    // Récupérer la puissance exacte ou la plus proche
+    let puissanceMoteur = parseFloat(puissance);
+    if (!simulateurData.rendements[classeEfficience][puissanceMoteur]) {
+        puissanceMoteur = trouverPuissanceProche(puissanceMoteur, classeEfficience);
+    }
+    
+    // Récupérer le rendement
+    const efficacite = simulateurData.rendements[classeEfficience][puissanceMoteur][plageVitesse];
+    
+    // Convertir en pourcentage (arrondi à 1 décimale)
+    return (efficacite * 100).toFixed(1);
+}
+
+// Fonction à appeler lors des changements de paramètres pour mettre à jour l'efficacité
+function mettreAJourEfficaciteMoteur() {
+    // Pour le moteur actuel
+    const polesActuel = document.getElementById(`polesActuel_${simulateurId}`).value;
+    const classeActuelle = document.getElementById(`classeActuelle_${simulateurId}`).value;
+    const efficaciteActuelle = determinerEfficaciteMoteur(polesActuel, classeActuelle, puissanceActuelle, simulateurData);
+    document.getElementById(`efficaciteMoteurActuel_${simulateurId}`).value = efficaciteActuelle;
+    
+    // Pour le moteur cible
+    const polesCible = document.getElementById(`polesCible_${simulateurId}`).value;
+    const classeCible = document.getElementById(`classeCible_${simulateurId}`).value;
+    const efficaciteCible = determinerEfficaciteMoteur(polesCible, classeCible, puissanceCible, simulateurData);
+    document.getElementById(`efficaciteMoteurCible_${simulateurId}`).value = efficaciteCible;
+}
+
+// Ajouter des événements d'écoute pour mettre à jour l'efficacité
+document.getElementById(`polesActuel_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+document.getElementById(`classeActuelle_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+document.getElementById(`polesCible_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+document.getElementById(`classeCible_${simulateurId}`).addEventListener('change', mettreAJourEfficaciteMoteur);
+
+// Également mettre à jour lors des changements de puissance
+function selectPuissanceActuelle(puissance) {
     puissanceActuelle = parseFloat(puissance);
     document.getElementById(`puissanceActuelleValue_${simulateurId}`).textContent = puissance + ' kW';
-    console.log("Nouvelle puissance actuelle:", puissanceActuelle); // Pour le débogage
+    mettreAJourEfficaciteMoteur(); // Mettre à jour l'efficacité
     calculerResultats();
 }
 
 function selectPuissanceCible(puissance) {
-    // Convertir explicitement en nombre flottant
     puissanceCible = parseFloat(puissance);
     document.getElementById(`puissanceCibleValue_${simulateurId}`).textContent = puissance + ' kW';
-    console.log("Nouvelle puissance cible:", puissanceCible); // Pour le débogage
+    mettreAJourEfficaciteMoteur(); // Mettre à jour l'efficacité
     calculerResultats();
 }
 
@@ -1699,28 +1757,36 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         
 
         function findClosestPower(targetPower, rendements, classe) {
-        if (rendements[classe][targetPower] !== undefined) {
-            return targetPower; // La valeur existe déjà
-        }
-        
-        // Convertir les clés en nombres pour la comparaison
-        const powers = Object.keys(rendements[classe]).map(Number);
-        
-        // Trouver la valeur la plus proche
-        let closestPower = powers[0];
-        let minDiff = Math.abs(targetPower - closestPower);
-        
-        for (let i = 1; i < powers.length; i++) {
-            const diff = Math.abs(targetPower - powers[i]);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closestPower = powers[i];
-            }
-        }
-        
-        console.log(`Puissance ${targetPower} non trouvée, utilisation de ${closestPower} à la place`);
-        return closestPower;
+  // Convertir targetPower en nombre
+  targetPower = parseFloat(targetPower);
+  
+  // Convertir les clés en nombres pour la comparaison
+  const powers = Object.keys(rendements[classe]).map(key => parseFloat(key)).sort((a, b) => a - b);
+  
+  // Voir si la valeur exacte existe (avec une petite tolérance)
+  for (let power of powers) {
+    if (Math.abs(power - targetPower) < 0.0001) {
+      return power.toString(); // Retourne la clé d'origine
     }
+  }
+  
+  // Trouver la puissance la plus proche
+  let closestPower = powers[0];
+  let minDiff = Math.abs(targetPower - closestPower);
+  
+  for (let i = 1; i < powers.length; i++) {
+    const diff = Math.abs(targetPower - powers[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestPower = powers[i];
+    }
+  }
+  
+  console.log(`Puissance ${targetPower} non trouvée, utilisation de ${closestPower} à la place`);
+  return closestPower.toString(); // Retourne la clé d'origine
+}
+
+
 
     function getVitesseRange(poles) {
     switch(poles) {
@@ -1732,7 +1798,7 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
     }
 }
 
-         const puissanceActuelleAjustee = findClosestPower(puissanceActuelle, simulateurData.rendements, classeActuelle);
+         const puissanceActuelleAjustee = Number(findClosestPower(Number(puissanceActuelle), simulateurData.rendements, classeActuelle));
          const puissanceCibleAjustee = findClosestPower(puissanceCible, simulateurData.rendements, classeCible);
          
          const plageVitesseActuelle = getVitesseRange(polesActuel);
@@ -1740,6 +1806,12 @@ function genererAnalyseTexte(economieAnnuelle, retourInvestissement, classeCible
         // Calculer les rendements ajustés
         const rendementActuel = simulateurData.rendements[classeActuelle][puissanceActuelleAjustee][plageVitesseActuelle];
         const rendementCible = simulateurData.rendements[classeCible][puissanceCibleAjustee][plageVitesseCible];
+
+        console.log("Puissance recherchée:", puissanceActuelle);
+console.log("Puissance utilisée:", puissanceActuelleAjustee);
+console.log("Plage de vitesse:", plageVitesseActuelle);
+console.log("Rendement trouvé:", rendementActuel);
+console.log("Classe d'efficience:", classeActuelle);
         
         // Calculer les heures de fonctionnement annuelles
         const heuresAnnuelles = joursFonctionnement * heuresFonctionnementParJour;
@@ -2009,6 +2081,7 @@ if (vitesseVariableCibleElement) {
     vitesseVariableCibleElement.addEventListener('change', calculerResultats);
 }
     // Calculer les résultats initiaux
+    mettreAJourEfficaciteMoteur();
     calculerResultats();
 });
 
