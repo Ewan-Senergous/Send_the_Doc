@@ -2130,8 +2130,13 @@ console.log("Classe d'efficience:", classeActuelle);
         let consommationActuelle = puissanceActuelleAjustee * heuresAnnuelles / efficaciteMoteurActuel;
 
         if (vitesseVariableActuel) {
-            consommationActuelle *= 0.85; // Réduction de 15% grâce au variateur
-        }
+    // Appliquer la réduction variable selon la puissance
+    if (puissanceActuelleAjustee <= 90) {
+        consommationActuelle *= 0.85; // Réduction de 15% pour ≤ 90 kW
+    } else {
+        consommationActuelle *= 0.75; // Réduction de 25% pour > 90 kW
+    }
+}
 
 // Calculer la consommation avec le moteur cible
         const puissanceUtileCible = puissanceCibleAjustee * efficaciteMoteurCible;
@@ -2139,8 +2144,12 @@ console.log("Classe d'efficience:", classeActuelle);
         
         // Ajuster la consommation si un variateur est utilisé (exemple: réduction de 15%)
         if (vitesseVariableCible) {
-            consommationCible *= 0.85; // Réduction de 15% grâce au variateur
-        }
+    if (puissanceCibleAjustee <= 90) {
+        consommationCible *= 0.85; // Réduction de 15% pour ≤ 90 kW
+    } else {
+        consommationCible *= 0.75; // Réduction de 25% pour > 90 kW
+    }
+}
         
         // Économie d'énergie annuelle
         const economieEnergie = consommationActuelle - consommationCible;
