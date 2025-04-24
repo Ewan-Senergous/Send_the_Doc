@@ -2103,13 +2103,17 @@ helpIcons.forEach(icon => {
 });
 
 // Empêcher le focus automatique sur les inputs quand on clique sur les labels et autres éléments
-document.querySelectorAll('.simulateur-input-group label, .simulateur-input-group .help-icon, .simulateur-input-group span').forEach(element => {
+document.querySelectorAll('.simulateur-input-group label:not(.switch-label), .simulateur-input-group .help-icon, .simulateur-input-group span:not(.simulateur-label)').forEach(element => {
   element.addEventListener('click', function(e) {
-    // Empêcher la propagation du clic aux parents
+    // Ne pas interférer avec les clics sur les éléments de switch
+    if (this.closest('.switch-group') || this.closest('.switch-container') || this.classList.contains('switch-label')) {
+      return;
+    }
+    
+    // Empêcher la propagation du clic aux parents pour les autres éléments
     e.stopPropagation();
     
-    // Empêcher le comportement par défaut (qui peut inclure la mise au focus d'un input associé)
-    // Si c'est un bouton ou un élément qui a besoin de son comportement par défaut, conditionnez ceci
+    // Empêcher le comportement par défaut pour les éléments non-switch
     if (!this.classList.contains('help-icon')) {
       e.preventDefault();
     }
