@@ -1619,51 +1619,360 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Fonction de sélection pour le moteur actuel
-    function determinerEfficaciteMoteur(poles, classeEfficience, puissance, simulateurData) {
-    // Déterminer la plage de vitesse en fonction du nombre de pôles
-    let plageVitesse;
-    switch(parseInt(poles)) {
-        case 2: plageVitesse = '1801_6000'; break; // 3000 tr/min
-        case 4: plageVitesse = '1201_1800'; break; // 1500 tr/min
-        case 6: plageVitesse = '901_1200';  break; // 1000 tr/min
-        case 8: plageVitesse = '600_900';   break; // 750 tr/min
-        default: plageVitesse = '1201_1800'; // Par défaut 4 pôles
+    function getMotorEfficiency(power, poles, efficiencyClass, simulateurData) {
+  // Convertir power en nombre pour s'assurer qu'il s'agit bien d'un nombre
+  const powerNum = parseFloat(power);
+  
+  // Déterminer la plage de vitesse
+  let speedRange;
+  switch (parseInt(poles)) {
+    case 2: speedRange = '1801_6000'; break; // 3000 tr/min
+    case 4: speedRange = '1201_1800'; break; // 1500 tr/min
+    case 6: speedRange = '901_1200'; break;  // 1000 tr/min
+    case 8: speedRange = '600_900'; break;   // 750 tr/min
+    default: speedRange = '1201_1800';       // Par défaut 4 pôles
+  }
+  
+  // Cas spéciaux pour les petites puissances - utiliser des comparaisons numériques
+  // au lieu de comparaisons de chaînes
+  if (powerNum <= 1.1) {
+    // IE1
+    if (efficiencyClass === "IE1") {
+      if (Math.abs(powerNum - 0.12) < 0.001) {
+        if (poles == 2) return "45.0";
+        if (poles == 4) return "50.0";
+        if (poles == 6) return "38.3";
+        if (poles == 8) return "31.0";
+      }
+      else if (Math.abs(powerNum - 0.18) < 0.001) {
+        if (poles == 2) return "52.8";
+        if (poles == 4) return "57.0";
+        if (poles == 6) return "45.5";
+        if (poles == 8) return "38.0";
+      }
+      else if (Math.abs(powerNum - 0.20) < 0.001) {
+        if (poles == 2) return "54.6";
+        if (poles == 4) return "58.5";
+        if (poles == 6) return "47.6";
+        if (poles == 8) return "39.7";
+      }
+      else if (Math.abs(powerNum - 0.25) < 0.001) {
+        if (poles == 2) return "58.2";
+        if (poles == 4) return "61.5";
+        if (poles == 6) return "52.1";
+        if (poles == 8) return "43.4";
+      }
+      else if (Math.abs(powerNum - 0.37) < 0.001) {
+        if (poles == 2) return "63.9";
+        if (poles == 4) return "66.0";
+        if (poles == 6) return "59.7";
+        if (poles == 8) return "49.7";
+      }
+      else if (Math.abs(powerNum - 0.40) < 0.001) {
+        if (poles == 2) return "64.9";
+        if (poles == 4) return "66.8";
+        if (poles == 6) return "61.1";
+        if (poles == 8) return "50.9";
+      }
+      else if (Math.abs(powerNum - 0.55) < 0.001) {
+        if (poles == 2) return "69.0";
+        if (poles == 4) return "70.0";
+        if (poles == 6) return "65.8";
+        if (poles == 8) return "56.1";
+      }
+      else if (Math.abs(powerNum - 0.75) < 0.001) {
+        if (poles == 2) return "72.1";
+        if (poles == 4) return "72.1";
+        if (poles == 6) return "70.0";
+        if (poles == 8) return "61.2";
+      }
+      else if (Math.abs(powerNum - 1.1) < 0.001) {
+        if (poles == 2) return "75.0";
+        if (poles == 4) return "75.0";
+        if (poles == 6) return "72.9";
+        if (poles == 8) return "66.5";
+      }
     }
-    
-    // Trouver la puissance la plus proche si la puissance exacte n'existe pas
-    function trouverPuissanceProche(puissance, classeEfficience) {
-        const puissances = Object.keys(simulateurData.rendements[classeEfficience]).map(Number);
-        return puissances.reduce((a, b) => {
-            return Math.abs(b - puissance) < Math.abs(a - puissance) ? b : a;
-        });
+    // IE2
+    else if (efficiencyClass === "IE2") {
+      if (Math.abs(powerNum - 0.12) < 0.001) {
+        if (poles == 2) return "53.6";
+        if (poles == 4) return "59.1";
+        if (poles == 6) return "50.6";
+        if (poles == 8) return "39.8";
+      }
+      else if (Math.abs(powerNum - 0.18) < 0.001) {
+        if (poles == 2) return "60.4";
+        if (poles == 4) return "64.7";
+        if (poles == 6) return "56.6";
+        if (poles == 8) return "45.9";
+      }
+      else if (Math.abs(powerNum - 0.20) < 0.001) {
+        if (poles == 2) return "61.9";
+        if (poles == 4) return "65.9";
+        if (poles == 6) return "58.2";
+        if (poles == 8) return "47.4";
+      }
+      else if (Math.abs(powerNum - 0.25) < 0.001) {
+        if (poles == 2) return "64.8";
+        if (poles == 4) return "68.5";
+        if (poles == 6) return "61.6";
+        if (poles == 8) return "50.6";
+      }
+      else if (Math.abs(powerNum - 0.37) < 0.001) {
+        if (poles == 2) return "69.5";
+        if (poles == 4) return "72.7";
+        if (poles == 6) return "67.6";
+        if (poles == 8) return "56.1";
+      }
+      else if (Math.abs(powerNum - 0.40) < 0.001) {
+        if (poles == 2) return "70.4";
+        if (poles == 4) return "73.5";
+        if (poles == 6) return "68.8";
+        if (poles == 8) return "57.2";
+      }
+      else if (Math.abs(powerNum - 0.55) < 0.001) {
+        if (poles == 2) return "74.1";
+        if (poles == 4) return "77.1";
+        if (poles == 6) return "73.1";
+        if (poles == 8) return "61.7";
+      }
+      else if (Math.abs(powerNum - 0.75) < 0.001) {
+        if (poles == 2) return "77.4";
+        if (poles == 4) return "79.6";
+        if (poles == 6) return "75.9";
+        if (poles == 8) return "66.2";
+      }
+      else if (Math.abs(powerNum - 1.1) < 0.001) {
+        if (poles == 2) return "79.6";
+        if (poles == 4) return "81.4";
+        if (poles == 6) return "78.1";
+        if (poles == 8) return "70.8";
+      }
     }
-    
-    // Récupérer la puissance exacte ou la plus proche
-    let puissanceMoteur = parseFloat(puissance);
-    if (!simulateurData.rendements[classeEfficience][puissanceMoteur]) {
-        puissanceMoteur = trouverPuissanceProche(puissanceMoteur, classeEfficience);
+    // IE3
+    else if (efficiencyClass === "IE3") {
+      if (Math.abs(powerNum - 0.12) < 0.001) {
+        if (poles == 2) return "60.8";
+        if (poles == 4) return "64.8";
+        if (poles == 6) return "57.7";
+        if (poles == 8) return "50.7";
+      }
+      else if (Math.abs(powerNum - 0.18) < 0.001) {
+        if (poles == 2) return "65.9";
+        if (poles == 4) return "69.9";
+        if (poles == 6) return "63.9";
+        if (poles == 8) return "58.7";
+      }
+      else if (Math.abs(powerNum - 0.20) < 0.001) {
+        if (poles == 2) return "67.2";
+        if (poles == 4) return "71.1";
+        if (poles == 6) return "65.4";
+        if (poles == 8) return "60.6";
+      }
+      else if (Math.abs(powerNum - 0.25) < 0.001) {
+        if (poles == 2) return "69.7";
+        if (poles == 4) return "73.5";
+        if (poles == 6) return "68.6";
+        if (poles == 8) return "64.1";
+      }
+      else if (Math.abs(powerNum - 0.37) < 0.001) {
+        if (poles == 2) return "73.8";
+        if (poles == 4) return "77.3";
+        if (poles == 6) return "73.5";
+        if (poles == 8) return "69.3";
+      }
+      else if (Math.abs(powerNum - 0.40) < 0.001) {
+        if (poles == 2) return "74.6";
+        if (poles == 4) return "78.0";
+        if (poles == 6) return "74.4";
+        if (poles == 8) return "70.1";
+      }
+      else if (Math.abs(powerNum - 0.55) < 0.001) {
+        if (poles == 2) return "77.8";
+        if (poles == 4) return "80.8";
+        if (poles == 6) return "77.2";
+        if (poles == 8) return "73.0";
+      }
+      else if (Math.abs(powerNum - 0.75) < 0.001) {
+        if (poles == 2) return "80.7";
+        if (poles == 4) return "82.5";
+        if (poles == 6) return "78.9";
+        if (poles == 8) return "75.0";
+      }
+      else if (Math.abs(powerNum - 1.1) < 0.001) {
+        if (poles == 2) return "82.7";
+        if (poles == 4) return "84.1";
+        if (poles == 6) return "81.0";
+        if (poles == 8) return "77.7";
+      }
     }
+    // IE4
+    else if (efficiencyClass === "IE4") {
+      if (Math.abs(powerNum - 0.12) < 0.001) {
+        if (poles == 2) return "66.5";
+        if (poles == 4) return "69.8";
+        if (poles == 6) return "64.9";
+        if (poles == 8) return "62.3";
+      }
+      else if (Math.abs(powerNum - 0.18) < 0.001) {
+        if (poles == 2) return "70.8";
+        if (poles == 4) return "74.7";
+        if (poles == 6) return "70.1";
+        if (poles == 8) return "67.2";
+      }
+      else if (Math.abs(powerNum - 0.20) < 0.001) {
+        if (poles == 2) return "71.9";
+        if (poles == 4) return "75.8";
+        if (poles == 6) return "71.4";
+        if (poles == 8) return "68.4";
+      }
+      else if (Math.abs(powerNum - 0.25) < 0.001) {
+        if (poles == 2) return "74.3";
+        if (poles == 4) return "77.9";
+        if (poles == 6) return "74.1";
+        if (poles == 8) return "70.8";
+      }
+      else if (Math.abs(powerNum - 0.37) < 0.001) {
+        if (poles == 2) return "78.1";
+        if (poles == 4) return "81.1";
+        if (poles == 6) return "78.0";
+        if (poles == 8) return "74.8";
+      }
+      else if (Math.abs(powerNum - 0.40) < 0.001) {
+        if (poles == 2) return "78.9";
+        if (poles == 4) return "81.7";
+        if (poles == 6) return "78.7";
+        if (poles == 8) return "74.9";
+      }
+      else if (Math.abs(powerNum - 0.55) < 0.001) {
+        if (poles == 2) return "81.5";
+        if (poles == 4) return "83.9";
+        if (poles == 6) return "80.9";
+        if (poles == 8) return "77.0";
+      }
+      else if (Math.abs(powerNum - 0.75) < 0.001) {
+        if (poles == 2) return "83.5";
+        if (poles == 4) return "85.7";
+        if (poles == 6) return "82.7";
+        if (poles == 8) return "78.4";
+      }
+      else if (Math.abs(powerNum - 1.1) < 0.001) {
+        if (poles == 2) return "85.2";
+        if (poles == 4) return "87.2";
+        if (poles == 6) return "84.5";
+        if (poles == 8) return "80.8";
+      }
+    }
+    // IE5
+    else if (efficiencyClass === "IE5") {
+      if (Math.abs(powerNum - 0.12) < 0.001) {
+        if (poles == 2) return "71.4";
+        if (poles == 4) return "74.3";
+        if (poles == 6) return "69.8";
+        if (poles == 8) return "67.4";
+      }
+      else if (Math.abs(powerNum - 0.18) < 0.001) {
+        if (poles == 2) return "75.2";
+        if (poles == 4) return "78.7";
+        if (poles == 6) return "74.6";
+        if (poles == 8) return "71.9";
+      }
+      else if (Math.abs(powerNum - 0.20) < 0.001) {
+        if (poles == 2) return "76.2";
+        if (poles == 4) return "79.6";
+        if (poles == 6) return "75.7";
+        if (poles == 8) return "73.0";
+      }
+      else if (Math.abs(powerNum - 0.25) < 0.001) {
+        if (poles == 2) return "78.3";
+        if (poles == 4) return "81.5";
+        if (poles == 6) return "78.1";
+        if (poles == 8) return "75.2";
+      }
+      else if (Math.abs(powerNum - 0.37) < 0.001) {
+        if (poles == 2) return "81.7";
+        if (poles == 4) return "84.3";
+        if (poles == 6) return "81.6";
+        if (poles == 8) return "78.4";
+      }
+      else if (Math.abs(powerNum - 0.40) < 0.001) {
+        if (poles == 2) return "82.3";
+        if (poles == 4) return "84.8";
+        if (poles == 6) return "82.2";
+        if (poles == 8) return "78.9";
+      }
+      else if (Math.abs(powerNum - 0.55) < 0.001) {
+        if (poles == 2) return "84.6";
+        if (poles == 4) return "86.7";
+        if (poles == 6) return "84.2";
+        if (poles == 8) return "80.6";
+      }
+      else if (Math.abs(powerNum - 0.75) < 0.001) {
+        if (poles == 2) return "86.3";
+        if (poles == 4) return "88.2";
+        if (poles == 6) return "85.7";
+        if (poles == 8) return "82.0";
+      }
+      else if (Math.abs(powerNum - 1.1) < 0.001) {
+        if (poles == 2) return "87.8";
+        if (poles == 4) return "89.5";
+        if (poles == 6) return "87.2";
+        if (poles == 8) return "84.0";
+      }
+    }
+  }
+  
+  // Si ce n'est pas un cas spécial, utiliser la méthode standard
+  try {
+    // Convertir le nombre en chaîne pour l'accès aux données
+    const powerStr = powerNum.toString();
     
-    // Récupérer le rendement
-    const efficacite = simulateurData.rendements[classeEfficience][puissanceMoteur][plageVitesse];
-    
-    // Convertir en pourcentage (arrondi à 1 décimale)
-    return (efficacite * 100).toFixed(1);
+    if (simulateurData.rendements[efficiencyClass][powerStr] &&
+        simulateurData.rendements[efficiencyClass][powerStr][speedRange]) {
+      const efficiency = simulateurData.rendements[efficiencyClass][powerStr][speedRange];
+      return (efficiency * 100).toFixed(1);
+    }
+  } catch (e) {
+    console.error("Erreur lors de l'accès aux données de rendement:", e);
+  }
+  
+  // Si pas trouvé, chercher la puissance la plus proche dans le tableau
+  const powers = Object.keys(simulateurData.rendements[efficiencyClass])
+                       .map(Number)
+                       .sort((a, b) => a - b);
+  
+  let closestPower = powers[0];
+  let minDiff = Math.abs(powerNum - closestPower);
+  
+  for (let i = 1; i < powers.length; i++) {
+    const diff = Math.abs(powerNum - powers[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestPower = powers[i];
+    }
+  }
+  
+  console.log(`Utilisation de la puissance proche ${closestPower} pour ${powerNum} kW, ${poles} pôles, ${efficiencyClass}`);
+  
+  // Utiliser la puissance la plus proche
+  const efficiency = simulateurData.rendements[efficiencyClass][closestPower.toString()][speedRange];
+  return (efficiency * 100).toFixed(1);
 }
 
 // Fonction à appeler lors des changements de paramètres pour mettre à jour l'efficacité
 function mettreAJourEfficaciteMoteur() {
+    
     // Pour le moteur actuel
     const polesActuel = document.getElementById(`polesActuel_${simulateurId}`).value;
     const classeActuelle = document.getElementById(`classeActuelle_${simulateurId}`).value;
-    const efficaciteActuelle = determinerEfficaciteMoteur(polesActuel, classeActuelle, puissanceActuelle, simulateurData);
+    const efficaciteActuelle = getMotorEfficiency(puissanceActuelle, polesActuel, classeActuelle, simulateurData);
     document.getElementById(`efficaciteMoteurActuel_${simulateurId}`).value = efficaciteActuelle;
     
     // Pour le moteur cible
     const polesCible = document.getElementById(`polesCible_${simulateurId}`).value;
     const classeCible = document.getElementById(`classeCible_${simulateurId}`).value;
-    const efficaciteCible = determinerEfficaciteMoteur(polesCible, classeCible, puissanceCible, simulateurData);
+    const efficaciteCible = getMotorEfficiency(puissanceCible, polesCible, classeCible, simulateurData);
     document.getElementById(`efficaciteMoteurCible_${simulateurId}`).value = efficaciteCible;
 }
 
@@ -1818,7 +2127,7 @@ console.log("Classe d'efficience:", classeActuelle);
         
         // Calculer les consommations
         const puissanceUtileActuelle = puissanceActuelleAjustee * efficaciteMoteurActuel;
-        const consommationActuelle = puissanceActuelleAjustee * heuresAnnuelles / efficaciteMoteurActuel;
+        let consommationActuelle = puissanceActuelleAjustee * heuresAnnuelles / efficaciteMoteurActuel;
 
         if (vitesseVariableActuel) {
             consommationActuelle *= 0.85; // Réduction de 15% grâce au variateur
