@@ -248,7 +248,7 @@ $simulateurId = 'simulateur_' . uniqid();
 
 function impactIndicator($pourcentage) {
     if ($pourcentage >= 80) {
-        $couleur = '#16a34a';
+        $couleur = '#0F893D';
         $texte = 'Économies élevées';
     } elseif ($pourcentage >= 50) {
         $couleur = '#f59e0b';
@@ -787,7 +787,7 @@ gap: 0rem !important;
     }
     
     .simulateur-result-value.positive {
-        color: #16a34a;
+        color: #0F893D;
     }
     
     .simulateur-chart-container {
@@ -852,7 +852,7 @@ gap: 0rem !important;
     .simulateur-savings-value {
         font-size: 1.25rem;
         font-weight: 700;
-        color: #16a34a;
+        color: #0F893D;
     }
     
     .simulateur-environmental {
@@ -1079,6 +1079,18 @@ gap: 0rem !important;
   padding-left: 40px; /* Espace pour l'icône */
 }
 
+.screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 </style>
 
 <div class="simulateur-economie-energie">
@@ -1117,16 +1129,18 @@ gap: 0rem !important;
                                 </div>
 
                                 <div class="simulateur-category-selector">
-        <select id="puissanceCategoryActuelle_<?php echo $simulateurId; ?>" class="simulateur-select">
-            <option value="micro">Micro-moteurs (0.1 kW - 0.75 kW)</option>
-            <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
-            <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
-            <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
-        </select>
-        <div class="simulateur-puissance-grid" id="puissanceActuelleGrid_<?php echo $simulateurId; ?>">
-                                        <!-- Rempli dynamiquement par JavaScript -->
-                                    </div>
-                                </div>
+    <label for="puissanceCategoryActuelle_<?php echo $simulateurId; ?>" class="screen-reader-text">Catégorie de puissance du moteur actuel</label>
+    <select id="puissanceCategoryActuelle_<?php echo $simulateurId; ?>" class="simulateur-select" aria-describedby="puissanceCategoryDesc_<?php echo $simulateurId; ?>">
+        <option value="micro">Micro-moteurs (0.12 kW - 0.75 kW)</option>
+        <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
+        <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
+        <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
+    </select>
+    <div id="puissanceCategoryDesc_<?php echo $simulateurId; ?>" class="screen-reader-text">Sélectionnez une catégorie pour afficher les puissances disponibles</div>
+    <div class="simulateur-puissance-grid" id="puissanceActuelleGrid_<?php echo $simulateurId; ?>" role="radiogroup" aria-label="Options de puissance du moteur">
+        <!-- Rempli dynamiquement par JavaScript -->
+    </div>
+</div>
                             </div>
 
                             
@@ -1259,16 +1273,18 @@ gap: 0rem !important;
                                     </div>
                                 </div>
                                 <div class="simulateur-category-selector">
-                                    <select id="puissanceCategoryCible_<?php echo $simulateurId; ?>" class="simulateur-select">
-                                        <option value="micro">Micro-moteurs (0.12 kW - 0.75 kW)</option>
-                                        <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
-                                        <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
-                                        <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
-                                    </select>
-                                    <div class="simulateur-puissance-grid" id="puissanceCibleGrid_<?php echo $simulateurId; ?>">
-                                        <!-- Rempli dynamiquement par JavaScript -->
-                                    </div>
-                                </div>
+    <label for="puissanceCategoryCible_<?php echo $simulateurId; ?>" class="screen-reader-text">Catégorie de puissance du moteur cible</label>
+    <select id="puissanceCategoryCible_<?php echo $simulateurId; ?>" class="simulateur-select" aria-describedby="puissanceCategoryDesc_<?php echo $simulateurId; ?>">
+        <option value="micro">Micro-moteurs (0.12 kW - 0.75 kW)</option>
+        <option value="petit" selected>Petits moteurs (1.1 kW - 11 kW)</option>
+        <option value="moyen">Moteurs moyens (15 kW - 75 kW)</option>
+        <option value="grand">Grands moteurs (90 kW - 1000 kW)</option>
+    </select>
+    <div id="puissanceCategoryDesc_<?php echo $simulateurId; ?>" class="screen-reader-text">Sélectionnez une catégorie pour afficher les puissances disponibles</div>
+    <div class="simulateur-puissance-grid" id="puissanceCibleGrid_<?php echo $simulateurId; ?>" role="radiogroup" aria-label="Options de puissance du moteur">
+        <!-- Rempli dynamiquement par JavaScript -->
+    </div>
+</div>
                             </div>
                             
                             <!-- Nombre de pôles cible -->
@@ -2225,7 +2241,7 @@ if (retourInvestissement < 0) {
 } else if (retourInvestissement === 0) {
     retourInvestissementElement.style.color = '#000000'; // Noir pour zéro
 } else {
-    retourInvestissementElement.style.color = '#16a34a'; // Vert pour les valeurs positives
+    retourInvestissementElement.style.color = '#0F893D'; // Vert pour les valeurs positives
 }
         document.getElementById(`economie5Ans_${simulateurId}`).textContent = Math.round(economie5Ans).toLocaleString() + ' €';
         document.getElementById(`economie10Ans_${simulateurId}`).textContent = Math.round(economie10Ans).toLocaleString() + ' €';
@@ -2240,7 +2256,7 @@ if (economieAnnuelle < 0) {
 } else if (economieAnnuelle === 0) {
     economieAnnuelleElement.style.color = '#000000';
 } else {
-    economieAnnuelleElement.style.color = '#16a34a';
+    economieAnnuelleElement.style.color = '#0F893D';
 }
         
         document.getElementById(`analyseText_${simulateurId}`).innerHTML = genererAnalyseTexte(
@@ -2313,7 +2329,7 @@ function updateChart(economieAnnuelle, coutInvestissement) {
                 {
                     label: 'Économies cumulées',
                     data: dataEconomiesCumulees,
-                    borderColor: '#16a34a',
+                    borderColor: '#0F893D',
                     backgroundColor: 'rgba(22, 163, 74, 0.15)',
                     fill: true
                 }
