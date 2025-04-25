@@ -380,6 +380,15 @@ function impactIndicator($pourcentage) {
 }
 
 @media (max-width: 768px) {
+    .simulateur-disclaimer {
+        max-width: 330px !important;
+    }
+
+    .help-content li,
+    .info-box li,
+    .simulateur-economie-energie li {
+        font-size: 0.9rem !important;
+    }
     /* Structure principale avec réduction dimensionnelle complète */
     .simulateur-economie-energie {
         margin: 0.5rem auto;
