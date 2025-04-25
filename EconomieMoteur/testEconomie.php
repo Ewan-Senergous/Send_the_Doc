@@ -1205,9 +1205,13 @@ gap: 0rem !important;
     </button>  <?php echo impactIndicator(85); ?></label>
                                     <div class="help-content">
   <div class="info-box">
-    <p>Permet d'ajuster la vitesse du moteur en fonction des besoins, évitant le fonctionnement constant à pleine puissance.</p>
-    <p>Représente l'investissement le plus rentable pour les applications à charge variable comme les pompes générant des d'économies d'argent et d'énergies de 10% à 20% avec un retour sur investissement en 1 à 3 ans.</p>
-    <p>À éviter: Pour les applications à charge constante fonctionnant toujours à pleine puissance, un variateur peut réduire légèrement l'efficacité globale (1% à 3%).</p>
+  <p>Une augmentation de 1% d'efficacité moteur réduit génère des économies d'argent er d'énergie annuelles de 1% à 1,2%. Les moteurs industriels modernes présentent généralement une efficacité entre 80% et 97%.</p>
+  <p>Cette valeur est automatiquement déterminée selon :</p>
+    <ul>
+      <li>La puissance de votre moteur (kW)</li>
+      <li>Sa classe d'efficience énergétique (IE1 à IE5)</li>
+      <li>Sa vitesse de rotation (nombre de pôles)</li>
+    </ul>
   </div>
 </div>
                                 <input
@@ -1243,6 +1247,8 @@ gap: 0rem !important;
     <p>Permet d'ajuster la vitesse du moteur en fonction des besoins, évitant le fonctionnement constant à pleine puissance.</p>
     <p>Représente l'investissement le plus rentable pour les applications à charge variable comme les pompes générant des d'économies d'argent et d'énergies de 10% à 20% avec un retour sur investissement en 1 à 3 ans.</p>
     <p>À éviter: Pour les applications à charge constante fonctionnant toujours à pleine puissance, un variateur peut réduire légèrement l'efficacité globale (1% à 3%).</p>
+    <p><strong>Pour moteurs ≤ 90 kW : Coefficient de réduction = 0,85 (économie de 15%)</strong></p>
+    <p><strong>Pour moteurs > 90 kW : Coefficient de réduction = 0,75 (économie de 25%)</strong></p>
   </div>
 </div>
                             </div>
@@ -1362,6 +1368,12 @@ gap: 0rem !important;
                                     <div class="help-content">
   <div class="info-box">
     <p>Une augmentation de 1% d'efficacité moteur réduit génère des économies d'argent er d'énergie annuelles de 1% à 1,2%. Les moteurs industriels modernes présentent généralement une efficacité entre 80% et 97%.</p>
+    <p>Cette valeur est automatiquement déterminée selon :</p>
+    <ul>
+      <li>La puissance de votre moteur (kW)</li>
+      <li>Sa classe d'efficience énergétique (IE1 à IE5)</li>
+      <li>Sa vitesse de rotation (nombre de pôles)</li>
+    </ul>
   </div>
 </div>
                                 <input
@@ -1399,6 +1411,8 @@ gap: 0rem !important;
     <p>Permet d'ajuster la vitesse du moteur en fonction des besoins, évitant le fonctionnement constant à pleine puissance.</p>
     <p>Représente l'investissement le plus rentable pour les applications à charge variable comme les pompes générant des d'économies d'argent et d'énergies de 10% à 20% avec un retour sur investissement en 1 à 3 ans.</p>
     <p>À éviter: Pour les applications à charge constante fonctionnant toujours à pleine puissance, un variateur peut réduire légèrement l'efficacité globale (1% à 3%).</p>
+    <p><strong>Pour moteurs ≤ 90 kW : Coefficient de réduction = 0,85 (économie de 15%)</strong></p>
+    <p><strong>Pour moteurs > 90 kW : Coefficient de réduction = 0,75 (économie de 25%)</strong></p>
   </div>
 </div>
                             </div>
