@@ -765,8 +765,9 @@ gap: 0rem !important;
         flex-direction: row;
         gap: 0.75rem;
         text-align: center;
-        max-width: 690px;
+        max-width: 1060px;
         margin: 0 auto;
+        flex-wrap: wrap;
     }
     
     .simulateur-result-row {
@@ -784,7 +785,6 @@ gap: 0rem !important;
         font-size: 0.875rem;
         font-weight: 500;
         text-align: center;
-        margin-bottom: 0.75rem;
     }
     
     .simulateur-result-value.positive {
@@ -1034,16 +1034,20 @@ gap: 0rem !important;
       max-height: 0;
       opacity: 0;
       margin: 0;
+      position: absolute;
+      pointer-events: none;
     }
     
     .help-content.visible {
       max-height: 500px;
       opacity: 1;
       margin: 15px 0;
+      position: static;
+      pointer-events: auto;
     }
     
     .info-box {
-      background-color: #f8f8f8;
+      background-color: #f9fafb;
       border-left: 4px solid #2563eb;
       border-radius: 0 4px 4px 0;
       padding: 12px 15px;
@@ -1488,31 +1492,96 @@ gap: 0rem !important;
                     
                     <div class="simulateur-results-container">
                         <div class="simulateur-results-summary">
-                            <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Consommation annuelle actuelle :</div>
+                            <div class="simulateur-result-row" style="flex-direction: column; align-items: flex-start;">
+                                <div class="simulateur-result-label"> <button type="button" class="help-icon" aria-label="Afficher l'aide" style="display: inline-flex; vertical-align: middle;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+                    </svg>
+                </button>
+                                    Consommation annuelle actuelle :</div>
                                 <div class="simulateur-result-value text-bold-black" id="consommationActuelle_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
-                            
+                           
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Consommation annuelle cible :</div>
+                                <div class="simulateur-result-label"> <button type="button" class="help-icon" aria-label="Afficher l'aide" style="display: inline-flex; vertical-align: middle;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+                    </svg>
+                </button>
+                                    Consommation annuelle cible :</div>
                                 <div class="simulateur-result-value text-bold-black" id="consommationCible_<?php echo $simulateurId; ?>">0 kWh/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Économie annuelle :</div>
+                                <div class="simulateur-result-label"> <button type="button" class="help-icon" data-target="economie-help" aria-label="Afficher l'aide" style="display: inline-flex; vertical-align: middle;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+        <circle cx="12" cy="12" r="10"></circle>
+        <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+    </svg>
+</button>
+                                    Économie annuelle :</div>
                                 <div class="simulateur-result-value positive text-bold-black" id="economieAnnuelle_<?php echo $simulateurId; ?>">0 €/an</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Coût investissement :</div>
+                                <div class="simulateur-result-label"> <button type="button" class="help-icon" data-target="investissement-help" aria-label="Afficher l'aide" style="display: inline-flex; vertical-align: middle;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+        <circle cx="12" cy="12" r="10"></circle>
+        <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+    </svg>
+</button>
+                                    Coût investissement :</div>
                                 <div class="simulateur-result-value text-bold-black" id="coutInvestissement_<?php echo $simulateurId; ?>">0 €</div>
                             </div>
                             
                             <div class="simulateur-result-row">
-                                <div class="simulateur-result-label">Retour sur investissement :</div>
+                                <div class="simulateur-result-label"> <button type="button" class="help-icon" data-target="retour-help" aria-label="Afficher l'aide" style="display: inline-flex; vertical-align: middle;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+        <circle cx="12" cy="12" r="10"></circle>
+        <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+    </svg>
+</button>
+                                    Retour sur investissement :</div>
                                 <div class="simulateur-result-value text-bold-black" id="retourInvestissement_<?php echo $simulateurId; ?>">0 ans</div>
                             </div>
+                            <div class="help-content" id="consommation-help">
+        <div class="info-box">
+            <p>Formule de calcul :</p>
+            <p><strong>Consommation (kWh/an) = Puissance moteur (kW) × Jours par an × Heures par jour ÷ Efficacité</strong></p>
+            <p>Avec variateur de vitesse :</p>
+            <ul style="list-style-type: none; padding: 0 !important;">
+                <li>• Moteurs ≤ 90 kW : Consommation réduite de 15%</li>
+                <li>• Moteurs > 90 kW : Consommation réduite de 25%</li>
+            </ul>
+        </div>
+    </div>
+    <div class="help-content" id="economie-help">
+                    <div class="info-box">
+                        <p>Formule de calcul :</p>
+                        <p><strong>Économie annuelle (€/an) = (Consommation actuelle - Consommation cible) × Prix unitaire de l'électricité (€/kWh)</strong></p>
+                    </div>
+                </div>
+
+                <div class="help-content" id="investissement-help">
+                    <div class="info-box">
+                        <p>Formule de calcul :</p>
+                        <p><strong>Coût d'investissement (€) = Coût du moteur + Coût du variateur de vitesse (si applicable)</strong></p>
+                        <p>Note : Le coût varie selon la puissance et la classe d'efficience du moteur.</p>
+                    </div>
+                </div>
+
+                <div class="help-content" id="retour-help">
+                    <div class="info-box">
+                        <p>Formule de calcul :</p>
+                        <p><strong>Retour sur investissement (ans) = Coût d'investissement (€) ÷ Économie annuelle (€/an)</strong></p>
+                        <p>Plus cette valeur est basse, plus l'investissement est rentable rapidement.</p>
+                    </div>
+                </div>
                         </div>
+
+                       
                         
                         <div class="simulateur-chart-fullwidth">
                             <h4 class="text-bold-black">Évolution des coûts sur 10 ans :</h4>
@@ -2466,7 +2535,18 @@ const helpIcons = document.querySelectorAll('.help-icon');
     
 // Ajouter un gestionnaire d'événement à chaque bouton d'aide
 helpIcons.forEach(icon => {
-  icon.addEventListener('click', function() {
+    icon.addEventListener('click', function() {
+    // Si l'icône a un attribut data-target, utiliser cet ID pour trouver l'infobulle spécifique
+    const targetId = this.getAttribute('data-target');
+    if (targetId) {
+      const helpContent = document.getElementById(targetId);
+      if (helpContent && helpContent.classList.contains('help-content')) {
+        helpContent.classList.toggle('visible');
+        this.classList.toggle('active');
+        return;
+      }
+    }
+    
     // Rechercher d'abord dans .simulateur-input-group
     let helpContent = this.closest('.simulateur-input-group')?.querySelector('.help-content');
     
@@ -2480,6 +2560,11 @@ helpIcons.forEach(icon => {
           helpContent = null;
         }
       }
+    }
+    
+    // Si toujours pas trouvé et c'est dans les résultats, rechercher l'infobulle globale des résultats
+    if (!helpContent && this.closest('.simulateur-results-summary')) {
+      helpContent = this.closest('.simulateur-results-container').querySelector('.help-content');
     }
     
     // Basculer la classe 'visible' pour afficher/masquer le contenu
