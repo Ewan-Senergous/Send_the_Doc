@@ -531,7 +531,7 @@ function impactIndicator($pourcentage) {
 
     .simulateur-section
      {
-        max-width: 64% !important;
+        max-width: 65% !important;
     }
 
     .simulateur-savings,
@@ -777,6 +777,7 @@ gap: 0rem !important;
         max-width: 1060px;
         margin: 0 auto;
         flex-wrap: wrap;
+        justify-content: center;
     }
     
     .simulateur-result-row {
@@ -1637,7 +1638,7 @@ gap: 0rem !important;
                 <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
             </svg>
         </button>
-                                    Réduction annuelle de CO2 :</div>
+        Baisse CO2/an :</div>
         <div class="simulateur-environmental-value text-bold-black" id="reductionCO2_<?php echo $simulateurId; ?>">0 kg CO2/an</div>
     </div>
     
@@ -1658,7 +1659,7 @@ gap: 0rem !important;
                 <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
             </svg>
         </button>
-                                  Économie d'énergie annuelle :</div>
+                                  Économie kWh/an :</div>
     <div class="simulateur-environmental-value text-bold-black" id="economieEnergie_<?php echo $simulateurId; ?>">0 kWh/an</div>
 </div>
 
