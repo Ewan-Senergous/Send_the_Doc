@@ -883,7 +883,7 @@ gap: 0rem !important;
         color: #6b7280;
         display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.3rem;
     }
 
     .simulateur-environmental-label-2 {
@@ -1539,14 +1539,13 @@ gap: 0rem !important;
                                 <div class="simulateur-environmental-row">
                                     <div class="simulateur-environmental-label">
                                     <svg fill="#000000" height="24px" width="24px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 490 490" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <g> <path d="M470,360.75h-79.6c-8.1,0-15.4-4.8-18.5-12.3c-3.1-7.4-1.5-16,4.2-21.8l59.2-60.2c1.1-1.7,2.2-4.2,2.2-7.4 c0-7.5-6.1-13.6-13.6-13.6s-13.6,6.1-13.6,13.6c0,11.1-9,20-20,20c-11.1,0-20-9-20-20c0-29.6,24.1-53.6,53.6-53.6 s53.6,24.1,53.6,53.6c0,11.8-3.8,23.1-10.9,32.5c-0.5,0.7-1.1,1.3-1.7,1.9l-26.8,27.2H470c11.1,0,20,9,20,20 C490,351.85,481.1,360.75,470,360.75z"></path> </g> <g> <path d="M271.8,321.75c-53.1,0-96.2-43.2-96.2-96.2c0-53.1,43.2-96.2,96.2-96.2c53.1,0,96.2,43.2,96.2,96.2 S324.9,321.75,271.8,321.75z M271.8,169.35c-31,0-56.2,25.2-56.2,56.2s25.2,56.2,56.2,56.2s56.2-25.2,56.2-56.2 C328,194.55,302.8,169.35,271.8,169.35z"></path> </g> <g> <path d="M94.3,317.85c-52,0-94.3-42.3-94.3-94.3s42.3-94.3,94.3-94.3c29.8,0,58.1,14.3,75.8,38.3c6.6,8.9,4.7,21.4-4.2,28 s-21.4,4.7-28-4.2c-10.4-14-26.3-22-43.6-22c-29.9,0-54.2,24.3-54.2,54.2s24.3,54.2,54.2,54.2c15.3,0,29.5-6.2,39.9-17.5 c7.5-8.1,20.2-8.7,28.3-1.2c8.1,7.5,8.7,20.2,1.2,28.3C145.8,306.75,120.6,317.85,94.3,317.85z"></path> </g> </g> </g> </g></svg>
-                                    Réduction annuelle de CO2
-            <button type="button" class="help-icon" aria-label="Afficher l'aide">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
-                </svg>
-            </button>
-            :</div>
+                                    <button type="button" class="help-icon" aria-label="Afficher l'aide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+            </svg>
+        </button>
+                                    Réduction annuelle de CO2 :</div>
         <div class="simulateur-environmental-value text-bold-black" id="reductionCO2_<?php echo $simulateurId; ?>">0 kg CO2/an</div>
     </div>
     
@@ -1561,8 +1560,21 @@ gap: 0rem !important;
                                 <div class="simulateur-environmental-row">
                                     <div class="simulateur-environmental-label">
                                   <svg version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 512 512" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css">  .st0{fill:#000000;}  </style> <g> <path class="st0" d="M354.07,158.485l-213.094,70.516c-0.641,0.219-1.188,0.547-1.813,0.797c-0.922,0.391-1.859,0.734-2.719,1.219 c-0.766,0.406-1.438,0.922-2.156,1.406c-0.719,0.5-1.469,0.969-2.141,1.531c-0.688,0.594-1.297,1.25-1.938,1.891 c-0.578,0.594-1.172,1.172-1.703,1.813c-0.547,0.688-1.016,1.438-1.5,2.156c-0.469,0.734-0.969,1.422-1.375,2.188 c-0.391,0.75-0.688,1.547-1.016,2.328c-0.344,0.813-0.703,1.625-0.969,2.484c-0.25,0.828-0.391,1.719-0.578,2.594 c-0.156,0.828-0.359,1.656-0.453,2.516c-0.094,0.984-0.047,1.984-0.047,2.969c0.016,0.672-0.094,1.297-0.031,1.984 c0.016,0.141,0.063,0.266,0.078,0.422c0.094,0.859,0.313,1.719,0.484,2.578c0.188,0.969,0.344,1.938,0.625,2.844 c0.047,0.125,0.047,0.266,0.094,0.375c0.406,1.234,0.938,2.406,1.484,3.547c0.156,0.313,0.328,0.625,0.5,0.938 c0.688,1.266,1.469,2.453,2.328,3.594c0.328,0.406,0.688,0.766,1.031,1.156c0.719,0.828,1.469,1.609,2.281,2.328 c0.422,0.375,0.859,0.75,1.297,1.094c0.844,0.656,1.719,1.266,2.625,1.813c0.469,0.281,0.906,0.578,1.391,0.844 c1.203,0.625,2.469,1.188,3.766,1.656c0.203,0.063,0.375,0.172,0.578,0.234c1.547,0.5,3.125,0.813,4.75,1.031 c0.391,0.063,0.797,0.078,1.203,0.109c0.781,0.078,1.594,0.188,2.391,0.188c0.5,0,0.984-0.094,1.484-0.109 c0.266-0.031,0.5,0.016,0.75,0.016c11.188-0.938,20.891,2.547,29.688,10.641c5.797,5.344,10.594,12.156,14.328,19.234h-10.656 c-11.938,0-21.594,9.672-21.594,21.609v66.5c0,11.922,9.656,21.594,21.594,21.594h19.141c0,2.281,0,5.063,0,8.203 c-4.328,0-7.828,3.516-7.828,7.844s3.5,7.844,7.828,7.844c0,2.578,0,5.203,0,7.828c-4.328,0-7.828,3.516-7.828,7.828 c0,4.328,3.5,7.844,7.828,7.844c0,7.016,0,13.078,0,16.859c0,15.672,9.406,17.234,25.078,17.234c0,0,3.141,9.406,32.906,9.406 c29.781,0,32.906-9.406,32.906-9.406c15.672,0,25.063-1.563,25.063-17.234c0-3.813,0-9.922,0-17.016 c3.578-0.734,6.281-3.906,6.281-7.688s-2.703-6.953-6.281-7.672c0-2.719,0-5.469,0-8.141c3.578-0.734,6.281-3.906,6.281-7.688 c0-3.797-2.703-6.953-6.281-7.672c0-3.234,0-6.047,0-8.375h20.719c11.938,0,21.594-9.672,21.594-21.594v-66.5 c0-11.938-9.656-21.609-21.594-21.609h-9.453c5.656-12.547,13.969-23.469,25.188-29.578c13.078-7.141,17.906-23.531,10.766-36.625 s-23.547-17.906-36.609-10.781c-30.719,16.75-48.203,46.906-56.531,76.984H253.82c-5.703-18.375-15.75-37.688-29.953-52.984 l147.172-48.688c14.156-4.688,21.828-19.953,17.141-34.109C383.508,161.47,368.227,153.798,354.07,158.485z"></path> <path class="st0" d="M149.445,194.892c2.813,0,5.672-0.438,8.484-1.359l213.109-70.531c14.156-4.688,21.828-19.938,17.141-34.109 c-4.672-14.156-19.938-21.828-34.109-17.141l-213.094,70.516c-14.172,4.688-21.844,19.938-17.156,34.094 C127.57,187.704,138.117,194.892,149.445,194.892z"></path> <path class="st0" d="M167.305,103.36c2.813,0,5.672-0.453,8.484-1.375l149.188-49.359c14.141-4.688,21.828-19.953,17.141-34.109 S322.18-3.312,308.008,1.376L158.836,50.735c-14.172,4.688-21.844,19.953-17.156,34.094 C145.43,96.173,155.977,103.36,167.305,103.36z"></path> </g> </g></svg>
-                                        Économie d'énergie annuelle :</div>
-                                    <div class="simulateur-environmental-value text-bold-black" id="economieEnergie_<?php echo $simulateurId; ?>">0 kWh/an</div>
+                                  <button type="button" class="help-icon" aria-label="Afficher l'aide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <text x="12" y="17" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">ℹ</text>
+            </svg>
+        </button>
+                                  Économie d'énergie annuelle :</div>
+    <div class="simulateur-environmental-value text-bold-black" id="economieEnergie_<?php echo $simulateurId; ?>">0 kWh/an</div>
+</div>
+
+<div class="help-content">
+    <div class="info-box">
+        <p>Formule de calcul :</p>
+        <p><strong>Économie d'énergie (kWh/an) = Consommation moteur actuel - Consommation moteur cible</strong></p>
+</div>
                                 </div>
                             </div>
                         </div>
