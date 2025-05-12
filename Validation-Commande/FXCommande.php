@@ -9,14 +9,11 @@ if (!function_exists('cenovContactForm')) {
             if ($securityCheck !== true) {
                 $result = $securityCheck;
             } else {
-                // Initialiser les messages de débogage
-                $debug_messages = initDebugMessages();
-                
                 // Récupérer et formater les données du formulaire
                 $content = prepareEmailContent();
                 
                 // Traiter les fichiers uploadés
-                $uploadResult = processUploadedFiles($debug_messages);
+                $uploadResult = processUploadedFiles();
                 $attachments = $uploadResult['attachments'];
                 $fileNames = $uploadResult['fileNames'];
                 $fileWarning = $uploadResult['fileWarning'];
@@ -24,19 +21,11 @@ if (!function_exists('cenovContactForm')) {
                 // Mettre à jour le contenu de l'email avec la liste des pièces jointes
                 $content = updateContentWithAttachments($content, $fileNames);
                 
-                $debug_messages[] = 'Contenu de l\'email préparé : ' . $content;
-                if (!empty($fileNames)) {
-                    $debug_messages[] = 'Fichiers joints détectés : ' . implode(', ', $fileNames);
-                }
-                
                 // Préparer et envoyer l'email
-                $emailResult = sendEmail($content, $attachments, $debug_messages);
+                $emailResult = sendEmail($content, $attachments);
                 
                 // Nettoyer les fichiers temporaires
                 cleanupAttachments($attachments);
-                
-                // Afficher les messages de débogage
-                displayDebugMessages($debug_messages);
                 
                 if ($emailResult === true) {
                     $result = $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
@@ -118,16 +107,6 @@ if (!function_exists('cenovContactForm')) {
         return $result;
     }
     
-    function initDebugMessages() {
-        $debug_messages = [];
-        $debug_messages[] = '=== DÉBUT DU TRAITEMENT DU FORMULAIRE ===';
-        $debug_messages[] = 'Méthode de requête : ' . $_SERVER['REQUEST_METHOD'];
-        $debug_messages[] = 'Données POST reçues : ' . print_r($_POST, true);
-        $debug_messages[] = 'Fichiers reçus : ' . print_r($_FILES, true);
-        
-        return $debug_messages;
-    }
-    
     function prepareEmailContent() {
         // Constante pour les champs non renseignés
         $not_provided = 'Non renseigné';
@@ -152,9 +131,19 @@ if (!function_exists('cenovContactForm')) {
         $content .= "Code postal : " . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : $not_provided) . "\r\n";
         $content .= "Ville : " . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : $not_provided) . "\r\n";
         
-        // Obtenir le nom complet du pays au lieu du code
+        // Obtenir le nom du pays
+        $country_name = getCountryName($not_provided);
+        $content .= "Pays : " . $country_name . "\r\n";
+        
+        // Ajout des produits du panier WooCommerce
+        $content .= addCartProductsToContent();
+        
+        return $content;
+    }
+    
+    function getCountryName($default_value) {
         $country_code = isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : '';
-        $country_name = $not_provided;
+        $country_name = $default_value;
         
         if (!empty($country_code) && function_exists('WC')) {
             $countries = WC()->countries->get_countries();
@@ -163,12 +152,7 @@ if (!function_exists('cenovContactForm')) {
             }
         }
         
-        $content .= "Pays : " . $country_name . "\r\n";
-        
-        // Ajout des produits du panier WooCommerce
-        $content .= addCartProductsToContent();
-        
-        return $content;
+        return $country_name;
     }
     
     function addCartProductsToContent() {
@@ -201,7 +185,7 @@ if (!function_exists('cenovContactForm')) {
         return $content;
     }
     
-    function processUploadedFiles(&$debug_messages) {
+    function processUploadedFiles() {
         $fileWarning = '';
         $attachments = array();
         $fileNames = array();
@@ -231,27 +215,23 @@ if (!function_exists('cenovContactForm')) {
             
             // Vérification des erreurs d'upload
             if ($file['error'] !== UPLOAD_ERR_OK) {
-                $error_message = getUploadErrorMessage($file);
-                $debug_messages[] = 'Erreur upload: ' . $error_message;
                 continue;
             }
             
             // Vérification du type de fichier
             $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
             if (!in_array($file['type'], $allowed_types)) {
-                $debug_messages[] = 'Type de fichier non supporté: ' . $file['name'] . ' (' . $file['type'] . ')';
                 continue;
             }
             
             // Vérification de la taille
             $max_size = 10 * 1024 * 1024; // 10 Mo
             if ($file['size'] > $max_size) {
-                $debug_messages[] = 'Fichier trop volumineux: ' . $file['name'];
                 continue;
             }
             
             // Traitement du fichier
-            $file_result = processFile($file, $key, $debug_messages);
+            $file_result = processFile($file, $key);
             if ($file_result['success']) {
                 $attachments[] = $file_result['path'];
                 $fileNames[] = $file['name'];
@@ -265,34 +245,7 @@ if (!function_exists('cenovContactForm')) {
         );
     }
     
-    function getUploadErrorMessage($file) {
-        $error_message = "Erreur lors de l'upload du fichier " . $file['name'] . ": ";
-        switch ($file['error']) {
-            case UPLOAD_ERR_INI_SIZE:
-                $error_message .= "Le fichier dépasse la taille maximale autorisée par le serveur.";
-                break;
-            case UPLOAD_ERR_FORM_SIZE:
-                $error_message .= "Le fichier dépasse la taille maximale autorisée par le formulaire.";
-                break;
-            case UPLOAD_ERR_PARTIAL:
-                $error_message .= "Le fichier n'a été que partiellement uploadé.";
-                break;
-            case UPLOAD_ERR_NO_FILE:
-                $error_message .= "Aucun fichier n'a été uploadé.";
-                break;
-            case UPLOAD_ERR_NO_TMP_DIR:
-                $error_message .= "Dossier temporaire manquant.";
-                break;
-            case UPLOAD_ERR_CANT_WRITE:
-                $error_message .= "Échec d'écriture du fichier sur le disque.";
-                break;
-            default:
-                $error_message .= "Erreur inconnue.";
-        }
-        return $error_message;
-    }
-    
-    function processFile($file, $key, &$debug_messages) {
+    function processFile($file, $key) {
         // Préparation du dossier temporaire
         $upload_dir = wp_upload_dir();
         $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
@@ -309,10 +262,8 @@ if (!function_exists('cenovContactForm')) {
         
         // Déplacement du fichier
         if (move_uploaded_file($file['tmp_name'], $temp_file)) {
-            $debug_messages[] = 'Fichier uploadé avec succès: ' . $file['name'];
             return array('success' => true, 'path' => $temp_file);
         } else {
-            $debug_messages[] = 'Échec du déplacement du fichier: ' . $file['name'];
             return array('success' => false, 'path' => '');
         }
     }
@@ -324,7 +275,7 @@ if (!function_exists('cenovContactForm')) {
         return $content;
     }
     
-    function sendEmail($content, $attachments, &$debug_messages) {
+    function sendEmail($content, $attachments) {
         $to = 'ventes@cenov-distribution.fr';
         
         // Générer un numéro de commande et obtenir la date actuelle
@@ -344,12 +295,8 @@ if (!function_exists('cenovContactForm')) {
             'Content-Type: text/html; charset=UTF-8'
         ];
         
-        $debug_messages[] = 'Tentative d\'envoi d\'email à : ' . $to;
-        $debug_messages[] = 'En-têtes de l\'email : ' . print_r($headers, true);
-        
         // Envoi de l'email
         $sent = wp_mail($to, $subject, $html_content, $headers, $attachments);
-        $debug_messages[] = 'Résultat de l\'envoi d\'email : ' . ($sent ? 'SUCCÈS' : 'ÉCHEC');
         
         // Vider le panier après envoi
         if ($sent && class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
@@ -367,22 +314,6 @@ if (!function_exists('cenovContactForm')) {
                 }
             }
         }
-    }
-    
-    function displayDebugMessages($debug_messages) {
-        // Ne pas afficher les messages de débogage pour les utilisateurs normaux
-        // Vérifier si l'utilisateur est administrateur ou si WP_DEBUG est activé
-        if (empty($debug_messages) ||
-            !(current_user_can('administrator') || (defined('WP_DEBUG') && WP_DEBUG))) {
-            return;
-        }
-        
-        echo '<div style="background:#222;color:#fff;padding:15px;margin:20px 0;white-space:pre-wrap;font-size:13px;border-radius:8px;">';
-        echo '<strong>DEBUG FORMULAIRE :</strong><br>';
-        foreach ($debug_messages as $msg) {
-            echo htmlspecialchars($msg) . "\n";
-        }
-        echo '</div>';
     }
 }
 
@@ -416,11 +347,6 @@ function cenovCheckSubmissionRate() {
     
     return true;
 }
-
-// Gestionnaire d'erreurs PHP pour afficher dans la console JS
-set_error_handler(function($_, $errstr, $errfile, $errline) {
-    echo "<script>console.error('PHP ERROR: " . addslashes($errstr) . " in " . addslashes($errfile) . " line " . $errline . "');</script>";
-});
 
 // Affichage du résultat
 $result = cenovContactForm();
@@ -684,7 +610,7 @@ $result = cenovContactForm();
 
             <!-- Bouton d'envoi (occupe toute la largeur) -->
             <div class="form-row full-width form-submit">
-                <button type="submit" name="cenov_submit" value="1">Envoyer</button>
+                <button type="submit" name="cenov_submit" value="1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg> Envoyer</button>
             </div>
         </div>
     </form>
@@ -758,7 +684,7 @@ $result = cenovContactForm();
 
   .cenov-form-container h3 {
     margin-top: 0;
-    margin-bottom: 25px;
+    margin-bottom: 5px;
     color: #333;
     font-size: 1.4rem;
   }
@@ -785,6 +711,12 @@ $result = cenovContactForm();
     font-weight: 600;
     font-size: 0.95rem;
     color: #444;
+  }
+
+  
+  /* Supprimer la marge inférieure pour les labels des cases à cocher */
+  .cenov-gdpr-consent label {
+    margin-bottom: 0;
   }
   
   /* Style pour les inputs avec icônes */
@@ -838,6 +770,26 @@ $result = cenovContactForm();
   .input-icon-wrapper textarea:focus {
     border: 2px solid #2563eb !important;
     outline: none;
+  }
+  
+  /* Forcer les champs avec autofill à garder un fond blanc */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: inherit !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  
+  /* Sélecteurs pour d'autres navigateurs */
+  input:autofill {
+    background-color: white !important;
+  }
+  
+  input:-internal-autofill-selected {
+    background-color: white !important;
+    appearance: none;
   }
   
   /* Styles pour le sélecteur de fichier */
@@ -1086,7 +1038,6 @@ $result = cenovContactForm();
   .cenov-gdpr-consent {
     display: flex;
     align-items: flex-start;
-    margin-top: 5px;
   }
 
   .cenov-gdpr-consent input {
@@ -1094,15 +1045,14 @@ $result = cenovContactForm();
     margin-right: 10px;
   }
 
-  .form-submit {
-    margin-top: 10px;
-  }
 
   .form-submit button {
     width: auto;
     max-width: 300px;
     margin: 0 auto;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: white;
     background-color: #2563eb;
     border: none;
@@ -1113,6 +1063,10 @@ $result = cenovContactForm();
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+  }
+  
+  .form-submit button svg {
+    margin-right: 8px;
   }
 
   .form-submit button:hover {
