@@ -82,6 +82,26 @@ if (!function_exists('cenovContactForm')) {
             $content .= "Ville : " . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : 'Non renseigné') . "\r\n";
             $content .= "Pays : " . (isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : 'Non renseigné') . "\r\n";
 
+            // Ajout des produits du panier WooCommerce
+            $content .= "\r\n--- PRODUITS DU PANIER ---\r\n";
+            if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
+                foreach (WC()->cart->get_cart() as $cart_item) {
+                    $product = $cart_item['data'];
+                    $quantity = $cart_item['quantity'];
+                    $content .= "Produit : " . $product->get_name() . "\r\n";
+                    $content .= "Quantité : " . $quantity . "\r\n";
+                    $prix_unitaire = number_format((float)$product->get_price(), 2, ',', ' ') . " €";
+                    $sous_total = number_format((float)$cart_item['line_total'], 2, ',', ' ') . " €";
+                    $content .= "Prix : " . $prix_unitaire . "\r\n";
+                    $content .= "Sous-total : " . $sous_total . "\r\n\r\n";
+                }
+                $content .= "Sous-total panier : " . number_format((float)WC()->cart->get_subtotal(), 2, ',', ' ') . " €\r\n";
+                $content .= "TVA : " . number_format((float)WC()->cart->get_total_tax(), 2, ',', ' ') . " €\r\n";
+                $content .= "Total : " . number_format((float)WC()->cart->get_total(), 2, ',', ' ') . " €\r\n";
+            } else {
+                $content .= "Aucun produit dans le panier\r\n";
+            }
+
             $debug_messages[] = 'Contenu de l\'email préparé : ' . $content;
 
             // Gestion des fichiers
@@ -96,8 +116,8 @@ if (!function_exists('cenovContactForm')) {
             $subject = 'Nouvelle demande de devis';
             $headers = [
                 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
-                'Reply-To: ' . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '') . ' ' . 
-                             (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '') . 
+                'Reply-To: ' . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '') . ' ' .
+                             (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '') .
                              ' <' . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '') . '>'
             ];
             $debug_messages[] = 'Tentative d\'envoi d\'email à : ' . $to;
@@ -184,6 +204,11 @@ if (!function_exists('cenovContactForm')) {
             // Envoi de l'email
             $sent = wp_mail($to, $subject, $content, $headers, $attachments);
             $debug_messages[] = 'Résultat de l\'envoi d\'email : ' . ($sent ? 'SUCCÈS' : 'ÉCHEC');
+            
+            // Vider le panier après envoi
+            if ($sent && class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
+                WC()->cart->empty_cart();
+            }
             
             // Nettoyage des fichiers temporaires
             if (!empty($attachments)) {
