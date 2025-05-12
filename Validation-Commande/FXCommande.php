@@ -1,24 +1,71 @@
 <?php
 if (!function_exists('cenovContactForm')) {
     function cenovContactForm() {
-        $hasError = false;
         $result = '';
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['billing_first_name']) && isset($_POST['g-recaptcha-response'])) {
-            // Protection contre les attaques de force brute
-            if (!cenovCheckSubmissionRate()) {
-                return '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
+            // Effectuer les vérifications de sécurité
+            $securityCheck = cenovPerformSecurityChecks();
+            if ($securityCheck !== true) {
+                $result = $securityCheck;
+            } else {
+                // Initialiser les messages de débogage
+                $debug_messages = initDebugMessages();
+                
+                // Récupérer et formater les données du formulaire
+                $content = prepareEmailContent();
+                
+                // Traiter les fichiers uploadés
+                $uploadResult = processUploadedFiles($debug_messages);
+                $attachments = $uploadResult['attachments'];
+                $fileNames = $uploadResult['fileNames'];
+                $fileWarning = $uploadResult['fileWarning'];
+                
+                // Mettre à jour le contenu de l'email avec la liste des pièces jointes
+                $content = updateContentWithAttachments($content, $fileNames);
+                
+                $debug_messages[] = 'Contenu de l\'email préparé : ' . $content;
+                if (!empty($fileNames)) {
+                    $debug_messages[] = 'Fichiers joints détectés : ' . implode(', ', $fileNames);
+                }
+                
+                // Préparer et envoyer l'email
+                $emailResult = sendEmail($content, $attachments, $debug_messages);
+                
+                // Nettoyer les fichiers temporaires
+                cleanupAttachments($attachments);
+                
+                // Afficher les messages de débogage
+                displayDebugMessages($debug_messages);
+                
+                if ($emailResult === true) {
+                    $result = $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+                } else {
+                    $result = '<div class="error-message">Une erreur est survenue lors de l\'envoi de votre message. Veuillez nous contacter par téléphone.</div>';
+                }
             }
-            // Vérification du nonce CSRF
-            if (!isset($_POST['cenov_nonce']) || !wp_verify_nonce($_POST['cenov_nonce'], 'cenov_contact_action')) {
-                return '<div class="error-message">Erreur de sécurité. Veuillez rafraîchir la page et réessayer.</div>';
-            }
-            // Vérification honeypot - si rempli, c'est probablement un bot
-            if (!empty($_POST['cenov_website'])) {
-                // Bot détecté, mais on simule un succès pour ne pas alerter le bot
-                return '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
-            }
-            
+        }
+        
+        return $result;
+    }
+    
+    function cenovPerformSecurityChecks() {
+        $result = true;
+        
+        // Protection contre les attaques de force brute
+        if (!cenovCheckSubmissionRate()) {
+            $result = '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
+        }
+        // Vérification du nonce CSRF
+        elseif (!isset($_POST['cenov_nonce']) || !wp_verify_nonce($_POST['cenov_nonce'], 'cenov_contact_action')) {
+            $result = '<div class="error-message">Erreur de sécurité. Veuillez rafraîchir la page et réessayer.</div>';
+        }
+        // Vérification honeypot - si rempli, c'est probablement un bot
+        elseif (!empty($_POST['cenov_website'])) {
+            // Bot détecté, mais on simule un succès pour ne pas alerter le bot
+            $result = '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+        }
+        else {
             // Vérification du temps de soumission
             $submissionTime = isset($_POST['cenov_timestamp']) ? (int)$_POST['cenov_timestamp'] : 0;
             $currentTime = time();
@@ -27,247 +74,289 @@ if (!function_exists('cenovContactForm')) {
             // Si le formulaire est soumis en moins de 3 secondes, c'est probablement un bot
             if ($timeDifference < 3) {
                 // Simulation d'un succès pour ne pas alerter le bot
-                return '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+                $result = '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
             }
-
-            // Vérification reCAPTCHA
-            $recaptcha_response = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
-            
-            if (empty($recaptcha_response)) {
-                return '<div class="error-message">Échec de la vérification de sécurité. Veuillez réessayer.</div>';
+            else {
+                // Vérification reCAPTCHA
+                $recaptchaCheck = verifyRecaptcha();
+                if ($recaptchaCheck !== true) {
+                    $result = $recaptchaCheck;
+                }
             }
-            
+        }
+        
+        return $result;
+    }
+    
+    function verifyRecaptcha() {
+        $result = true;
+        $recaptcha_response = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
+        
+        if (empty($recaptcha_response)) {
+            $result = '<div class="error-message">Échec de la vérification de sécurité. Veuillez réessayer.</div>';
+        }
+        else {
             $recaptcha_secret = get_option('cenov_recaptcha_secret', '');
             $verify_response = wp_remote_get(
                 "https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}"
             );
             
             if (is_wp_error($verify_response)) {
-                return '<div class="error-message">Erreur de vérification. Veuillez réessayer plus tard.</div>';
+                $result = '<div class="error-message">Erreur de vérification. Veuillez réessayer plus tard.</div>';
             }
-            
-            $result = json_decode(wp_remote_retrieve_body($verify_response));
-            
-            // Vérifier que le score est acceptable (0.0 = bot, 1.0 = humain)
-            if (!isset($result->success) || !$result->success || (isset($result->score) && $result->score < 0.5)) {
-                return '<div class="error-message">La vérification de sécurité a échoué. Veuillez réessayer.</div>';
-            }
-            
-            // Récupération des données du formulaire
-            $debug_messages = [];
-            // Afficher les logs pour tout le monde (plus seulement admin)
-            $debug_messages[] = '=== DÉBUT DU TRAITEMENT DU FORMULAIRE ===';
-            $debug_messages[] = 'Méthode de requête : ' . $_SERVER['REQUEST_METHOD'];
-            $debug_messages[] = 'Données POST reçues : ' . print_r($_POST, true);
-            $debug_messages[] = 'Fichiers reçus : ' . print_r($_FILES, true);
-
-            $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
-
-            // Champs natifs WooCommerce
-            $content .= "Prénom : " . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : 'Non renseigné') . "\r\n";
-            $content .= "Nom : " . (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : 'Non renseigné') . "\r\n";
-            $content .= "Email : " . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : 'Non renseigné') . "\r\n";
-            $content .= "Téléphone : " . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : 'Non renseigné') . "\r\n";
-
-            // Champs personnalisés
-            $content .= "Référence client : " . (isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : 'Non renseigné') . "\r\n";
-            $content .= "Message : " . (isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : 'Non renseigné') . "\r\n";
-            $content .= "Matériel équivalent : " . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . "\r\n";
-
-            // Informations professionnelles
-            $content .= "\r\n--- INFORMATIONS PROFESSIONNELLES ---\r\n";
-            $content .= "Société : " . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : 'Non renseigné') . "\r\n";
-            $content .= "Adresse : " . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : 'Non renseigné') . "\r\n";
-            $content .= "Code postal : " . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : 'Non renseigné') . "\r\n";
-            $content .= "Ville : " . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : 'Non renseigné') . "\r\n";
-            $content .= "Pays : " . (isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : 'Non renseigné') . "\r\n";
-
-            // Ajout des produits du panier WooCommerce
-            $content .= "\r\n--- PRODUITS DU PANIER ---\r\n";
-            if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
-                foreach (WC()->cart->get_cart() as $cart_item) {
-                    $product = $cart_item['data'];
-                    $quantity = $cart_item['quantity'];
-                    $content .= "Produit : " . $product->get_name() . "\r\n\r\n";
-                    $content .= "Quantité : " . $quantity . "\r\n";
-                    $prix_unitaire = number_format((float)$product->get_price(), 2, ',', ' ') . " €";
-                    $sous_total = number_format((float)$cart_item['line_total'], 2, ',', ' ') . " €";
-                    $content .= "Prix : " . $prix_unitaire . "\r\n";
-                    $content .= "Sous-total : " . $sous_total . "\r\n\r\n";
-                }
-                $content .= "Sous-total panier : " . number_format((float)WC()->cart->get_subtotal(), 2, ',', ' ') . " €\r\n";
-                $content .= "TVA : " . number_format((float)WC()->cart->get_total_tax(), 2, ',', ' ') . " €\r\n";
-                $sous_total_value = (float)WC()->cart->get_subtotal();
-                $tva_value = (float)WC()->cart->get_total_tax();
-                $total_value = $sous_total_value + $tva_value;
-                $content .= "Total : " . number_format($total_value, 2, ',', ' ') . " €\r\n";
-            } else {
-                $content .= "Aucun produit dans le panier\r\n";
-            }
-
-            // Upload de plaque signalétique (occupe toute la largeur)
-            $fileWarning = '';
-            if (empty($_FILES['cenov_plaque']['name'][0])) {
-                $fileWarning = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
-            }
-            
-            // Gestion des fichiers uploadés
-            $attachments = array();
-            $fileNames = array();
-
-            if (!empty($_FILES['cenov_plaque']['name'][0])) {
-                foreach($_FILES['cenov_plaque']['name'] as $key => $name) {
-                    if(empty($name)) continue;
-                    
-                    // Créer un tableau de fichier individuel pour faciliter le traitement
-                    $file = array(
-                        'name' => $_FILES['cenov_plaque']['name'][$key],
-                        'type' => $_FILES['cenov_plaque']['type'][$key],
-                        'tmp_name' => $_FILES['cenov_plaque']['tmp_name'][$key],
-                        'error' => $_FILES['cenov_plaque']['error'][$key],
-                        'size' => $_FILES['cenov_plaque']['size'][$key]
-                    );
-                    
-                    // Vérification des erreurs d'upload
-                    if ($file['error'] !== UPLOAD_ERR_OK) {
-                        $error_message = "Erreur lors de l'upload du fichier " . $file['name'] . ": ";
-                        switch ($file['error']) {
-                            case UPLOAD_ERR_INI_SIZE:
-                                $error_message .= "Le fichier dépasse la taille maximale autorisée par le serveur.";
-                                break;
-                            case UPLOAD_ERR_FORM_SIZE:
-                                $error_message .= "Le fichier dépasse la taille maximale autorisée par le formulaire.";
-                                break;
-                            case UPLOAD_ERR_PARTIAL:
-                                $error_message .= "Le fichier n'a été que partiellement uploadé.";
-                                break;
-                            case UPLOAD_ERR_NO_FILE:
-                                $error_message .= "Aucun fichier n'a été uploadé.";
-                                break;
-                            case UPLOAD_ERR_NO_TMP_DIR:
-                                $error_message .= "Dossier temporaire manquant.";
-                                break;
-                            case UPLOAD_ERR_CANT_WRITE:
-                                $error_message .= "Échec d'écriture du fichier sur le disque.";
-                                break;
-                            default:
-                                $error_message .= "Erreur inconnue.";
-                        }
-                        $debug_messages[] = 'Erreur upload: ' . $error_message;
-                        continue; // Au lieu de return, on continue pour permettre le traitement des autres fichiers
-                    }
-                    
-                    // Vérification du type de fichier
-                    $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
-                    if (!in_array($file['type'], $allowed_types)) {
-                        $debug_messages[] = 'Type de fichier non supporté: ' . $file['name'] . ' (' . $file['type'] . ')';
-                        continue; // Au lieu de return, on continue
-                    }
-                    
-                    // Vérification de la taille
-                    $max_size = 10 * 1024 * 1024; // 10 Mo
-                    if ($file['size'] > $max_size) {
-                        $debug_messages[] = 'Fichier trop volumineux: ' . $file['name'];
-                        continue; // Au lieu de return, on continue
-                    }
-                    
-                    // Préparation du dossier temporaire
-                    $upload_dir = wp_upload_dir();
-                    $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
-                    
-                    // Création du dossier s'il n'existe pas
-                    if (!file_exists($temp_dir)) {
-                        wp_mkdir_p($temp_dir);
-                    }
-                    
-                    // Génération d'un nom de fichier unique
-                    $filename = sanitize_file_name($file['name']);
-                    $filename = time() . '_' . $key . '_' . $filename;
-                    $temp_file = $temp_dir . '/' . $filename;
-                    
-                    // Déplacement du fichier
-                    if (move_uploaded_file($file['tmp_name'], $temp_file)) {
-                        $attachments[] = $temp_file;
-                        $fileNames[] = $file['name'];
-                        $debug_messages[] = 'Fichier uploadé avec succès: ' . $file['name'];
-                    } else {
-                        $debug_messages[] = 'Échec du déplacement du fichier: ' . $file['name'];
-                        continue; // Au lieu de return, on continue
-                    }
+            else {
+                $response_body = json_decode(wp_remote_retrieve_body($verify_response));
+                
+                // Vérifier que le score est acceptable (0.0 = bot, 1.0 = humain)
+                if (!isset($response_body->success) || !$response_body->success ||
+                    (isset($response_body->score) && $response_body->score < 0.5)) {
+                    $result = '<div class="error-message">La vérification de sécurité a échoué. Veuillez réessayer.</div>';
                 }
             }
-
-            // Mise à jour du contenu de l'email avec la liste des pièces jointes
-            if (!empty($fileNames)) {
-                $content .= "\r\n\r\nPièces jointes :\r\n";
-                foreach ($fileNames as $fileName) {
-                    $content .= "- " . $fileName . "\r\n";
-                }
-            } else {
-                $content .= "\r\n\r\nAucune plaque signalétique n'a été jointe à ce message.";
-            }
-            
-            if (empty($_FILES['cenov_plaque']['name'][0])) {
-                $content .= "\r\n\r\nAucune plaque signalétique n'a été jointe à ce message.";
-            }
-            
-            $debug_messages[] = 'Contenu de l\'email préparé : ' . $content;
-
-            // Gestion des fichiers
-            if (!empty($_FILES['cenov_plaque']['name'][0])) {
-                $debug_messages[] = 'Fichiers joints détectés : ' . implode(', ', $fileNames);
-            }
-
-            // Envoi de l'email
-            $to = 'ventes@cenov-distribution.fr';
-            $subject = 'Nouvelle demande de devis';
-            $headers = [
-                'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
-                'Reply-To: ' . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '') . ' ' .
-                             (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '') .
-                             ' <' . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '') . '>'
-            ];
-            $debug_messages[] = 'Tentative d\'envoi d\'email à : ' . $to;
-            $debug_messages[] = 'En-têtes de l\'email : ' . print_r($headers, true);
-
-            // Envoi de l'email
-            $sent = wp_mail($to, $subject, $content, $headers, $attachments);
-            $debug_messages[] = 'Résultat de l\'envoi d\'email : ' . ($sent ? 'SUCCÈS' : 'ÉCHEC');
-            
-            // Vider le panier après envoi
-            if ($sent && class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
-                WC()->cart->empty_cart();
-            }
-            
-            // Nettoyage des fichiers temporaires
-            if (!empty($attachments)) {
-                foreach ($attachments as $file) {
-                    if (file_exists($file)) {
-                        @unlink($file);
-                    }
-                }
-            }
-            
-            if ($sent) {
-                $debug_messages[] = 'Email envoyé avec succès';
-                return $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
-            } else {
-                $debug_messages[] = 'Échec de l\'envoi de l\'email';
-                return '<div class="error-message">Une erreur est survenue lors de l\'envoi de votre message. Veuillez nous contacter par téléphone.</div>';
-            }
-        }
-        
-        // Affichage des messages de debug pour tous les utilisateurs
-        if (!empty($debug_messages)) {
-            echo '<div style="background:#222;color:#fff;padding:15px;margin:20px 0;white-space:pre-wrap;font-size:13px;border-radius:8px;">';
-            echo '<strong>DEBUG FORMULAIRE :</strong><br>';
-            foreach ($debug_messages as $msg) {
-                echo htmlspecialchars($msg) . "\n";
-            }
-            echo '</div>';
         }
         
         return $result;
+    }
+    
+    function initDebugMessages() {
+        $debug_messages = [];
+        $debug_messages[] = '=== DÉBUT DU TRAITEMENT DU FORMULAIRE ===';
+        $debug_messages[] = 'Méthode de requête : ' . $_SERVER['REQUEST_METHOD'];
+        $debug_messages[] = 'Données POST reçues : ' . print_r($_POST, true);
+        $debug_messages[] = 'Fichiers reçus : ' . print_r($_FILES, true);
+        
+        return $debug_messages;
+    }
+    
+    function prepareEmailContent() {
+        // Constante pour les champs non renseignés
+        $not_provided = 'Non renseigné';
+        
+        $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
+        
+        // Champs natifs WooCommerce
+        $content .= "Prénom : " . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : $not_provided) . "\r\n";
+        $content .= "Nom : " . (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : $not_provided) . "\r\n";
+        $content .= "Email : " . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : $not_provided) . "\r\n";
+        $content .= "Téléphone : " . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : $not_provided) . "\r\n";
+        
+        // Champs personnalisés
+        $content .= "Référence client : " . (isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : $not_provided) . "\r\n";
+        $content .= "Message : " . (isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : $not_provided) . "\r\n";
+        $content .= "Matériel équivalent : " . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . "\r\n";
+        
+        // Informations professionnelles
+        $content .= "\r\n--- INFORMATIONS PROFESSIONNELLES ---\r\n";
+        $content .= "Société : " . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : $not_provided) . "\r\n";
+        $content .= "Adresse : " . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : $not_provided) . "\r\n";
+        $content .= "Code postal : " . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : $not_provided) . "\r\n";
+        $content .= "Ville : " . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : $not_provided) . "\r\n";
+        $content .= "Pays : " . (isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : $not_provided) . "\r\n";
+        
+        // Ajout des produits du panier WooCommerce
+        $content .= addCartProductsToContent();
+        
+        return $content;
+    }
+    
+    function addCartProductsToContent() {
+        $content = "\r\n--- PRODUITS DU PANIER ---\r\n";
+        
+        if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
+            foreach (WC()->cart->get_cart() as $cart_item) {
+                $product = $cart_item['data'];
+                $quantity = $cart_item['quantity'];
+                $content .= "Produit : " . $product->get_name() . "\r\n\r\n";
+                $content .= "Quantité : " . $quantity . "\r\n";
+                $prix_unitaire = number_format((float)$product->get_price(), 2, ',', ' ') . ' €';
+                $sous_total = number_format((float)$cart_item['line_total'], 2, ',', ' ') . ' €';
+                $content .= "Prix : " . $prix_unitaire . "\r\n";
+                $content .= "Sous-total : " . $sous_total . "\r\n\r\n";
+            }
+            $content .= "Sous-total panier : " . number_format((float)WC()->cart->get_subtotal(), 2, ',', ' ') . ' €' . "\r\n";
+            $content .= "TVA : " . number_format((float)WC()->cart->get_total_tax(), 2, ',', ' ') . ' €' . "\r\n";
+            $sous_total_value = (float)WC()->cart->get_subtotal();
+            $tva_value = (float)WC()->cart->get_total_tax();
+            $total_value = $sous_total_value + $tva_value;
+            $content .= "Total : " . number_format($total_value, 2, ',', ' ') . ' €' . "\r\n";
+        } else {
+            $content .= "Aucun produit dans le panier\r\n";
+        }
+        
+        return $content;
+    }
+    
+    function processUploadedFiles(&$debug_messages) {
+        $fileWarning = '';
+        $attachments = array();
+        $fileNames = array();
+        
+        if (empty($_FILES['cenov_plaque']['name'][0])) {
+            $fileWarning = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
+            return array(
+                'fileWarning' => $fileWarning,
+                'attachments' => $attachments,
+                'fileNames' => $fileNames
+            );
+        }
+        
+        foreach($_FILES['cenov_plaque']['name'] as $key => $name) {
+            if(empty($name)) {
+                continue;
+            }
+            
+            // Créer un tableau de fichier individuel pour faciliter le traitement
+            $file = array(
+                'name' => $_FILES['cenov_plaque']['name'][$key],
+                'type' => $_FILES['cenov_plaque']['type'][$key],
+                'tmp_name' => $_FILES['cenov_plaque']['tmp_name'][$key],
+                'error' => $_FILES['cenov_plaque']['error'][$key],
+                'size' => $_FILES['cenov_plaque']['size'][$key]
+            );
+            
+            // Vérification des erreurs d'upload
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                $error_message = getUploadErrorMessage($file);
+                $debug_messages[] = 'Erreur upload: ' . $error_message;
+                continue;
+            }
+            
+            // Vérification du type de fichier
+            $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
+            if (!in_array($file['type'], $allowed_types)) {
+                $debug_messages[] = 'Type de fichier non supporté: ' . $file['name'] . ' (' . $file['type'] . ')';
+                continue;
+            }
+            
+            // Vérification de la taille
+            $max_size = 10 * 1024 * 1024; // 10 Mo
+            if ($file['size'] > $max_size) {
+                $debug_messages[] = 'Fichier trop volumineux: ' . $file['name'];
+                continue;
+            }
+            
+            // Traitement du fichier
+            $file_result = processFile($file, $key, $debug_messages);
+            if ($file_result['success']) {
+                $attachments[] = $file_result['path'];
+                $fileNames[] = $file['name'];
+            }
+        }
+        
+        return array(
+            'fileWarning' => $fileWarning,
+            'attachments' => $attachments,
+            'fileNames' => $fileNames
+        );
+    }
+    
+    function getUploadErrorMessage($file) {
+        $error_message = "Erreur lors de l'upload du fichier " . $file['name'] . ": ";
+        switch ($file['error']) {
+            case UPLOAD_ERR_INI_SIZE:
+                $error_message .= "Le fichier dépasse la taille maximale autorisée par le serveur.";
+                break;
+            case UPLOAD_ERR_FORM_SIZE:
+                $error_message .= "Le fichier dépasse la taille maximale autorisée par le formulaire.";
+                break;
+            case UPLOAD_ERR_PARTIAL:
+                $error_message .= "Le fichier n'a été que partiellement uploadé.";
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                $error_message .= "Aucun fichier n'a été uploadé.";
+                break;
+            case UPLOAD_ERR_NO_TMP_DIR:
+                $error_message .= "Dossier temporaire manquant.";
+                break;
+            case UPLOAD_ERR_CANT_WRITE:
+                $error_message .= "Échec d'écriture du fichier sur le disque.";
+                break;
+            default:
+                $error_message .= "Erreur inconnue.";
+        }
+        return $error_message;
+    }
+    
+    function processFile($file, $key, &$debug_messages) {
+        // Préparation du dossier temporaire
+        $upload_dir = wp_upload_dir();
+        $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
+        
+        // Création du dossier s'il n'existe pas
+        if (!file_exists($temp_dir)) {
+            wp_mkdir_p($temp_dir);
+        }
+        
+        // Génération d'un nom de fichier unique
+        $filename = sanitize_file_name($file['name']);
+        $filename = time() . '_' . $key . '_' . $filename;
+        $temp_file = $temp_dir . '/' . $filename;
+        
+        // Déplacement du fichier
+        if (move_uploaded_file($file['tmp_name'], $temp_file)) {
+            $debug_messages[] = 'Fichier uploadé avec succès: ' . $file['name'];
+            return array('success' => true, 'path' => $temp_file);
+        } else {
+            $debug_messages[] = 'Échec du déplacement du fichier: ' . $file['name'];
+            return array('success' => false, 'path' => '');
+        }
+    }
+    
+    function updateContentWithAttachments($content, $fileNames) {
+        if (empty($fileNames)) {
+            $content .= "\r\n\r\nAucune plaque signalétique n'a été jointe à ce message.";
+        }
+        return $content;
+    }
+    
+    function sendEmail($content, $attachments, &$debug_messages) {
+        $to = 'ventes@cenov-distribution.fr';
+        $subject = 'Nouvelle demande de devis';
+        $headers = [
+            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
+            'Reply-To: ' . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '') . ' ' .
+                         (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '') .
+                         ' <' . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '') . '>'
+        ];
+        $debug_messages[] = 'Tentative d\'envoi d\'email à : ' . $to;
+        $debug_messages[] = 'En-têtes de l\'email : ' . print_r($headers, true);
+        
+        // Envoi de l'email
+        $sent = wp_mail($to, $subject, $content, $headers, $attachments);
+        $debug_messages[] = 'Résultat de l\'envoi d\'email : ' . ($sent ? 'SUCCÈS' : 'ÉCHEC');
+        
+        // Vider le panier après envoi
+        if ($sent && class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
+            WC()->cart->empty_cart();
+        }
+        
+        return $sent;
+    }
+    
+    function cleanupAttachments($attachments) {
+        if (!empty($attachments)) {
+            foreach ($attachments as $file) {
+                if (file_exists($file)) {
+                    @unlink($file);
+                }
+            }
+        }
+    }
+    
+    function displayDebugMessages($debug_messages) {
+        // Ne pas afficher les messages de débogage pour les utilisateurs normaux
+        // Vérifier si l'utilisateur est administrateur ou si WP_DEBUG est activé
+        if (empty($debug_messages) ||
+            !(current_user_can('administrator') || (defined('WP_DEBUG') && WP_DEBUG))) {
+            return;
+        }
+        
+        echo '<div style="background:#222;color:#fff;padding:15px;margin:20px 0;white-space:pre-wrap;font-size:13px;border-radius:8px;">';
+        echo '<strong>DEBUG FORMULAIRE :</strong><br>';
+        foreach ($debug_messages as $msg) {
+            echo htmlspecialchars($msg) . "\n";
+        }
+        echo '</div>';
     }
 }
 
@@ -287,7 +376,7 @@ function cenovCheckSubmissionRate() {
         return true;
     }
     
-    // Si le nombre maximal de tentatives est atteint (5 par défaut)
+    // Si le nombre maximal de tentatives est atteint (15 par défaut)
     if ($submission_count >= 15) {
         // Vous pouvez également journaliser cette tentative
         if (function_exists('error_log')) {
@@ -303,7 +392,7 @@ function cenovCheckSubmissionRate() {
 }
 
 // Gestionnaire d'erreurs PHP pour afficher dans la console JS
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
+set_error_handler(function($_, $errstr, $errfile, $errline) {
     echo "<script>console.error('PHP ERROR: " . addslashes($errstr) . " in " . addslashes($errfile) . " line " . $errline . "');</script>";
 });
 
