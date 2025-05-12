@@ -151,7 +151,19 @@ if (!function_exists('cenovContactForm')) {
         $content .= "Adresse : " . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : $not_provided) . "\r\n";
         $content .= "Code postal : " . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : $not_provided) . "\r\n";
         $content .= "Ville : " . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : $not_provided) . "\r\n";
-        $content .= "Pays : " . (isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : $not_provided) . "\r\n";
+        
+        // Obtenir le nom complet du pays au lieu du code
+        $country_code = isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : '';
+        $country_name = $not_provided;
+        
+        if (!empty($country_code) && function_exists('WC')) {
+            $countries = WC()->countries->get_countries();
+            if (isset($countries[$country_code])) {
+                $country_name = $countries[$country_code];
+            }
+        }
+        
+        $content .= "Pays : " . $country_name . "\r\n";
         
         // Ajout des produits du panier WooCommerce
         $content .= addCartProductsToContent();
@@ -166,7 +178,10 @@ if (!function_exists('cenovContactForm')) {
             foreach (WC()->cart->get_cart() as $cart_item) {
                 $product = $cart_item['data'];
                 $quantity = $cart_item['quantity'];
-                $content .= "Produit : " . $product->get_name() . "\r\n\r\n";
+                $sku = $product->get_sku() ? $product->get_sku() : 'N/A';
+                
+                $content .= "Produit : " . $product->get_name() . " (" . $sku . ")\r\n";
+                $content .= "SKU : #PRO" . $sku . "-SUP0000017\r\n";
                 $content .= "Quantité : " . $quantity . "\r\n";
                 $prix_unitaire = number_format((float)$product->get_price(), 2, ',', ' ') . ' €';
                 $sous_total = number_format((float)$cart_item['line_total'], 2, ',', ' ') . ' €';
@@ -311,18 +326,29 @@ if (!function_exists('cenovContactForm')) {
     
     function sendEmail($content, $attachments, &$debug_messages) {
         $to = 'ventes@cenov-distribution.fr';
-        $subject = 'Nouvelle demande de devis';
+        
+        // Générer un numéro de commande et obtenir la date actuelle
+        $commande_number = 'CMD' . date('YmdHis');
+        $date_commande = date_i18n('F j, Y');
+        
+        $subject = 'Nouvelle commande : n°' . $commande_number . ' (' . $date_commande . ')';
+        
+        // Convertir le contenu en HTML pour préserver les sauts de ligne
+        $html_content = '<pre style="font-family: Arial, sans-serif; font-size: 14px;">' . htmlspecialchars($content) . '</pre>';
+        
         $headers = [
-            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
+            'From: Cenov Distribution <ventes@cenov-distribution.fr>',
             'Reply-To: ' . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '') . ' ' .
                          (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '') .
-                         ' <' . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '') . '>'
+                         ' <' . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '') . '>',
+            'Content-Type: text/html; charset=UTF-8'
         ];
+        
         $debug_messages[] = 'Tentative d\'envoi d\'email à : ' . $to;
         $debug_messages[] = 'En-têtes de l\'email : ' . print_r($headers, true);
         
         // Envoi de l'email
-        $sent = wp_mail($to, $subject, $content, $headers, $attachments);
+        $sent = wp_mail($to, $subject, $html_content, $headers, $attachments);
         $debug_messages[] = 'Résultat de l\'envoi d\'email : ' . ($sent ? 'SUCCÈS' : 'ÉCHEC');
         
         // Vider le panier après envoi
