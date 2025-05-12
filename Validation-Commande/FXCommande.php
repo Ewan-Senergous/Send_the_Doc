@@ -88,7 +88,7 @@ if (!function_exists('cenovContactForm')) {
                 foreach (WC()->cart->get_cart() as $cart_item) {
                     $product = $cart_item['data'];
                     $quantity = $cart_item['quantity'];
-                    $content .= "Produit : " . $product->get_name() . "\r\n";
+                    $content .= "Produit : " . $product->get_name() . "\r\n\r\n";
                     $content .= "Quantité : " . $quantity . "\r\n";
                     $prix_unitaire = number_format((float)$product->get_price(), 2, ',', ' ') . " €";
                     $sous_total = number_format((float)$cart_item['line_total'], 2, ',', ' ') . " €";
