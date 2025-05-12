@@ -546,6 +546,46 @@ $result = cenovContactForm();
                 </div>
             </div>
 
+            <!-- Récapitulatif de la commande -->
+            <div class="form-row full-width order-summary">
+                <h4 class="order-summary-title">Récapitulatif de ma demande :</h4>
+                <div class="order-summary-content">
+                    <?php
+                    if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
+                        foreach (WC()->cart->get_cart() as $cart_item) {
+                            $product = $cart_item['data'];
+                            $quantity = $cart_item['quantity'];
+                            ?>
+                            <div class="product-summary-item">
+                                <div class="product-image">
+                                    <?php
+                                    $image_id = $product->get_image_id();
+                                    if ($image_id) {
+                                        echo wp_get_attachment_image($image_id, 'thumbnail');
+                                    } else {
+                                        echo '<img src="' . wc_placeholder_img_src() . '" alt="Placeholder" />';
+                                    }
+                                    ?>
+                                </div>
+                                <div class="product-details">
+                                    <h5 class="product-title"><?php echo esc_html($product->get_name()); ?></h5>
+                                    <div class="product-meta">
+                                        <div class="product-quantity">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package-icon lucide-package"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>
+                                            <span>Quantité : <?php echo esc_html($quantity); ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    } else {
+                        echo '<div class="empty-cart-message">Aucun produit dans le panier</div>';
+                    }
+                    ?>
+                </div>
+            </div>
+
             <!-- Upload de plaque signalétique (occupe toute la largeur) -->
             <div class="form-row full-width file-upload">
                 <label for="cenov-plaque">Votre plaque signalétique 📋 :</label>
@@ -1080,6 +1120,98 @@ $result = cenovContactForm();
     border-left: 4px solid #ef4444;
   }
 
+  /* Styles pour le récapitulatif de commande */
+  .order-summary {
+    background-color: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  .order-summary-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    padding: 15px 20px;
+    background-color: #93c5fd;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .order-summary-content {
+    padding: 15px 20px;
+    background-color: #dbeafe;
+  }
+
+  .product-summary-item {
+    display: flex;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #000;
+  }
+
+  .product-summary-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .product-image {
+    width: 80px;
+    min-width: 80px;
+    height: 80px;
+    margin-right: 15px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #fff;
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .product-details {
+    flex: 1;
+  }
+
+  .product-title {
+    margin: 0 0 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .product-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .product-quantity {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #000;
+  }
+
+  .product-meta svg {
+    margin-right: 5px;
+  }
+
+  .empty-cart-message {
+    padding: 15px;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
     .form-grid {
@@ -1088,6 +1220,17 @@ $result = cenovContactForm();
     
     .cenov-form-container {
       padding: 20px;
+    }
+
+    .product-meta {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .product-image {
+      width: 60px;
+      min-width: 60px;
+      height: 60px;
     }
   }
 </style>
