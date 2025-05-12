@@ -4,7 +4,7 @@ if (!function_exists('cenovContactForm')) {
         $hasError = false;
         $result = '';
         
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cenov_prenom']) && isset($_POST['g-recaptcha-response'])) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['billing_first_name']) && isset($_POST['g-recaptcha-response'])) {
             // Protection contre les attaques de force brute
             if (!cenovCheckSubmissionRate()) {
                 return '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
@@ -54,63 +54,65 @@ if (!function_exists('cenovContactForm')) {
             }
             
             // Récupération des données du formulaire
-            // Récupération des données du formulaire
-$prenom = isset($_POST['cenov_prenom']) ? sanitize_text_field($_POST['cenov_prenom']) : '';
-$nom_famille = isset($_POST['cenov_nom']) ? sanitize_text_field($_POST['cenov_nom']) : '';
-$nom = $prenom . ' ' . $nom_famille;
-$email = isset($_POST['cenov_email']) ? sanitize_email($_POST['cenov_email']) : '';
-$telephone = isset($_POST['cenov_telephone']) ? sanitize_text_field($_POST['cenov_telephone']) : '';
-$message = isset($_POST['cenov_message']) ? sanitize_textarea_field($_POST['cenov_message']) : '';
+            $debug_messages = [];
+            // Afficher les logs pour tout le monde (plus seulement admin)
+            $debug_messages[] = '=== DÉBUT DU TRAITEMENT DU FORMULAIRE ===';
+            $debug_messages[] = 'Méthode de requête : ' . $_SERVER['REQUEST_METHOD'];
+            $debug_messages[] = 'Données POST reçues : ' . print_r($_POST, true);
+            $debug_messages[] = 'Fichiers reçus : ' . print_r($_FILES, true);
 
-// Récupération des champs optionnels
-$societe = isset($_POST['cenov_societe']) ? sanitize_text_field($_POST['cenov_societe']) : '';
-$adresse = isset($_POST['cenov_adresse']) ? sanitize_text_field($_POST['cenov_adresse']) : '';
-$codepostal = isset($_POST['cenov_codepostal']) ? sanitize_text_field($_POST['cenov_codepostal']) : '';
-$ville = isset($_POST['cenov_ville']) ? sanitize_text_field($_POST['cenov_ville']) : '';
-$produit = isset($_POST['cenov_produit']) ? sanitize_text_field($_POST['cenov_produit']) : '';
+            $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
 
-// Vérification des champs obligatoires
-if (empty($prenom) || empty($nom_famille) || empty($email) || empty($telephone)) {
-    return '<div class="error-message">Veuillez remplir tous les champs obligatoires.</div>';
-}
+            // Champs natifs WooCommerce
+            $content .= "Prénom : " . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : 'Non renseigné') . "\r\n";
+            $content .= "Nom : " . (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : 'Non renseigné') . "\r\n";
+            $content .= "Email : " . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : 'Non renseigné') . "\r\n";
+            $content .= "Téléphone : " . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : 'Non renseigné') . "\r\n";
 
-// Préparation de l'email
-$to = 'ventes@cenov-distribution.fr';
-$subject = 'Nouvelle plaque signalétique de ' . $nom;
+            // Champs personnalisés
+            $content .= "Référence client : " . (isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : 'Non renseigné') . "\r\n";
+            $content .= "Message : " . (isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : 'Non renseigné') . "\r\n";
+            $content .= "Matériel équivalent : " . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . "\r\n";
 
-// Construction du corps de l'email avec tous les champs
-$content = "--- INFORMATIONS PERSONNELLES ---\r\n";
-            $content .= "Prénom : " . $prenom . "\r\n";
-            $content .= "Nom : " . $nom_famille . "\r\n";
-            $content .= "Email : " . $email . "\r\n";
-            $content .= "Téléphone : " . $telephone . "\r\n\r\n";
-            
-            $content .= "--- INFORMATIONS PROFESSIONNELLES ---\r\n";
-            $content .= "Société : " . ($societe ? $societe : 'Non renseignée') . "\r\n";
-            $content .= "Adresse : " . ($adresse ? $adresse : 'Non renseignée') . "\r\n";
-            $content .= "Code postal : " . ($codepostal ? $codepostal : 'Non renseigné') . "\r\n";
-            $content .= "Ville : " . ($ville ? $ville : 'Non renseignée') . "\r\n";
-            $content .= "Produit concerné : " . ($produit ? $produit : 'Non renseigné') . "\r\n\r\n";
-            
-            $content .= "--- MESSAGE ---\r\n";
-            $content .= !empty($message) ? $message : 'Aucun message spécifique fourni';
-            $content .= "\r\n\r\n";
-            
+            // Informations professionnelles
+            $content .= "\r\n--- INFORMATIONS PROFESSIONNELLES ---\r\n";
+            $content .= "Société : " . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : 'Non renseigné') . "\r\n";
+            $content .= "Adresse : " . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : 'Non renseigné') . "\r\n";
+            $content .= "Code postal : " . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : 'Non renseigné') . "\r\n";
+            $content .= "Ville : " . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : 'Non renseigné') . "\r\n";
+            $content .= "Pays : " . (isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : 'Non renseigné') . "\r\n";
+
+            $debug_messages[] = 'Contenu de l\'email préparé : ' . $content;
+
+            // Gestion des fichiers
+            if (!empty($_FILES['billing_plaque']['name'])) {
+                $content .= "\r\n--- FICHIER JOINT ---\r\n";
+                $content .= "Nom du fichier : " . sanitize_file_name($_FILES['billing_plaque']['name']) . "\r\n";
+                $debug_messages[] = 'Fichier joint détecté : ' . $_FILES['billing_plaque']['name'];
+            }
+
+            // Envoi de l'email
+            $to = 'ventes@cenov-distribution.fr';
+            $subject = 'Nouvelle demande de devis';
             $headers = [
                 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
-                'Reply-To: ' . $nom . ' <' . $email . '>'
+                'Reply-To: ' . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '') . ' ' . 
+                             (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '') . 
+                             ' <' . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '') . '>'
             ];
+            $debug_messages[] = 'Tentative d\'envoi d\'email à : ' . $to;
+            $debug_messages[] = 'En-têtes de l\'email : ' . print_r($headers, true);
 
             $fileWarning = '';
-if (empty($_FILES['cenov_plaque']['name'])) {
-    $fileWarning = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
-}
+            if (empty($_FILES['billing_plaque']['name'])) {
+                $fileWarning = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
+            }
             
             // Gestion du fichier uploadé
             $attachments = array();
             
-            if (!empty($_FILES['cenov_plaque']['name'])) {
-                $file = $_FILES['cenov_plaque'];
+            if (!empty($_FILES['billing_plaque']['name'])) {
+                $file = $_FILES['billing_plaque'];
                 
                 // Vérification des erreurs d'upload
                 if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -175,12 +177,13 @@ if (empty($_FILES['cenov_plaque']['name'])) {
                 }
             }
 
-            if (empty($_FILES['cenov_plaque']['name'])) {
+            if (empty($_FILES['billing_plaque']['name'])) {
                 $content .= "\r\n\r\nAucune plaque signalétique n'a été jointe à ce message.";
             }
             
             // Envoi de l'email
             $sent = wp_mail($to, $subject, $content, $headers, $attachments);
+            $debug_messages[] = 'Résultat de l\'envoi d\'email : ' . ($sent ? 'SUCCÈS' : 'ÉCHEC');
             
             // Nettoyage des fichiers temporaires
             if (!empty($attachments)) {
@@ -192,10 +195,22 @@ if (empty($_FILES['cenov_plaque']['name'])) {
             }
             
             if ($sent) {
+                $debug_messages[] = 'Email envoyé avec succès';
                 return $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
             } else {
+                $debug_messages[] = 'Échec de l\'envoi de l\'email';
                 return '<div class="error-message">Une erreur est survenue lors de l\'envoi de votre message. Veuillez nous contacter par téléphone.</div>';
             }
+        }
+        
+        // Affichage des messages de debug pour tous les utilisateurs
+        if (!empty($debug_messages)) {
+            echo '<div style="background:#222;color:#fff;padding:15px;margin:20px 0;white-space:pre-wrap;font-size:13px;border-radius:8px;">';
+            echo '<strong>DEBUG FORMULAIRE :</strong><br>';
+            foreach ($debug_messages as $msg) {
+                echo htmlspecialchars($msg) . "\n";
+            }
+            echo '</div>';
         }
         
         return $result;
@@ -232,6 +247,11 @@ function cenovCheckSubmissionRate() {
     
     return true;
 }
+
+// Gestionnaire d'erreurs PHP pour afficher dans la console JS
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    echo "<script>console.error('PHP ERROR: " . addslashes($errstr) . " in " . addslashes($errfile) . " line " . $errline . "');</script>";
+});
 
 // Affichage du résultat
 $result = cenovContactForm();
