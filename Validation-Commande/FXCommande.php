@@ -97,7 +97,10 @@ if (!function_exists('cenovContactForm')) {
                 }
                 $content .= "Sous-total panier : " . number_format((float)WC()->cart->get_subtotal(), 2, ',', ' ') . " €\r\n";
                 $content .= "TVA : " . number_format((float)WC()->cart->get_total_tax(), 2, ',', ' ') . " €\r\n";
-                $content .= "Total : " . number_format((float)WC()->cart->get_total(), 2, ',', ' ') . " €\r\n";
+                $sous_total_value = (float)WC()->cart->get_subtotal();
+                $tva_value = (float)WC()->cart->get_total_tax();
+                $total_value = $sous_total_value + $tva_value;
+                $content .= "Total : " . number_format($total_value, 2, ',', ' ') . " €\r\n";
             } else {
                 $content .= "Aucun produit dans le panier\r\n";
             }
@@ -106,8 +109,6 @@ if (!function_exists('cenovContactForm')) {
 
             // Gestion des fichiers
             if (!empty($_FILES['billing_plaque']['name'])) {
-                $content .= "\r\n--- FICHIER JOINT ---\r\n";
-                $content .= "Nom du fichier : " . sanitize_file_name($_FILES['billing_plaque']['name']) . "\r\n";
                 $debug_messages[] = 'Fichier joint détecté : ' . $_FILES['billing_plaque']['name'];
             }
 
@@ -191,7 +192,6 @@ if (!function_exists('cenovContactForm')) {
                 // Déplacement du fichier
                 if (move_uploaded_file($file['tmp_name'], $temp_file)) {
                     $attachments[] = $temp_file;
-                    $content .= "\r\nPièce jointe : " . $file['name'] . "\r\n";
                 } else {
                     return '<div class="error-message">Erreur lors du téléchargement du fichier. Veuillez réessayer.</div>';
                 }
