@@ -1,5 +1,8 @@
 <?php
 if (!function_exists('cenovContactForm')) {
+    // Définir une constante pour les champs non renseignés
+    define('CENOV_NOT_PROVIDED', 'Non renseigné');
+    
     // Code pour gérer la suppression d'un article du panier
     if (isset($_GET['remove_item']) && !empty($_GET['remove_item'])) {
         $cart_item_key = sanitize_text_field($_GET['remove_item']);
@@ -124,7 +127,7 @@ if (!function_exists('cenovContactForm')) {
     
     function prepareEmailContent() {
         // Constante pour les champs non renseignés
-        $not_provided = 'Non renseigné';
+        $not_provided = CENOV_NOT_PROVIDED;
         
         $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
         
@@ -314,13 +317,13 @@ if (!function_exists('cenovContactForm')) {
                 <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
                     <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $client_name . '</p>
                     <p style="margin: 5px 0;"><strong>Email :</strong> ' . $client_email . '</p>
-                    <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : 'Non renseigné') . '</p>
-                    <p style="margin: 5px 0;"><strong>Société :</strong> ' . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : 'Non renseigné') . '</p>
-                    <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : 'Non renseigné') . '</p>
-                    <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : 'Non renseigné') . '</p>
-                    <p style="margin: 5px 0;"><strong>Ville :</strong> ' . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : 'Non renseigné') . '</p>
-                    <p style="margin: 5px 0;"><strong>Pays :</strong> ' . (isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : 'Non renseigné') . '</p>
-                    <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : 'Non renseigné') . '</p>
+                    <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Société :</strong> ' . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Ville :</strong> ' . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Pays :</strong> ' . (isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
                     <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>';
         
         // Ajouter le message du client s'il existe
@@ -329,6 +332,12 @@ if (!function_exists('cenovContactForm')) {
                     <p style="margin: 5px 0;"><strong>Message :</strong> ' . nl2br(esc_html(sanitize_textarea_field($_POST['billing_message']))) . '</p>';
         }
         
+        // Ajouter le contenu texte brut comme information supplémentaire
+        $html_content .= '
+                    <!-- Contenu brut original:
+                    ' . esc_html($content) . '
+                    -->';
+                    
         $html_content .= '
                 </div>
             </div>
@@ -1311,7 +1320,6 @@ $result = cenovContactForm();
   .empty-cart-message {
     padding: 15px;
     text-align: center;
-    color: #64748b;
     font-style: italic;
   }
 
