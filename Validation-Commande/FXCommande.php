@@ -414,7 +414,7 @@ if (!function_exists('cenovContactForm')) {
             ];
             
             // Petit ajustement du message pour le client
-            $client_html_content = str_replace('Demande de prix', 'Confirmation de votre demande de prix :', $html_content);
+            $client_html_content = str_replace('Demande de prix', 'Confirmation de votre demande de prix', $html_content);
             
             wp_mail($client_email, 'Confirmation : ' . $subject, $client_html_content, $client_headers, $attachments);
         }
@@ -1609,5 +1609,76 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
     });
+
+    // Liste des IDs des champs à sauvegarder/restaurer
+    const champs = [
+        {id: "cenov-prenom", type: "input"},
+        {id: "cenov-nom", type: "input"},
+        {id: "cenov-email", type: "input"},
+        {id: "cenov-telephone", type: "input"},
+        {id: "cenov-societe", type: "input"},
+        {id: "cenov-adresse", type: "input"},
+        {id: "cenov-codepostal", type: "input"},
+        {id: "cenov-ville", type: "input"},
+        {id: "cenov-pays", type: "select"},
+        {id: "cenov-reference", type: "input"},
+        {id: "cenov-message", type: "textarea"},
+        {id: "cenov-materiel-equivalent", type: "checkbox"},
+        {id: "cenov-gdpr", type: "checkbox"}
+    ];
+    const storageKey = "cenov_form_data";
+
+    // Fonction pour sauvegarder les champs dans le localStorage
+    function saveFormData() {
+        const data = {};
+        champs.forEach(champ => {
+            const el = document.getElementById(champ.id);
+            if (!el) return;
+            if (champ.type === "checkbox") {
+                data[champ.id] = el.checked;
+            } else if (champ.type === "select") {
+                data[champ.id] = el.value;
+            } else {
+                data[champ.id] = el.value;
+            }
+        });
+        localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    // Fonction pour restaurer les champs depuis le localStorage
+    function restoreFormData() {
+        const data = localStorage.getItem(storageKey);
+        if (!data) return;
+        let parsed;
+        try {
+            parsed = JSON.parse(data);
+        } catch (e) { return; }
+        champs.forEach(champ => {
+            const el = document.getElementById(champ.id);
+            if (!el || !(champ.id in parsed)) return;
+            if (champ.type === "checkbox") {
+                el.checked = !!parsed[champ.id];
+            } else {
+                el.value = parsed[champ.id];
+            }
+        });
+    }
+
+    // Sauvegarde à chaque modification
+    champs.forEach(champ => {
+        const el = document.getElementById(champ.id);
+        if (!el) return;
+        el.addEventListener(champ.type === "checkbox" ? "change" : "input", saveFormData);
+    });
+
+    // Restauration au chargement
+    restoreFormData();
+
+    // Nettoyage du localStorage après soumission réussie
+    if (form) {
+        form.addEventListener("submit", function() {
+            localStorage.removeItem(storageKey);
+        });
+    }
 });
 </script>
