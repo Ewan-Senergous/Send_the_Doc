@@ -803,6 +803,7 @@ $result = cenovContactForm();
     background: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #2563eb !important; 
   }
 
   .cenov-form-container h3 {
@@ -1348,6 +1349,12 @@ $result = cenovContactForm();
   
   .remove-product-btn:hover {
     color: #dc2626;
+  }
+
+  .preview-item:hover,
+  .file-input-container:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+    transform: translateY(-2px);
   }
 </style>
 
