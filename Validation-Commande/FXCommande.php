@@ -1,5 +1,20 @@
 <?php
 if (!function_exists('cenovContactForm')) {
+    // Code pour gérer la suppression d'un article du panier
+    if (isset($_GET['remove_item']) && !empty($_GET['remove_item'])) {
+        $cart_item_key = sanitize_text_field($_GET['remove_item']);
+        
+        // Vérifier que WooCommerce est disponible
+        if (function_exists('WC') && WC()->cart) {
+            // Supprimer l'article du panier
+            WC()->cart->remove_cart_item($cart_item_key);
+            
+            // Rediriger vers la même page sans le paramètre
+            wp_redirect(remove_query_arg('remove_item'));
+            exit;
+        }
+    }
+    
     function cenovContactForm() {
         $result = '';
         
@@ -504,7 +519,7 @@ $result = cenovContactForm();
                 <div class="order-summary-content">
                     <?php
                     if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
-                        foreach (WC()->cart->get_cart() as $cart_item) {
+                        foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
                             $product = $cart_item['data'];
                             $quantity = $cart_item['quantity'];
                             ?>
@@ -525,6 +540,18 @@ $result = cenovContactForm();
                                         <div class="product-quantity">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package-icon lucide-package"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>
                                             <span>Quantité : <?php echo esc_html($quantity); ?></span>
+                                        </div>
+                                        <div class="product-remove">
+                                            <a href="?remove_item=<?php echo esc_attr($cart_item_key); ?>" class="remove-product-btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2">
+                                                    <path d="M3 6h18"></path>
+                                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                                    <line x1="10" x2="10" y1="11" y2="17"></line>
+                                                    <line x1="14" x2="14" y1="11" y2="17"></line>
+                                                </svg>
+                                                <span>Supprimer</span>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -712,7 +739,6 @@ $result = cenovContactForm();
     font-size: 0.95rem;
     color: #444;
   }
-
   
   /* Supprimer la marge inférieure pour les labels des cases à cocher */
   .cenov-gdpr-consent label {
@@ -1170,8 +1196,8 @@ $result = cenovContactForm();
 
   .product-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .product-quantity {
@@ -1212,6 +1238,24 @@ $result = cenovContactForm();
       min-width: 60px;
       height: 60px;
     }
+  }
+
+  
+  .remove-product-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: #000;
+    transition: color 0.2s ease;
+    text-decoration: none;
+  }
+  
+  .remove-product-btn span {
+    font-size: 14px;
+  }
+  
+  .remove-product-btn:hover {
+    color: #dc2626;
   }
 </style>
 
