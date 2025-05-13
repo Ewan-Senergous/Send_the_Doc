@@ -171,7 +171,7 @@ if (!function_exists('cenovContactForm')) {
     }
     
     function addCartProductsToContent() {
-        $content = "\r\n--- PRODUITS DU PANIER ---\r\n";
+        $content = "\r\n--- PRODUITS DEMANDÉS ---\r\n";
         
         if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
             foreach (WC()->cart->get_cart() as $cart_item) {
@@ -181,18 +181,8 @@ if (!function_exists('cenovContactForm')) {
                 
                 $content .= "Produit : " . $product->get_name() . " (" . $sku . ")\r\n";
                 $content .= "SKU : #PRO" . $sku . "-SUP0000017\r\n";
-                $content .= "Quantité : " . $quantity . "\r\n";
-                $prix_unitaire = number_format((float)$product->get_price(), 2, ',', ' ') . ' €';
-                $sous_total = number_format((float)$cart_item['line_total'], 2, ',', ' ') . ' €';
-                $content .= "Prix : " . $prix_unitaire . "\r\n";
-                $content .= "Sous-total : " . $sous_total . "\r\n\r\n";
+                $content .= "Quantité : " . $quantity . "\r\n\r\n";
             }
-            $content .= "Sous-total panier : " . number_format((float)WC()->cart->get_subtotal(), 2, ',', ' ') . ' €' . "\r\n";
-            $content .= "TVA : " . number_format((float)WC()->cart->get_total_tax(), 2, ',', ' ') . ' €' . "\r\n";
-            $sous_total_value = (float)WC()->cart->get_subtotal();
-            $tva_value = (float)WC()->cart->get_total_tax();
-            $total_value = $sous_total_value + $tva_value;
-            $content .= "Total : " . number_format($total_value, 2, ',', ' ') . ' €' . "\r\n";
         } else {
             $content .= "Aucun produit dans le panier\r\n";
         }
@@ -291,27 +281,121 @@ if (!function_exists('cenovContactForm')) {
     }
     
     function sendEmail($content, $attachments) {
+        // Adresse email principal de l'entreprise
         $to = 'ventes@cenov-distribution.fr';
         
-        // Générer un numéro de commande et obtenir la date actuelle
-        $commande_number = 'CMD' . date('YmdHis');
-        $date_commande = date_i18n('F j, Y');
+        // Récupérer l'email du client
+        $client_email = isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '';
         
-        $subject = 'Nouvelle commande : n°' . $commande_number . ' (' . $date_commande . ')';
+        // Système de numérotation séquentiel
+        $current_number = get_option('cenov_price_request_number', 987540000);  // Valeur initiale
+        $commande_number = $current_number + 1;
+        update_option('cenov_price_request_number', $commande_number);  // Sauvegarde pour la prochaine utilisation
         
-        // Convertir le contenu en HTML pour préserver les sauts de ligne
-        $html_content = '<pre style="font-family: Arial, sans-serif; font-size: 14px;">' . htmlspecialchars($content) . '</pre>';
+        $date_commande = date_i18n('j F Y');
+        
+        $subject = 'Demande de prix : n°' . $commande_number . ' (' . $date_commande . ')';
+        
+        // Prénom et nom du client pour l'affichage
+        $client_firstname = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
+        $client_lastname = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
+        $client_name = $client_firstname . ' ' . $client_lastname;
+        
+        // Créer un contenu HTML plus formaté
+        $html_content = '
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #2563eb; margin-bottom: 5px;">Demande de prix</h2>
+                <p style="color: #64748b; margin-top: 0;">Référence : ' . $commande_number . ' - ' . $date_commande . '</p>
+            </div>
+            
+            <div style="margin-bottom: 25px; background-color: #fff; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles</h3>
+                <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $client_name . '</p>
+                <p style="margin: 5px 0;"><strong>Email :</strong> ' . $client_email . '</p>
+                <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : 'Non renseigné') . '</p>
+                <p style="margin: 5px 0;"><strong>Société :</strong> ' . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : 'Non renseigné') . '</p>
+                <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : 'Non renseigné') . '</p>
+                <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : 'Non renseigné') . '</p>
+                <p style="margin: 5px 0;"><strong>Ville :</strong> ' . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : 'Non renseigné') . '</p>
+                <p style="margin: 5px 0;"><strong>Pays :</strong> ' . (isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : 'Non renseigné') . '</p>
+                <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : 'Non renseigné') . '</p>
+                <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Produits demandés</h3>
+                <div style="background-color: #dbeafe; padding: 15px; border-radius: 6px;">';
+        
+        if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
+            foreach (WC()->cart->get_cart() as $cart_item) {
+                $product = $cart_item['data'];
+                $quantity = $cart_item['quantity'];
+                $sku = $product->get_sku() ? $product->get_sku() : 'N/A';
+                
+                $html_content .= '
+                <div style="background-color: #f8fafc; padding: 10px; margin-bottom: 10px; border-radius: 4px; border-left: 3px solid #2563eb;">
+                    <p style="margin: 5px 0;"><strong>Produit :</strong> ' . esc_html($product->get_name()) . ' (' . $sku . ')</p>
+                    <p style="margin: 5px 0;"><strong>SKU :</strong> #PRO' . $sku . '-SUP0000017</p>
+                    <p style="margin: 5px 0;"><strong>Quantité :</strong> ' . $quantity . '</p>
+                </div>';
+            }
+        } else {
+            $html_content .= '<p>Aucun produit demandé</p>';
+        }
+        
+        $html_content .= '
+                </div>
+            </div>';
+            
+        // Ajouter le message du client s'il existe
+        if (isset($_POST['billing_message']) && !empty($_POST['billing_message'])) {
+            $html_content .= '
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Message</h3>
+                <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; border-left: 3px solid #64748b;">
+                    <p style="margin: 0;">' . nl2br(esc_html(sanitize_textarea_field($_POST['billing_message']))) . '</p>
+                </div>
+            </div>';
+        }
+        
+        // Informations sur les pièces jointes
+        if (empty($attachments)) {
+            $html_content .= '
+            <div style="margin-bottom: 25px;">
+                <p>Aucune plaque signalétique n\'a été jointe à cette demande.</p>
+            </div>';
+        }
+        
+        $html_content .= '
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">
+                <p>Merci pour votre demande de prix. Nous vous contacterons dans les plus brefs délais.</p>
+                <p>© ' . date('Y') . ' Cenov Distribution - Tous droits réservés</p>
+            </div>
+        </div>';
         
         $headers = [
             'From: Cenov Distribution <ventes@cenov-distribution.fr>',
-            'Reply-To: ' . (isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '') . ' ' .
-                         (isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '') .
-                         ' <' . (isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '') . '>',
+            'Reply-To: Cenov Distribution <ventes@cenov-distribution.fr>',
             'Content-Type: text/html; charset=UTF-8'
         ];
         
-        // Envoi de l'email
+        // Envoi de l'email au service commercial
         $sent = wp_mail($to, $subject, $html_content, $headers, $attachments);
+        
+        // Envoi d'une copie au client s'il a fourni une adresse email
+        if ($sent && !empty($client_email)) {
+            $client_headers = [
+                'From: Cenov Distribution <ventes@cenov-distribution.fr>',
+                'Reply-To: Cenov Distribution <ventes@cenov-distribution.fr>',
+                'Content-Type: text/html; charset=UTF-8'
+            ];
+            
+            // Petit ajustement du message pour le client
+            $client_html_content = str_replace('Demande de prix', 'Confirmation de votre demande de prix', $html_content);
+            
+            wp_mail($client_email, 'Confirmation : ' . $subject, $client_html_content, $client_headers, $attachments);
+        }
         
         // Vider le panier après envoi
         if ($sent && class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
@@ -411,22 +495,22 @@ $result = cenovContactForm();
 
             <!-- Deuxième ligne: Téléphone et Email côte à côte -->
             <div class="form-row">
-                <label for="cenov-telephone">* Téléphone :</label>
-                <div class="input-icon-wrapper">
-                    <span class="input-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    </span>
-                    <input type="tel" id="cenov-telephone" name="billing_phone" data-woocommerce-checkout="billing_phone" placeholder="Votre numéro de téléphone" required />
-                </div>
-            </div>
-
-            <div class="form-row">
                 <label for="cenov-email">* Email :</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     </span>
                     <input type="email" id="cenov-email" name="billing_email" data-woocommerce-checkout="billing_email" placeholder="Votre adresse e-mail" required />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label for="cenov-telephone">* Téléphone :</label>
+                <div class="input-icon-wrapper">
+                    <span class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </span>
+                    <input type="tel" id="cenov-telephone" name="billing_phone" data-woocommerce-checkout="billing_phone" placeholder="Votre numéro de téléphone" required />
                 </div>
             </div>
 
