@@ -343,7 +343,7 @@ if (!function_exists('cenovContactForm')) {
             </div>
             
             <div style="margin-bottom: 25px;">
-                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Produits demandés :</h3>
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Détail de la commande :</h3>
                 <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">';
         
         if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
@@ -359,15 +359,10 @@ if (!function_exists('cenovContactForm')) {
                 $html_content .= '
                 <div style="background-color: #fff; padding: 10px; margin-bottom: 10px; border-radius: 4px; display: flex; align-items: center;">
                     <div style="width: 60px; min-width: 60px; height: 60px; margin-right: 15px; background-color: #fff; border-radius: 4px; overflow: hidden;">
-                        <!--[if mso]>
-                        <img src="' . $image_url . '" alt="' . esc_attr($product->get_name()) . '" style="width: 60px; height: auto;" />
-                        <![endif]-->
-                        <!--[if !mso]><!-->
                         <img src="' . $image_url . '" alt="' . esc_attr($product->get_name()) . '" style="width: 100%; height: 100%; object-fit: contain;" />
-                        <!--<![endif]-->
                     </div>
                     <div>
-                        <p style="margin: 5px 0;"><strong>Produit :</strong> ' . esc_html($product->get_name()) . ' (' . $sku . ')</p>
+                        <p style="margin: 5px 0;"><strong>Produit :</strong> ' . esc_html($product->get_name()) . '</p>
                         <p style="margin: 5px 0;"><strong>SKU :</strong> #PRO' . $sku . '-SUP0000017</p>
                         <p style="margin: 5px 0;"><strong>Quantité :</strong> ' . $quantity . '</p>
                     </div>
