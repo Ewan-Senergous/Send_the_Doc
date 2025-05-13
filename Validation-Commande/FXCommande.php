@@ -781,11 +781,6 @@ $result = cenovContactForm();
         padding-right: 40px !important;
     }
 
-    .input-icon-wrapper select:focus {
-        border: 2px solid #2563eb !important;
-        outline: none !important;
-    }
-
     .warning-message {
     background-color: #fff7ed;
     color: #9a3412;
@@ -858,10 +853,6 @@ $result = cenovContactForm();
     align-items: center;
   }
   
-  .input-icon-wrapper:focus-within {
-    transform: translateY(-2px);
-  }
-  
   .input-icon {
     position: absolute;
     left: 12px;
@@ -899,9 +890,10 @@ $result = cenovContactForm();
   }
 
   .input-icon-wrapper input:focus,
+  .input-icon-wrapper select:focus,
   .input-icon-wrapper textarea:focus {
     border: 2px solid #2563eb !important;
-    outline: none;
+    outline: none !important;
   }
   
   /* Forcer les champs avec autofill à garder un fond blanc */
