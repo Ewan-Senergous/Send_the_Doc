@@ -324,12 +324,23 @@ if (!function_exists('cenovContactForm')) {
         update_option('cenov_order_client_' . $commande_number, $client_name);
         update_option('cenov_order_email_' . $commande_number, $client_email);
         
+        // Créer l'URL sécurisée pour la page de récapitulatif
+        $recap_url = add_query_arg(
+            array(
+                'order' => $commande_number,
+                'key' => $order_key
+            ),
+            home_url('/recap-commande/')
+        );
+        
         // Créer un contenu HTML plus formaté
         $html_content = '
         <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Demande de prix :</h1>
-                <p style="color: #64748b; margin-top: 0;">Référence : ' . $commande_number . ' - ' . $date_commande . '</p>
+                <p style="margin-top: 0; margin-bottom: 5px;">Référence : ' . $commande_number . ' - ' . $date_commande . '</p>
+                <p style="margin: 0;"><a href="' . esc_url($recap_url) . '" style="color: #2563eb; text-decoration: underline;">[Commande n°' . $commande_number . ']</a></p>
+                <p style="margin: 5px 0; font-size: 12px; color: #6b7280;">Ce lien est valable pendant 30 jours.</p>
             </div>
             
             <div style="margin-bottom: 25px;">
@@ -343,6 +354,19 @@ if (!function_exists('cenovContactForm')) {
                     <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : CENOV_NOT_PROVIDED) . '</p>
                     <p style="margin: 5px 0;"><strong>Ville :</strong> ' . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : CENOV_NOT_PROVIDED) . '</p>
                     <p style="margin: 5px 0;"><strong>Pays :</strong> ' . (isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>';
+
+            // Créer l'URL sécurisée pour la page de récapitulatif
+            $recap_url = add_query_arg(
+                array(
+                    'order' => $commande_number,
+                    'key' => $order_key
+                ),
+                home_url('/recap-commande/')
+            );
+                    
+            $html_content .= '
                     <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
                     <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>';
         
@@ -443,26 +467,15 @@ if (!function_exists('cenovContactForm')) {
             // Petit ajustement du message pour le client
             $client_html_content = str_replace('Confirmation de votre demande de prix', 'Confirmation : ' . $subject, $html_content);
             
-            // Créer l'URL sécurisée pour la page de récapitulatif
-            $recap_url = add_query_arg(
-                array(
-                    'order' => $commande_number,
-                    'key' => $order_key
-                ),
-                home_url('/recap-commande/')
+            // Ajouter le message de remerciement uniquement pour le client
+            $client_html_content = str_replace(
+                '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">
+                <p>© Cenov Distribution - Tous droits réservés</p>',
+                '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">
+                <p>Merci pour votre demande de prix. Nous vous contacterons dans les plus brefs délais.</p>
+                <p>© Cenov Distribution - Tous droits réservés</p>',
+                $client_html_content
             );
-            
-            // Ajouter l'URL sécurisée au contenu de l'email
-            $client_html_content .= '
-            <div style="margin-top: 30px; text-align: center;">
-                <p>Vous pouvez consulter le récapitulatif de votre demande de prix à tout moment en utilisant le lien ci-dessous :</p>
-                <p style="margin: 20px 0;">
-                    <a href="' . esc_url($recap_url) . '" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
-                        Voir le récapitulatif de ma demande
-                    </a>
-                </p>
-                <p style="font-size: 12px; color: #6b7280;">Ce lien est valable pendant 30 jours.</p>
-            </div>';
             
             $sent_to_client = wp_mail($client_email, 'Confirmation : ' . $subject, $client_html_content, $client_headers, $attachments);
         }
