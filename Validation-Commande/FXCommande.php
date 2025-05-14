@@ -800,10 +800,10 @@ $result = cenovContactForm();
     max-width: 1000px;
     margin: 20px auto;
     padding: 30px;
-    background: #f9f9f9;
+    background: #f3f4f6;
     border-radius: 8px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    border: 2px solid #2563eb !important; 
+    border: 2px solid #2563eb !important;
   }
 
   .cenov-form-container h3 {
@@ -1322,7 +1322,7 @@ $result = cenovContactForm();
     }
 
     .product-meta {
-      flex-direction: column;
+      flex-direction: row;
       gap: 8px;
     }
 
