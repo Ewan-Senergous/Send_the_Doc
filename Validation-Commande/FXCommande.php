@@ -303,6 +303,13 @@ if (!function_exists('cenovContactForm')) {
         $commande_number = $current_number + 1;
         update_option('cenov_price_request_number', $commande_number);  // Sauvegarde pour la prochaine utilisation
         
+        // Générer une clé unique pour cette commande
+        $order_key = wp_generate_password(12, false);
+        // Stocker cette clé dans les options WordPress avec une référence à l'ID de commande
+        update_option('cenov_order_key_' . $commande_number, $order_key);
+        // Définir une durée d'expiration pour cette clé (30 jours par défaut)
+        update_option('cenov_order_key_expires_' . $commande_number, time() + (30 * DAY_IN_SECONDS));
+        
         $date_commande = date_i18n('j F Y');
         
         $subject = 'Demande de prix : n°' . $commande_number . ' (' . $date_commande . ')';
@@ -311,6 +318,11 @@ if (!function_exists('cenovContactForm')) {
         $client_firstname = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
         $client_lastname = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
         $client_name = $client_firstname . ' ' . $client_lastname;
+        
+        // Stocker des informations essentielles de la commande dans la base de données
+        update_option('cenov_order_date_' . $commande_number, time());
+        update_option('cenov_order_client_' . $commande_number, $client_name);
+        update_option('cenov_order_email_' . $commande_number, $client_email);
         
         // Créer un contenu HTML plus formaté
         $html_content = '
@@ -429,13 +441,34 @@ if (!function_exists('cenovContactForm')) {
             ];
             
             // Petit ajustement du message pour le client
-            $client_html_content = str_replace('Demande de prix', 'Confirmation de votre demande de prix', $html_content);
+            $client_html_content = str_replace('Confirmation de votre demande de prix', 'Confirmation : ' . $subject, $html_content);
+            
+            // Créer l'URL sécurisée pour la page de récapitulatif
+            $recap_url = add_query_arg(
+                array(
+                    'order' => $commande_number,
+                    'key' => $order_key
+                ),
+                home_url('/recap-commande/')
+            );
+            
+            // Ajouter l'URL sécurisée au contenu de l'email
+            $client_html_content .= '
+            <div style="margin-top: 30px; text-align: center;">
+                <p>Vous pouvez consulter le récapitulatif de votre demande de prix à tout moment en utilisant le lien ci-dessous :</p>
+                <p style="margin: 20px 0;">
+                    <a href="' . esc_url($recap_url) . '" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                        Voir le récapitulatif de ma demande
+                    </a>
+                </p>
+                <p style="font-size: 12px; color: #6b7280;">Ce lien est valable pendant 30 jours.</p>
+            </div>';
             
             $sent_to_client = wp_mail($client_email, 'Confirmation : ' . $subject, $client_html_content, $client_headers, $attachments);
         }
         
         // Considérer l'envoi réussi si l'email à l'entreprise a été envoyé, peu importe celui au client
-        $sent = $sent_to_company;
+        $sent = $sent_to_company && (!empty($client_email) ? $sent_to_client : true);
         
         // Préparer les noms de fichiers pour la session
         $file_names = array();
@@ -472,7 +505,8 @@ if (!function_exists('cenovContactForm')) {
                 'client_message' => isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : '',
                 'products' => $products_for_session,
                 'file_names' => $file_names,
-                'file_paths' => $file_paths // Chemins des fichiers temporaires
+                'file_paths' => $file_paths, // Chemins des fichiers temporaires
+                'order_key' => $order_key // Ajouter la clé à la session
             );
             
             // Vider le panier après envoi
@@ -480,8 +514,17 @@ if (!function_exists('cenovContactForm')) {
                 WC()->cart->empty_cart();
             }
             
-            // Rediriger vers la page de récapitulatif
-            wp_redirect(home_url('/recap-commande/'));
+            // URL sécurisée pour la page de récapitulatif
+            $recap_url = add_query_arg(
+                array(
+                    'order' => $commande_number,
+                    'key' => $order_key
+                ),
+                home_url('/recap-commande/')
+            );
+            
+            // Rediriger vers la page de récapitulatif avec les paramètres d'URL
+            wp_redirect($recap_url);
             exit;
         }
         

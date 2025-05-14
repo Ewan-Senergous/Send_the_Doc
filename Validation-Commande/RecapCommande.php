@@ -5,8 +5,34 @@ session_start();
 // Définir une constante pour les champs non renseignés
 define('NOT_PROVIDED', 'Non renseigné');
 
-if (!isset($_SESSION['commande_data']) || empty($_SESSION['commande_data'])) {
-    // Si les données ne sont pas disponibles, rediriger vers la page précédente
+// Vérifier si nous avons un numéro de commande et une clé dans l'URL
+if (isset($_GET['order']) && isset($_GET['key'])) {
+    $order_number = intval($_GET['order']);
+    $order_key = sanitize_text_field($_GET['key']);
+    
+    // Vérifier la validité de la clé
+    $stored_key = get_option('cenov_order_key_' . $order_number);
+    $key_expiration = get_option('cenov_order_key_expires_' . $order_number);
+    
+    // Si la clé est valide et n'a pas expiré
+    if ($stored_key && $stored_key === $order_key && $key_expiration > time()) {
+        // Récupérer les données de session si elles existent
+        if (!isset($_SESSION['commande_data']) || empty($_SESSION['commande_data']) || $_SESSION['commande_data']['commande_number'] != $order_number) {
+            // Tenter de reconstruire les données minimales depuis la base de données si elles ne sont pas en session
+            $_SESSION['commande_data'] = array(
+                'commande_number' => $order_number,
+                'date_commande' => date_i18n('j F Y', get_option('cenov_order_date_' . $order_number, time())),
+                'client_name' => get_option('cenov_order_client_' . $order_number, NOT_PROVIDED),
+                'client_email' => get_option('cenov_order_email_' . $order_number, NOT_PROVIDED),
+            );
+        }
+    } else {
+        // Si la clé est invalide ou a expiré, rediriger vers la page d'accueil
+        wp_redirect(home_url());
+        exit;
+    }
+} elseif (!isset($_SESSION['commande_data']) || empty($_SESSION['commande_data'])) {
+    // Si pas de paramètres d'URL et pas de données en session, rediriger vers la page précédente
     wp_redirect(home_url('/validation-commande/'));
     exit;
 }
