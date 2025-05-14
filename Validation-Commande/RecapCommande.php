@@ -154,7 +154,7 @@ $products = isset($data['products']) ? $data['products'] : [];
                         echo '<div class="attachment-preview">';
                         echo '<img src="data:' . $mime_type . ';base64,' . $image_data . '" alt="' . esc_attr($file_name) . '">';
                         echo '</div>';
-                    } 
+                    }
                     // Vérifier si le fichier temporaire existe encore
                     elseif (isset($data['file_paths']) && isset($data['file_paths'][$file_name]) && file_exists($data['file_paths'][$file_name])) {
                         // Utiliser le fichier temporaire
@@ -290,7 +290,7 @@ $products = isset($data['products']) ? $data['products'] : [];
     background: white;
     border-radius: 6px;
     padding: 10px 15px;
-    border: 1px solid #ddd !important;
+    border: 1px solid #6b7280 !important;
 }
 
 .info-item.full-width {
@@ -321,14 +321,13 @@ $products = isset($data['products']) ? $data['products'] : [];
     display: flex;
     flex-direction: column;
     gap: 15px;
+    border: 1px solid #6b7280;
 }
 
 .product-item {
     display: flex;
     background: white;
-    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .product-image {
@@ -385,7 +384,7 @@ $products = isset($data['products']) ? $data['products'] : [];
     display: flex;
     flex-direction: column;
     height: 220px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #6b7280;
     transition: transform 0.2s ease;
 }
 
@@ -399,7 +398,7 @@ $products = isset($data['products']) ? $data['products'] : [];
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f9fafb;
+    background-color: #FFF;
     padding: 10px;
     overflow: hidden;
 }
@@ -424,7 +423,7 @@ $products = isset($data['products']) ? $data['products'] : [];
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #6b7280 !important;
 }
 
 .attachment-name {

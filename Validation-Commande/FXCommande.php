@@ -47,9 +47,8 @@ if (!function_exists('cenovContactForm')) {
                 // Préparer et envoyer l'email
                 $emailResult = sendEmail($content, $attachments);
                 
-                // Ne pas nettoyer les fichiers temporaires immédiatement 
+                // Ne pas nettoyer les fichiers temporaires immédiatement
                 // pour permettre la prévisualisation sur la page de récapitulatif
-                // Les fichiers seront nettoyés plus tard par le garbage collector du serveur
                 
                 if ($emailResult === true) {
                     $result = $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
@@ -828,7 +827,7 @@ $result = cenovContactForm();
     .input-icon-wrapper select {
         width: 100% !important;
         padding: 12px 12px 12px 40px !important;
-        border: 1px solid #ddd !important;
+        border: 1px solid #6b7280 !important;
         border-radius: 6px !important;
         font-size: 15px !important;
         line-height: 1.4 !important;
@@ -937,7 +936,7 @@ $result = cenovContactForm();
   .input-icon-wrapper input[type="tel"] {
     width: 100%;
     padding: 12px 12px 12px 40px;
-    border: 1px solid #ddd !important;
+    border: 1px solid #6b7280 !important;
     border-radius: 6px;
     font-size: 15px;
     line-height: 1.4;
@@ -946,7 +945,7 @@ $result = cenovContactForm();
   .input-icon-wrapper textarea {
     width: 100%;
     padding: 12px 12px 12px 40px;
-    border: 1px solid #ddd !important;
+    border: 1px solid #6b7280 !important;
     border-radius: 6px;
     font-size: 15px;
     line-height: 1.4;
@@ -1291,8 +1290,7 @@ $result = cenovContactForm();
   .order-summary {
     background-color: #f8fafc;
     border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border: 1px solid #6b7280;
     overflow: hidden;
   }
 
@@ -1303,7 +1301,7 @@ $result = cenovContactForm();
     margin: 0;
     padding: 15px 20px;
     background-color: #93c5fd;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #6b7280;
   }
 
   .order-summary-content {
