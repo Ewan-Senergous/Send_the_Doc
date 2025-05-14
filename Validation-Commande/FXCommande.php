@@ -21,6 +21,11 @@ if (!function_exists('cenovContactForm')) {
     function cenovContactForm() {
         $result = '';
         
+        // Démarrer la session si nécessaire
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['billing_first_name']) && isset($_POST['g-recaptcha-response'])) {
             // Effectuer les vérifications de sécurité
             $securityCheck = cenovPerformSecurityChecks();
@@ -42,13 +47,17 @@ if (!function_exists('cenovContactForm')) {
                 // Préparer et envoyer l'email
                 $emailResult = sendEmail($content, $attachments);
                 
-                // Nettoyer les fichiers temporaires
-                cleanupAttachments($attachments);
+                // Ne pas nettoyer les fichiers temporaires immédiatement 
+                // pour permettre la prévisualisation sur la page de récapitulatif
+                // Les fichiers seront nettoyés plus tard par le garbage collector du serveur
                 
                 if ($emailResult === true) {
                     $result = $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
                 } else {
                     $result = '<div class="error-message">Une erreur est survenue lors de l\'envoi de votre message. Veuillez nous contacter par téléphone.</div>';
+                    
+                    // En cas d'erreur d'envoi, nettoyez les fichiers
+                    cleanupAttachments($attachments);
                 }
             }
         }
@@ -346,6 +355,9 @@ if (!function_exists('cenovContactForm')) {
                 <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Détail de la commande :</h3>
                 <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">';
         
+        // Préparation des produits pour la session
+        $products_for_session = array();
+        
         if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
             foreach (WC()->cart->get_cart() as $cart_item) {
                 $product = $cart_item['data'];
@@ -356,6 +368,14 @@ if (!function_exists('cenovContactForm')) {
                 $image_id = $product->get_image_id();
                 $image_url = $image_id ? wp_get_attachment_image_url($image_id, 'thumbnail') : wc_placeholder_img_src();
                 
+                // Ajouter au tableau pour la session
+                $products_for_session[] = array(
+                    'name' => $product->get_name(),
+                    'sku' => $sku,
+                    'quantity' => $quantity,
+                    'image' => $image_url
+                );
+                
                 $html_content .= '
                 <div style="background-color: #fff; padding: 10px; margin-bottom: 10px; border-radius: 4px; display: flex; align-items: center;">
                     <div style="width: 60px; min-width: 60px; height: 60px; margin-right: 15px; background-color: #fff; border-radius: 4px; overflow: hidden;">
@@ -363,7 +383,7 @@ if (!function_exists('cenovContactForm')) {
                     </div>
                     <div>
                         <p style="margin: 5px 0;"><strong>Produit :</strong> ' . esc_html($product->get_name()) . '</p>
-                        <p style="margin: 5px 0;"><strong>SKU :</strong> #PRO' . $sku . '-SUP0000017</p>
+                        <p style="margin: 5px 0;"><strong>SKU :</strong> ' . $sku . '</p>
                         <p style="margin: 5px 0;"><strong>Quantité :</strong> ' . $quantity . '</p>
                     </div>
                 </div>';
@@ -397,11 +417,12 @@ if (!function_exists('cenovContactForm')) {
             'Content-Type: text/html; charset=UTF-8'
         ];
         
-        // Envoi de l'email au service commercial
-        $sent = wp_mail($to, $subject, $html_content, $headers, $attachments);
+        // Envoi de l'email au service commercial - TOUJOURS à ventes@cenov-distribution.fr
+        $sent_to_company = wp_mail($to, $subject, $html_content, $headers, $attachments);
         
         // Envoi d'une copie au client s'il a fourni une adresse email
-        if ($sent && !empty($client_email)) {
+        $sent_to_client = false;
+        if (!empty($client_email)) {
             $client_headers = [
                 'From: Cenov Distribution <ventes@cenov-distribution.fr>',
                 'Reply-To: Cenov Distribution <ventes@cenov-distribution.fr>',
@@ -411,12 +432,58 @@ if (!function_exists('cenovContactForm')) {
             // Petit ajustement du message pour le client
             $client_html_content = str_replace('Demande de prix', 'Confirmation de votre demande de prix', $html_content);
             
-            wp_mail($client_email, 'Confirmation : ' . $subject, $client_html_content, $client_headers, $attachments);
+            $sent_to_client = wp_mail($client_email, 'Confirmation : ' . $subject, $client_html_content, $client_headers, $attachments);
         }
         
-        // Vider le panier après envoi
-        if ($sent && class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
-            WC()->cart->empty_cart();
+        // Considérer l'envoi réussi si l'email à l'entreprise a été envoyé, peu importe celui au client
+        $sent = $sent_to_company;
+        
+        // Préparer les noms de fichiers pour la session
+        $file_names = array();
+        $file_paths = array();
+        if (!empty($attachments)) {
+            foreach ($attachments as $file) {
+                $file_name = basename($file);
+                $file_names[] = $file_name;
+                $file_paths[$file_name] = $file; // Chemin complet du fichier temporaire
+            }
+        }
+        
+        // Stocker les données dans la session pour la page de récapitulatif
+        if ($sent) {
+            // Démarrer la session si ce n'est pas déjà fait
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            // Préparer les données pour la session
+            $_SESSION['commande_data'] = array(
+                'commande_number' => $commande_number,
+                'date_commande' => $date_commande,
+                'client_name' => $client_name,
+                'client_email' => $client_email,
+                'client_phone' => isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : '',
+                'client_company' => isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : '',
+                'client_address' => isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : '',
+                'client_postcode' => isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '',
+                'client_city' => isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : '',
+                'client_country' => isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : '',
+                'client_reference' => isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : '',
+                'client_materiel_equivalent' => isset($_POST['billing_materiel_equivalent']),
+                'client_message' => isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : '',
+                'products' => $products_for_session,
+                'file_names' => $file_names,
+                'file_paths' => $file_paths // Chemins des fichiers temporaires
+            );
+            
+            // Vider le panier après envoi
+            if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
+                WC()->cart->empty_cart();
+            }
+            
+            // Rediriger vers la page de récapitulatif
+            wp_redirect(home_url('/recap-commande/'));
+            exit;
         }
         
         return $sent;
