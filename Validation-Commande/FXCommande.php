@@ -481,6 +481,19 @@ if (!function_exists('cenovContactForm')) {
             }
         }
         
+        // Stocker toutes les données client dans la base de données pour une récupération ultérieure
+        update_option('cenov_order_phone_' . $commande_number, isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_company_' . $commande_number, isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_address_' . $commande_number, isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_postcode_' . $commande_number, isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_city_' . $commande_number, isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_country_' . $commande_number, isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_reference_' . $commande_number, isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : '');
+        update_option('cenov_order_materiel_equivalent_' . $commande_number, isset($_POST['billing_materiel_equivalent']));
+        update_option('cenov_order_message_' . $commande_number, isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : '');
+        update_option('cenov_order_products_' . $commande_number, $products_for_session);
+        update_option('cenov_order_file_names_' . $commande_number, $file_names);
+        
         // Stocker les données dans la session pour la page de récapitulatif
         if ($sent) {
             // Démarrer la session si ce n'est pas déjà fait

@@ -18,12 +18,24 @@ if (isset($_GET['order']) && isset($_GET['key'])) {
     if ($stored_key && $stored_key === $order_key && $key_expiration > time()) {
         // Récupérer les données de session si elles existent
         if (!isset($_SESSION['commande_data']) || empty($_SESSION['commande_data']) || $_SESSION['commande_data']['commande_number'] != $order_number) {
-            // Tenter de reconstruire les données minimales depuis la base de données si elles ne sont pas en session
+            // Tenter de reconstruire les données complètes depuis la base de données
             $_SESSION['commande_data'] = array(
                 'commande_number' => $order_number,
                 'date_commande' => date_i18n('j F Y', get_option('cenov_order_date_' . $order_number, time())),
                 'client_name' => get_option('cenov_order_client_' . $order_number, NOT_PROVIDED),
                 'client_email' => get_option('cenov_order_email_' . $order_number, NOT_PROVIDED),
+                'client_phone' => get_option('cenov_order_phone_' . $order_number, NOT_PROVIDED),
+                'client_company' => get_option('cenov_order_company_' . $order_number, NOT_PROVIDED),
+                'client_address' => get_option('cenov_order_address_' . $order_number, NOT_PROVIDED),
+                'client_postcode' => get_option('cenov_order_postcode_' . $order_number, NOT_PROVIDED),
+                'client_city' => get_option('cenov_order_city_' . $order_number, NOT_PROVIDED),
+                'client_country' => get_option('cenov_order_country_' . $order_number, NOT_PROVIDED),
+                'client_reference' => get_option('cenov_order_reference_' . $order_number, ''),
+                'client_materiel_equivalent' => get_option('cenov_order_materiel_equivalent_' . $order_number, false),
+                'client_message' => get_option('cenov_order_message_' . $order_number, ''),
+                'products' => get_option('cenov_order_products_' . $order_number, array()),
+                'file_names' => get_option('cenov_order_file_names_' . $order_number, array()),
+                'file_images' => get_option('cenov_order_file_images_' . $order_number, array()),
             );
         }
     } else {
@@ -64,12 +76,43 @@ if (isset($data['file_paths']) && !empty($data['file_paths']) && !isset($data['f
     
     // Ajouter les images encodées à la session
     $_SESSION['commande_data']['file_images'] = $file_images;
+    
+    // Stocker également les images dans la base de données pour une récupération future
+    if (isset($_SESSION['commande_data']['commande_number'])) {
+        $order_number = $_SESSION['commande_data']['commande_number'];
+        update_option('cenov_order_file_images_' . $order_number, $file_images);
+    }
+    
     $data = $_SESSION['commande_data']; // Mettre à jour la variable $data
 }
 
 $commande_number = isset($data['commande_number']) ? $data['commande_number'] : 'N/A';
 $date_commande = isset($data['date_commande']) ? $data['date_commande'] : date_i18n('j F Y');
 $products = isset($data['products']) ? $data['products'] : [];
+
+// Si nous avons un numéro de commande, sauvegarder les données complètes dans la base de données
+// pour permettre la récupération ultérieure depuis un autre navigateur ou session
+if ($commande_number != 'N/A' && isset($_SESSION['commande_data'])) {
+    $order_number = $commande_number;
+    
+    // Sauvegarder toutes les données client dans la base de données
+    update_option('cenov_order_phone_' . $order_number, isset($data['client_phone']) ? $data['client_phone'] : NOT_PROVIDED);
+    update_option('cenov_order_company_' . $order_number, isset($data['client_company']) ? $data['client_company'] : NOT_PROVIDED);
+    update_option('cenov_order_address_' . $order_number, isset($data['client_address']) ? $data['client_address'] : NOT_PROVIDED);
+    update_option('cenov_order_postcode_' . $order_number, isset($data['client_postcode']) ? $data['client_postcode'] : NOT_PROVIDED);
+    update_option('cenov_order_city_' . $order_number, isset($data['client_city']) ? $data['client_city'] : NOT_PROVIDED);
+    update_option('cenov_order_country_' . $order_number, isset($data['client_country']) ? $data['client_country'] : NOT_PROVIDED);
+    update_option('cenov_order_reference_' . $order_number, isset($data['client_reference']) ? $data['client_reference'] : '');
+    update_option('cenov_order_materiel_equivalent_' . $order_number, isset($data['client_materiel_equivalent']) ? $data['client_materiel_equivalent'] : false);
+    update_option('cenov_order_message_' . $order_number, isset($data['client_message']) ? $data['client_message'] : '');
+    update_option('cenov_order_products_' . $order_number, isset($data['products']) ? $data['products'] : array());
+    update_option('cenov_order_file_names_' . $order_number, isset($data['file_names']) ? $data['file_names'] : array());
+    
+    // Sauvegarder les images encodées si elles existent
+    if (isset($data['file_images'])) {
+        update_option('cenov_order_file_images_' . $order_number, $data['file_images']);
+    }
+}
 ?>
 
 <div class="cenov-recap-container">
