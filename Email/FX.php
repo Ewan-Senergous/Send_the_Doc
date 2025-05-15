@@ -5,277 +5,387 @@ define('CENOV_NOT_PROVIDED_M', 'Non renseigné');
 define('CENOV_DOUBLE_NEWLINE', "\r\n\r\n");
 
 if (!function_exists('cenovContactForm')) {
-        function cenovContactForm() {
+    function cenovContactForm() {
         $result = '';
-        $can_process = false;
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cenov_prenom']) && isset($_POST['g-recaptcha-response'])) {
-            // Protection contre les attaques de force brute
-            if (!cenovCheckSubmissionRate()) {
-                $result = '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
-            }
-            // Vérification du nonce CSRF
-            elseif (!isset($_POST['cenov_nonce']) || !wp_verify_nonce($_POST['cenov_nonce'], 'cenov_contact_action')) {
-                $result = '<div class="error-message">Erreur de sécurité. Veuillez rafraîchir la page et réessayer.</div>';
-            }
-            // Vérification honeypot - si rempli, c'est probablement un bot
-            elseif (!empty($_POST['cenov_website'])) {
-                // Bot détecté, mais on simule un succès pour ne pas alerter le bot
-                $result = '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
-            }
-            // Vérification du temps de soumission
-            else {
-                $submissionTime = isset($_POST['cenov_timestamp']) ? (int)$_POST['cenov_timestamp'] : 0;
-                $currentTime = time();
-                $timeDifference = $currentTime - $submissionTime;
-                
-                // Si le formulaire est soumis en moins de 3 secondes, c'est probablement un bot
-                if ($timeDifference < 3) {
-                    // Simulation d'un succès pour ne pas alerter le bot
-                    $result = '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
-                }
-                // Vérification reCAPTCHA
-                else {
-                    $recaptcha_response = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
-                    
-                    if (empty($recaptcha_response)) {
-                        $result = '<div class="error-message">Échec de la vérification de sécurité. Veuillez réessayer.</div>';
+            // Vérifications de sécurité
+            $security_result = checkFormSecurity();
+            if ($security_result === true) {
+                // Validation des données
+                $form_data = validateFormData();
+                if ($form_data !== false) {
+                    // Traitement des fichiers
+                    $file_result = processUploadedFiles();
+                    if (!isset($file_result['error'])) {
+                        // Envoyer l'email
+                        $result = sendContactEmail($form_data, $file_result['attachments'], $file_result['warning']);
+                    } else {
+                        $result = $file_result['error'];
                     }
-                    else {
-                        $recaptcha_secret = get_option('cenov_recaptcha_secret', '');
-                        $verify_response = wp_remote_get(
-                            "https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}"
-                        );
-                        
-                        if (is_wp_error($verify_response)) {
-                            $result = '<div class="error-message">Erreur de vérification. Veuillez réessayer plus tard.</div>';
-                        }
-                        else {
-                            $recaptcha_result = json_decode(wp_remote_retrieve_body($verify_response));
-                            
-                            // Déboguer la réponse reCAPTCHA
-                            error_log('reCAPTCHA response: ' . print_r($recaptcha_result, true));
-                            
-                            // Vérifier que le score est acceptable (0.0 = bot, 1.0 = humain)
-                            if (!isset($recaptcha_result->success) || !$recaptcha_result->success ||
-                                (isset($recaptcha_result->score) && $recaptcha_result->score < 0.5)) {
-                                $result = '<div class="error-message">La vérification de sécurité a échoué. Veuillez réessayer.</div>';
-                            }
-                            else {
-                                $can_process = true;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Continuer le traitement uniquement si les vérifications de sécurité sont réussies
-            if ($can_process) {
-                // Récupération des données du formulaire
-                $prenom = isset($_POST['cenov_prenom']) ? sanitize_text_field($_POST['cenov_prenom']) : '';
-                $nom_famille = isset($_POST['cenov_nom']) ? sanitize_text_field($_POST['cenov_nom']) : '';
-                $nom = $prenom . ' ' . $nom_famille;
-                $email = isset($_POST['cenov_email']) ? sanitize_email($_POST['cenov_email']) : '';
-                $telephone = isset($_POST['cenov_telephone']) ? sanitize_text_field($_POST['cenov_telephone']) : '';
-                $message = isset($_POST['cenov_message']) ? sanitize_textarea_field($_POST['cenov_message']) : '';
-
-                // Récupération des champs optionnels
-                $societe = isset($_POST['cenov_societe']) ? sanitize_text_field($_POST['cenov_societe']) : '';
-                $adresse = isset($_POST['cenov_adresse']) ? sanitize_text_field($_POST['cenov_adresse']) : '';
-                $codepostal = isset($_POST['cenov_codepostal']) ? sanitize_text_field($_POST['cenov_codepostal']) : '';
-                $ville = isset($_POST['cenov_ville']) ? sanitize_text_field($_POST['cenov_ville']) : '';
-                $produit = isset($_POST['cenov_produit']) ? sanitize_text_field($_POST['cenov_produit']) : '';
-
-                // Vérification des champs obligatoires
-                if (empty($prenom) || empty($nom_famille) || empty($email) || empty($telephone)) {
+                } else {
                     $result = '<div class="error-message">Veuillez remplir tous les champs obligatoires.</div>';
                 }
-                else {
-                    // Préparation de l'email
-                    $to = 'ventes@cenov-distribution.fr';
-                    $subject = 'Nouvelle plaque signalétique de ' . $nom;
-                    $fileWarning = '';
-                    
-                    // Construction du corps de l'email en HTML avec mise en forme
-                    $html_content = '
-                    <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Nouvelle plaque signalétique :</h1>
-                            <p style="margin-top: 0; margin-bottom: 5px;">Demande de : ' . $nom . '</p>
-                        </div>
-                        
-                        <div style="margin-bottom: 25px;">
-                            <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles :</h3>
-                            <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
-                                <p style="margin: 5px 0;"><strong>Prénom :</strong> ' . $prenom . '</p>
-                                <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $nom_famille . '</p>
-                                <p style="margin: 5px 0;"><strong>Email :</strong> ' . $email . '</p>
-                                <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . $telephone . '</p>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-bottom: 25px;">
-                            <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations professionnelles :</h3>
-                            <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
-                                <p style="margin: 5px 0;"><strong>Société :</strong> ' . ($societe ? $societe : CENOV_NOT_PROVIDED) . '</p>
-                                <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . ($adresse ? $adresse : CENOV_NOT_PROVIDED) . '</p>
-                                <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . ($codepostal ? $codepostal : CENOV_NOT_PROVIDED_M) . '</p>
-                                <p style="margin: 5px 0;"><strong>Ville :</strong> ' . ($ville ? $ville : CENOV_NOT_PROVIDED) . '</p>
-                                <p style="margin: 5px 0;"><strong>Produit concerné :</strong> ' . ($produit ? $produit : CENOV_NOT_PROVIDED_M) . '</p>
-                            </div>
-                        </div>';
-
-                    // Ajouter le message s'il existe
-                    if (!empty($message)) {
-                        $html_content .= '
-                        <div style="margin-bottom: 25px;">
-                            <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Message :</h3>
-                            <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
-                                <p style="margin: 5px 0;">' . nl2br(htmlspecialchars($message)) . '</p>
-                            </div>
-                        </div>';
-                    }
-
-                    // HTML est la seule version utilisée, pas besoin de version texte
-                    $headers = [
-                        'From: Cenov Distribution <ventes@cenov-distribution.fr>',
-                        'Reply-To: ' . $nom . ' <' . $email . '>',
-                        'Content-Type: text/html; charset=UTF-8'
-                    ];
-
-                    if (empty($_FILES['cenov_plaque']['name'][0])) {
-                        $fileWarning = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
-                    }
-                    
-                    // Gestion des fichiers uploadés
-                    $attachments = array();
-                    $file_error = null;
-                    
-                    if (!empty($_FILES['cenov_plaque']['name'][0])) {
-                        foreach($_FILES['cenov_plaque']['name'] as $key => $name) {
-                            if(empty($name)) {
-                                continue;
-                            }
-                            
-                            // Créer un tableau de fichier individuel pour faciliter le traitement
-                            $file = array(
-                                'name' => $_FILES['cenov_plaque']['name'][$key],
-                                'type' => $_FILES['cenov_plaque']['type'][$key],
-                                'tmp_name' => $_FILES['cenov_plaque']['tmp_name'][$key],
-                                'error' => $_FILES['cenov_plaque']['error'][$key],
-                                'size' => $_FILES['cenov_plaque']['size'][$key]
-                            );
-                            
-                            // Vérification des erreurs d'upload
-                            if ($file['error'] !== UPLOAD_ERR_OK) {
-                                $error_message = "Erreur lors de l'upload du fichier: ";
-                                switch ($file['error']) {
-                                    case UPLOAD_ERR_INI_SIZE:
-                                        $error_message .= "Le fichier dépasse la taille maximale autorisée par le serveur.";
-                                        break;
-                                    case UPLOAD_ERR_FORM_SIZE:
-                                        $error_message .= "Le fichier dépasse la taille maximale autorisée par le formulaire.";
-                                        break;
-                                    case UPLOAD_ERR_PARTIAL:
-                                        $error_message .= "Le fichier n'a été que partiellement uploadé.";
-                                        break;
-                                    case UPLOAD_ERR_NO_FILE:
-                                        $error_message .= "Aucun fichier n'a été uploadé.";
-                                        break;
-                                    case UPLOAD_ERR_NO_TMP_DIR:
-                                        $error_message .= "Dossier temporaire manquant.";
-                                        break;
-                                    case UPLOAD_ERR_CANT_WRITE:
-                                        $error_message .= "Échec d'écriture du fichier sur le disque.";
-                                        break;
-                                    default:
-                                        $error_message .= "Erreur inconnue.";
-                                }
-                                $file_error = '<div class="error-message">' . $error_message . '</div>';
-                                break;
-                            }
-                            
-                            // Vérification du type de fichier
-                            $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
-                            if (!in_array($file['type'], $allowed_types)) {
-                                $file_error = '<div class="error-message">Format de fichier non supporté. Formats acceptés : JPG, JPEG, PNG, PDF, HEIC, WEBP</div>';
-                                break;
-                            }
-                            
-                            // Vérification de la taille
-                            $max_size = 10 * 1024 * 1024; // 10 Mo
-                            if ($file['size'] > $max_size) {
-                                $file_error = '<div class="error-message">Le fichier est trop volumineux (10 Mo maximum)</div>';
-                                break;
-                            }
-                            
-                            // Préparation du dossier temporaire
-                            $upload_dir = wp_upload_dir();
-                            $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
-                            
-                            // Création du dossier s'il n'existe pas
-                            if (!file_exists($temp_dir)) {
-                                wp_mkdir_p($temp_dir);
-                            }
-                            
-                            // Génération d'un nom de fichier unique
-                            $filename = sanitize_file_name($file['name']);
-                            $filename = time() . '_' . $key . '_' . $filename;
-                            $temp_file = $temp_dir . '/' . $filename;
-                            
-                            // Déplacement du fichier
-                            if (move_uploaded_file($file['tmp_name'], $temp_file)) {
-                                $attachments[] = $temp_file;
-                                // Pas d'ajout au contenu texte car nous utilisons HTML
-                            } else {
-                                $file_error = '<div class="error-message">Erreur lors du téléchargement du fichier. Veuillez réessayer.</div>';
-                                break;
-                            }
-                        }
-                    }
-                    
-                    // S'il y a eu une erreur lors de la gestion des fichiers
-                    if ($file_error !== null) {
-                        $result = $file_error;
-                    }
-                    else {
-                        if (empty($_FILES['cenov_plaque']['name'][0])) {
-                            $html_content .= '
-                            <div style="margin-bottom: 25px;">
-                                <p style="color: #9a3412; font-style: italic;">Aucune plaque signalétique n\'a été jointe à ce message.</p>
-                            </div>';
-                        }
-                        
-                        // Ajout du pied de page
-                        $html_content .= '
-                        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: rgb(68, 71, 75); font-size: 14px;">
-                            <p>© Cenov Distribution - Tous droits réservés</p>
-                        </div>
-                    </div>';
-                        
-                        // Envoi de l'email
-                        $sent = wp_mail($to, $subject, $html_content, $headers, $attachments);
-                        
-                        // Nettoyage des fichiers temporaires
-                        if (!empty($attachments)) {
-                            foreach ($attachments as $file) {
-                                if (file_exists($file)) {
-                                    @unlink($file);
-                                }
-                            }
-                        }
-                        
-                        if ($sent) {
-                            $result = $fileWarning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
-                        } else {
-                            $result = '<div class="error-message">Une erreur est survenue lors de l\'envoi de votre message. Veuillez nous contacter par téléphone.</div>';
-                        }
-                    }
-                }
+            } else {
+                $result = $security_result;
             }
         }
         
         return $result;
+    }
+    
+    function checkFormSecurity() {
+        // Vérifications basiques
+        $basic_checks = checkBasicSecurity();
+        if ($basic_checks !== true) {
+            return $basic_checks;
+        }
+        
+        // Vérification reCAPTCHA
+        return verifyRecaptcha();
+    }
+    
+   
+    function checkBasicSecurity() {
+        $result = true;
+        
+        // Vérification de la force brute et du nonce CSRF
+        if (!cenovCheckSubmissionRate()) {
+            $result = '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
+        } elseif (!isset($_POST['cenov_nonce']) || !wp_verify_nonce($_POST['cenov_nonce'], 'cenov_contact_action')) {
+            $result = '<div class="error-message">Erreur de sécurité. Veuillez rafraîchir la page et réessayer.</div>';
+        }
+        
+        // Si déjà une erreur, retourner immédiatement
+        if ($result !== true) {
+            return $result;
+        }
+        
+        // Vérifications anti-spam (honeypot et temps de soumission)
+        if (!empty($_POST['cenov_website']) || time() - (isset($_POST['cenov_timestamp']) ? (int)$_POST['cenov_timestamp'] : 0) < 3) {
+            return '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+        }
+        
+        return true;
+    }
+    
+    function verifyRecaptcha() {
+        $recaptcha_response = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
+        
+        // Vérification initiale de la réponse reCAPTCHA
+        if (empty($recaptcha_response)) {
+            return '<div class="error-message">Échec de la vérification de sécurité. Veuillez réessayer.</div>';
+        }
+        
+        // Requête à l'API reCAPTCHA et vérification
+        return processRecaptchaResponse($recaptcha_response);
+    }
+    
+    /**
+     * Traite la réponse reCAPTCHA
+     * @param string $recaptcha_response La réponse reCAPTCHA à vérifier
+     * @return bool|string True si valide, message d'erreur sinon
+     */
+    function processRecaptchaResponse($recaptcha_response) {
+        $recaptcha_secret = get_option('cenov_recaptcha_secret', '');
+        $verify_response = wp_remote_get(
+            "https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}"
+        );
+        
+        if (is_wp_error($verify_response)) {
+            return '<div class="error-message">Erreur de vérification. Veuillez réessayer plus tard.</div>';
+        }
+        
+        $recaptcha_result = json_decode(wp_remote_retrieve_body($verify_response));
+        
+        // Vérifier le score reCAPTCHA
+        if (!isset($recaptcha_result->success) || !$recaptcha_result->success ||
+            (isset($recaptcha_result->score) && $recaptcha_result->score < 0.5)) {
+            return '<div class="error-message">La vérification de sécurité a échoué. Veuillez réessayer.</div>';
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Valide les données du formulaire
+     * @return array|bool Données validées ou false si validation échouée
+     */
+    function validateFormData() {
+        $data = [
+            'prenom' => isset($_POST['cenov_prenom']) ? sanitize_text_field($_POST['cenov_prenom']) : '',
+            'nom_famille' => isset($_POST['cenov_nom']) ? sanitize_text_field($_POST['cenov_nom']) : '',
+            'email' => isset($_POST['cenov_email']) ? sanitize_email($_POST['cenov_email']) : '',
+            'telephone' => isset($_POST['cenov_telephone']) ? sanitize_text_field($_POST['cenov_telephone']) : '',
+            'message' => isset($_POST['cenov_message']) ? sanitize_textarea_field($_POST['cenov_message']) : '',
+            'societe' => isset($_POST['cenov_societe']) ? sanitize_text_field($_POST['cenov_societe']) : '',
+            'adresse' => isset($_POST['cenov_adresse']) ? sanitize_text_field($_POST['cenov_adresse']) : '',
+            'codepostal' => isset($_POST['cenov_codepostal']) ? sanitize_text_field($_POST['cenov_codepostal']) : '',
+            'ville' => isset($_POST['cenov_ville']) ? sanitize_text_field($_POST['cenov_ville']) : '',
+            'produit' => isset($_POST['cenov_produit']) ? sanitize_text_field($_POST['cenov_produit']) : ''
+        ];
+        
+        $data['nom'] = $data['prenom'] . ' ' . $data['nom_famille'];
+        
+        // Vérification des champs obligatoires
+        if (empty($data['prenom']) || empty($data['nom_famille']) || empty($data['email']) || empty($data['telephone'])) {
+            return false;
+        }
+        
+        return $data;
+    }
+    
+    /**
+     * Traite les fichiers téléchargés
+     * @return array Résultat du traitement avec pièces jointes et avertissements
+     */
+    function processUploadedFiles() {
+        $result = [
+            'attachments' => [],
+            'warning' => '',
+            'error' => null
+        ];
+        
+        // Si aucun fichier n'est joint
+        if (empty($_FILES['cenov_plaque']['name'][0])) {
+            $result['warning'] = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
+            return $result;
+        }
+        
+        // Traiter chaque fichier
+        foreach($_FILES['cenov_plaque']['name'] as $key => $name) {
+            if(empty($name)) {
+                continue;
+            }
+            
+            // Préparer les données du fichier
+            $file = prepareFileData($key);
+            
+            // Valider et traiter le fichier
+            $validation = validateFile($file, $key);
+            
+            // Si validation échouée, retourner l'erreur
+            if (!$validation['success']) {
+                $result['error'] = $validation['error'];
+                return $result;
+            }
+            
+            // Ajouter le fichier aux pièces jointes
+            $result['attachments'][] = $validation['file_path'];
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Prépare les données d'un fichier téléchargé
+     * @param int $key Index du fichier
+     * @return array Données du fichier
+     */
+    function prepareFileData($key) {
+        return [
+            'name' => $_FILES['cenov_plaque']['name'][$key],
+            'type' => $_FILES['cenov_plaque']['type'][$key],
+            'tmp_name' => $_FILES['cenov_plaque']['tmp_name'][$key],
+            'error' => $_FILES['cenov_plaque']['error'][$key],
+            'size' => $_FILES['cenov_plaque']['size'][$key]
+        ];
+    }
+    
+    /**
+     * Valide un fichier téléchargé
+     * @param array $file Données du fichier
+     * @param int $key Index du fichier
+     * @return array Résultat de la validation
+     */
+    function validateFile($file, $key) {
+        $result = ['success' => false, 'error' => null, 'file_path' => null];
+        $valid = true;
+        
+        // Vérification des erreurs d'upload
+        if ($valid && $file['error'] !== UPLOAD_ERR_OK) {
+            $error_message = "Erreur lors de l'upload du fichier: ";
+            switch ($file['error']) {
+                case UPLOAD_ERR_INI_SIZE:
+                    $error_message .= "Le fichier dépasse la taille maximale autorisée par le serveur.";
+                    break;
+                case UPLOAD_ERR_FORM_SIZE:
+                    $error_message .= "Le fichier dépasse la taille maximale autorisée par le formulaire.";
+                    break;
+                case UPLOAD_ERR_PARTIAL:
+                    $error_message .= "Le fichier n'a été que partiellement uploadé.";
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    $error_message .= "Aucun fichier n'a été uploadé.";
+                    break;
+                case UPLOAD_ERR_NO_TMP_DIR:
+                    $error_message .= "Dossier temporaire manquant.";
+                    break;
+                case UPLOAD_ERR_CANT_WRITE:
+                    $error_message .= "Échec d'écriture du fichier sur le disque.";
+                    break;
+                default:
+                    $error_message .= "Erreur inconnue.";
+            }
+            $result['error'] = '<div class="error-message">' . $error_message . '</div>';
+            $valid = false;
+        }
+        
+        // Vérification du type de fichier
+        $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
+        if ($valid && !in_array($file['type'], $allowed_types)) {
+            $result['error'] = '<div class="error-message">Format de fichier non supporté. Formats acceptés : JPG, JPEG, PNG, PDF, HEIC, WEBP</div>';
+            $valid = false;
+        }
+        
+        // Vérification de la taille
+        $max_size = 10 * 1024 * 1024; // 10 Mo
+        if ($valid && $file['size'] > $max_size) {
+            $result['error'] = '<div class="error-message">Le fichier est trop volumineux (10 Mo maximum)</div>';
+            $valid = false;
+        }
+        
+        // Traitement du fichier si valide
+        if ($valid) {
+            $temp_file = saveUploadedFile($file, $key);
+            if ($temp_file) {
+                $result['success'] = true;
+                $result['file_path'] = $temp_file;
+            } else {
+                $result['error'] = '<div class="error-message">Erreur lors du téléchargement du fichier. Veuillez réessayer.</div>';
+            }
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Sauvegarde un fichier téléchargé
+     * @param array $file Données du fichier
+     * @param int $key Index du fichier
+     * @return string|false Chemin du fichier sauvegardé ou false si erreur
+     */
+    function saveUploadedFile($file, $key) {
+        // Préparation du dossier temporaire
+        $upload_dir = wp_upload_dir();
+        $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
+        
+        // Création du dossier s'il n'existe pas
+        if (!file_exists($temp_dir)) {
+            wp_mkdir_p($temp_dir);
+        }
+        
+        // Génération d'un nom de fichier unique
+        $filename = sanitize_file_name($file['name']);
+        $filename = time() . '_' . $key . '_' . $filename;
+        $temp_file = $temp_dir . '/' . $filename;
+        
+        // Déplacement du fichier
+        if (move_uploaded_file($file['tmp_name'], $temp_file)) {
+            return $temp_file;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Envoie l'email avec les pièces jointes
+     * @param array $data Données du formulaire
+     * @param array $attachments Liste des pièces jointes
+     * @param string $file_warning Message d'avertissement
+     * @return string Message de résultat
+     */
+    function sendContactEmail($data, $attachments, $file_warning) {
+        // Création du contenu HTML de l'email
+        $html_content = buildEmailContent($data, $attachments);
+        
+        // Envoi de l'email
+        $to = 'ventes@cenov-distribution.fr';
+        $subject = 'Nouvelle plaque signalétique de ' . $data['nom'];
+        $headers = [
+            'From: Cenov Distribution <ventes@cenov-distribution.fr>',
+            'Reply-To: ' . $data['nom'] . ' <' . $data['email'] . '>',
+            'Content-Type: text/html; charset=UTF-8'
+        ];
+        
+        $sent = wp_mail($to, $subject, $html_content, $headers, $attachments);
+        
+        // Nettoyage des fichiers temporaires
+        foreach ($attachments as $file) {
+            if (file_exists($file)) {
+                @unlink($file);
+            }
+        }
+        
+        if ($sent) {
+            return $file_warning . '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+        } else {
+            return '<div class="error-message">Une erreur est survenue lors de l\'envoi de votre message. Veuillez nous contacter par téléphone.</div>';
+        }
+    }
+    
+    /**
+     * Construit le contenu HTML de l'email
+     * @param array $data Données du formulaire
+     * @param array $attachments Liste des pièces jointes
+     * @return string Contenu HTML
+     */
+    function buildEmailContent($data, $attachments) {
+        $html_content = '
+        <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Nouvelle plaque signalétique :</h1>
+                <p style="margin-top: 0; margin-bottom: 5px;">Demande de : ' . $data['nom'] . '</p>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                    <p style="margin: 5px 0;"><strong>Prénom :</strong> ' . $data['prenom'] . '</p>
+                    <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $data['nom_famille'] . '</p>
+                    <p style="margin: 5px 0;"><strong>Email :</strong> ' . $data['email'] . '</p>
+                    <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . $data['telephone'] . '</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations professionnelles :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                    <p style="margin: 5px 0;"><strong>Société :</strong> ' . ($data['societe'] ? $data['societe'] : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . ($data['adresse'] ? $data['adresse'] : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . ($data['codepostal'] ? $data['codepostal'] : CENOV_NOT_PROVIDED_M) . '</p>
+                    <p style="margin: 5px 0;"><strong>Ville :</strong> ' . ($data['ville'] ? $data['ville'] : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Produit concerné :</strong> ' . ($data['produit'] ? $data['produit'] : CENOV_NOT_PROVIDED_M) . '</p>
+                </div>
+            </div>';
+
+        // Ajouter le message s'il existe
+        if (!empty($data['message'])) {
+            $html_content .= '
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Message :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                    <p style="margin: 5px 0;">' . nl2br(htmlspecialchars($data['message'])) . '</p>
+                </div>
+            </div>';
+        }
+
+        // Ajouter l'information sur les pièces jointes
+        if (empty($attachments)) {
+            $html_content .= '
+            <div style="margin-bottom: 25px;">
+                <p style="color: #9a3412; font-style: italic;">Aucune plaque signalétique n\'a été jointe à ce message.</p>
+            </div>';
+        }
+        
+        // Ajout du pied de page
+        $html_content .= '
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: rgb(68, 71, 75); font-size: 14px;">
+            <p>© Cenov Distribution - Tous droits réservés</p>
+        </div>
+    </div>';
+        
+        return $html_content;
     }
 }
 
