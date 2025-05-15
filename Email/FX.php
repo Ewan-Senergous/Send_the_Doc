@@ -48,8 +48,12 @@ if (!function_exists('cenovContactForm')) {
             
             $result = json_decode(wp_remote_retrieve_body($verify_response));
             
+            // Déboguer la réponse reCAPTCHA
+            error_log('reCAPTCHA response: ' . print_r($result, true));
+            
             // Vérifier que le score est acceptable (0.0 = bot, 1.0 = humain)
-            if (!$result->success || $result->score < 0.5) {
+            if (!isset($result->success) || !$result->success || 
+                (isset($result->score) && $result->score < 0.5)) {
                 return '<div class="error-message">La vérification de sécurité a échoué. Veuillez réessayer.</div>';
             }
             
@@ -286,7 +290,7 @@ $result = cenovContactForm();
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     </span>
-                    <input type="email" id="cenov-email" name="billing_email" data-woocommerce-checkout="billing_email" placeholder="Votre adresse e-mail" required />
+                    <input type="email" id="cenov-email" name="cenov_email" placeholder="Votre adresse e-mail" required />
                 </div>
             </div>
 
@@ -296,7 +300,7 @@ $result = cenovContactForm();
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     </span>
-                    <input type="tel" id="cenov-telephone" name="billing_phone" data-woocommerce-checkout="billing_phone" placeholder="Votre numéro de téléphone" required />
+                    <input type="tel" id="cenov-telephone" name="cenov_telephone" placeholder="Votre numéro de téléphone" required />
                 </div>
             </div>
 
@@ -369,7 +373,7 @@ $result = cenovContactForm();
             <div class="form-row full-width file-upload">
                 <label for="cenov-plaque">Votre plaque signalétique 📋 :</label>
                 <div class="file-input-container">
-                    <input type="file" id="cenov-plaque" name="cenov_plaque[]" multiple accept=".jpg, .jpeg, .png, .pdf, .heic, .webp" data-woocommerce-checkout="billing_plaque"/>
+                    <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf, .heic, .webp"/>
                     <div class="file-upload-placeholder">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -880,6 +884,24 @@ document.addEventListener("DOMContentLoaded", function() {
     const fileInputContainer = document.querySelector(".file-input-container");
     const form = document.querySelector(".cenov-form-container form");
     const recaptchaResponse = document.getElementById("g-recaptcha-response");
+    
+    // Configuration du reCAPTCHA pour la soumission du formulaire
+    if (form) {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            // Exécuter reCAPTCHA
+            grecaptcha.ready(function() {
+                grecaptcha.execute('6LcXl_sqAAAAAP5cz7w1iul0Bu18KnGqQ6u2DZ7W', {action: 'submit'})
+                .then(function(token) {
+                    // Ajouter le token au champ caché
+                    document.getElementById('g-recaptcha-response').value = token;
+                    // Soumettre le formulaire
+                    form.submit();
+                });
+            });
+        });
+    }
 
     // Variables pour gérer les fichiers
     let selectedFiles = [];
