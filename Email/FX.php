@@ -82,109 +82,189 @@ if (empty($prenom) || empty($nom_famille) || empty($email) || empty($telephone))
 $to = 'ventes@cenov-distribution.fr';
 $subject = 'Nouvelle plaque signalétique de ' . $nom;
 
-// Construction du corps de l'email avec tous les champs
+// Construction du corps de l'email en HTML avec mise en forme
+$html_content = '
+<div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Nouvelle plaque signalétique</h1>
+        <p style="margin-top: 0; margin-bottom: 5px;">Demande de : ' . $nom . '</p>
+    </div>
+    
+    <div style="margin-bottom: 25px;">
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles :</h3>
+        <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+            <p style="margin: 5px 0;"><strong>Prénom :</strong> ' . $prenom . '</p>
+            <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $nom_famille . '</p>
+            <p style="margin: 5px 0;"><strong>Email :</strong> ' . $email . '</p>
+            <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . $telephone . '</p>
+        </div>
+    </div>
+    
+    <div style="margin-bottom: 25px;">
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations professionnelles :</h3>
+        <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+            <p style="margin: 5px 0;"><strong>Société :</strong> ' . ($societe ? $societe : 'Non renseignée') . '</p>
+            <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . ($adresse ? $adresse : 'Non renseignée') . '</p>
+            <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . ($codepostal ? $codepostal : 'Non renseigné') . '</p>
+            <p style="margin: 5px 0;"><strong>Ville :</strong> ' . ($ville ? $ville : 'Non renseignée') . '</p>
+            <p style="margin: 5px 0;"><strong>Produit concerné :</strong> ' . ($produit ? $produit : 'Non renseigné') . '</p>
+        </div>
+    </div>';
+
+// Ajouter le message s'il existe
+if (!empty($message)) {
+    $html_content .= '
+    <div style="margin-bottom: 25px;">
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Message :</h3>
+        <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+            <p style="margin: 5px 0;">' . nl2br(htmlspecialchars($message)) . '</p>
+        </div>
+    </div>';
+}
+
+// Version texte pour la compatibilité
 $content = "--- INFORMATIONS PERSONNELLES ---\r\n";
-            $content .= "Prénom : " . $prenom . "\r\n";
-            $content .= "Nom : " . $nom_famille . "\r\n";
-            $content .= "Email : " . $email . "\r\n";
-            $content .= "Téléphone : " . $telephone . "\r\n\r\n";
-            
-            $content .= "--- INFORMATIONS PROFESSIONNELLES ---\r\n";
-            $content .= "Société : " . ($societe ? $societe : 'Non renseignée') . "\r\n";
-            $content .= "Adresse : " . ($adresse ? $adresse : 'Non renseignée') . "\r\n";
-            $content .= "Code postal : " . ($codepostal ? $codepostal : 'Non renseigné') . "\r\n";
-            $content .= "Ville : " . ($ville ? $ville : 'Non renseignée') . "\r\n";
-            $content .= "Produit concerné : " . ($produit ? $produit : 'Non renseigné') . "\r\n\r\n";
-            
-            $content .= "--- MESSAGE ---\r\n";
-            $content .= !empty($message) ? $message : 'Aucun message spécifique fourni';
-            $content .= "\r\n\r\n";
-            
-            $headers = [
-                'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
-                'Reply-To: ' . $nom . ' <' . $email . '>'
-            ];
+$content .= "Prénom : " . $prenom . "\r\n";
+$content .= "Nom : " . $nom_famille . "\r\n";
+$content .= "Email : " . $email . "\r\n";
+$content .= "Téléphone : " . $telephone . "\r\n\r\n";
+
+$content .= "--- INFORMATIONS PROFESSIONNELLES ---\r\n";
+$content .= "Société : " . ($societe ? $societe : 'Non renseignée') . "\r\n";
+$content .= "Adresse : " . ($adresse ? $adresse : 'Non renseignée') . "\r\n";
+$content .= "Code postal : " . ($codepostal ? $codepostal : 'Non renseigné') . "\r\n";
+$content .= "Ville : " . ($ville ? $ville : 'Non renseignée') . "\r\n";
+$content .= "Produit concerné : " . ($produit ? $produit : 'Non renseigné') . "\r\n\r\n";
+
+$content .= "--- MESSAGE ---\r\n";
+$content .= !empty($message) ? $message : 'Aucun message spécifique fourni';
+$content .= "\r\n\r\n";
+
+$headers = [
+    'From: Cenov Distribution <ventes@cenov-distribution.fr>',
+    'Reply-To: ' . $nom . ' <' . $email . '>',
+    'Content-Type: text/html; charset=UTF-8'
+];
 
             $fileWarning = '';
-if (empty($_FILES['cenov_plaque']['name'])) {
+if (empty($_FILES['cenov_plaque']['name'][0])) {
     $fileWarning = '<div class="warning-message">Attention : aucune plaque signalétique n\'a été jointe à votre message.</div>';
 }
             
-            // Gestion du fichier uploadé
+            // Gestion des fichiers uploadés
             $attachments = array();
             
-            if (!empty($_FILES['cenov_plaque']['name'])) {
-                $file = $_FILES['cenov_plaque'];
-                
-                // Vérification des erreurs d'upload
-                if ($file['error'] !== UPLOAD_ERR_OK) {
-                    $error_message = "Erreur lors de l'upload du fichier: ";
-                    switch ($file['error']) {
-                        case UPLOAD_ERR_INI_SIZE:
-                            $error_message .= "Le fichier dépasse la taille maximale autorisée par le serveur.";
-                            break;
-                        case UPLOAD_ERR_FORM_SIZE:
-                            $error_message .= "Le fichier dépasse la taille maximale autorisée par le formulaire.";
-                            break;
-                        case UPLOAD_ERR_PARTIAL:
-                            $error_message .= "Le fichier n'a été que partiellement uploadé.";
-                            break;
-                        case UPLOAD_ERR_NO_FILE:
-                            $error_message .= "Aucun fichier n'a été uploadé.";
-                            break;
-                        case UPLOAD_ERR_NO_TMP_DIR:
-                            $error_message .= "Dossier temporaire manquant.";
-                            break;
-                        case UPLOAD_ERR_CANT_WRITE:
-                            $error_message .= "Échec d'écriture du fichier sur le disque.";
-                            break;
-                        default:
-                            $error_message .= "Erreur inconnue.";
+            if (!empty($_FILES['cenov_plaque']['name'][0])) {
+                foreach($_FILES['cenov_plaque']['name'] as $key => $name) {
+                    if(empty($name)) {
+                        continue;
                     }
-                    return '<div class="error-message">' . $error_message . '</div>';
-                }
-                
-                // Vérification du type de fichier
-                $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
-                if (!in_array($file['type'], $allowed_types)) {
-                    return '<div class="error-message">Format de fichier non supporté. Formats acceptés : JPG, JPEG, PNG, PDF, HEIC, WEBP</div>';
-                }
-                
-                // Vérification de la taille
-                $max_size = 10 * 1024 * 1024; // 10 Mo
-                if ($file['size'] > $max_size) {
-                    return '<div class="error-message">Le fichier est trop volumineux (10 Mo maximum)</div>';
-                }
-                
-                // Préparation du dossier temporaire
-                $upload_dir = wp_upload_dir();
-                $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
-                
-                // Création du dossier s'il n'existe pas
-                if (!file_exists($temp_dir)) {
-                    wp_mkdir_p($temp_dir);
-                }
-                
-                // Génération d'un nom de fichier unique
-                $filename = sanitize_file_name($file['name']);
-                $filename = time() . '_' . $filename;
-                $temp_file = $temp_dir . '/' . $filename;
-                
-                // Déplacement du fichier
-                if (move_uploaded_file($file['tmp_name'], $temp_file)) {
-                    $attachments[] = $temp_file;
-                    $content .= "\r\nPièce jointe : " . $file['name'] . "\r\n";
-                } else {
-                    return '<div class="error-message">Erreur lors du téléchargement du fichier. Veuillez réessayer.</div>';
+                    
+                    // Créer un tableau de fichier individuel pour faciliter le traitement
+                    $file = array(
+                        'name' => $_FILES['cenov_plaque']['name'][$key],
+                        'type' => $_FILES['cenov_plaque']['type'][$key],
+                        'tmp_name' => $_FILES['cenov_plaque']['tmp_name'][$key],
+                        'error' => $_FILES['cenov_plaque']['error'][$key],
+                        'size' => $_FILES['cenov_plaque']['size'][$key]
+                    );
+                    
+                    // Vérification des erreurs d'upload
+                    if ($file['error'] !== UPLOAD_ERR_OK) {
+                        $error_message = "Erreur lors de l'upload du fichier: ";
+                        switch ($file['error']) {
+                            case UPLOAD_ERR_INI_SIZE:
+                                $error_message .= "Le fichier dépasse la taille maximale autorisée par le serveur.";
+                                break;
+                            case UPLOAD_ERR_FORM_SIZE:
+                                $error_message .= "Le fichier dépasse la taille maximale autorisée par le formulaire.";
+                                break;
+                            case UPLOAD_ERR_PARTIAL:
+                                $error_message .= "Le fichier n'a été que partiellement uploadé.";
+                                break;
+                            case UPLOAD_ERR_NO_FILE:
+                                $error_message .= "Aucun fichier n'a été uploadé.";
+                                break;
+                            case UPLOAD_ERR_NO_TMP_DIR:
+                                $error_message .= "Dossier temporaire manquant.";
+                                break;
+                            case UPLOAD_ERR_CANT_WRITE:
+                                $error_message .= "Échec d'écriture du fichier sur le disque.";
+                                break;
+                            default:
+                                $error_message .= "Erreur inconnue.";
+                        }
+                        return '<div class="error-message">' . $error_message . '</div>';
+                    }
+                    
+                    // Vérification du type de fichier
+                    $allowed_types = array('image/jpeg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
+                    if (!in_array($file['type'], $allowed_types)) {
+                        return '<div class="error-message">Format de fichier non supporté. Formats acceptés : JPG, JPEG, PNG, PDF, HEIC, WEBP</div>';
+                    }
+                    
+                    // Vérification de la taille
+                    $max_size = 10 * 1024 * 1024; // 10 Mo
+                    if ($file['size'] > $max_size) {
+                        return '<div class="error-message">Le fichier est trop volumineux (10 Mo maximum)</div>';
+                    }
+                    
+                    // Préparation du dossier temporaire
+                    $upload_dir = wp_upload_dir();
+                    $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
+                    
+                    // Création du dossier s'il n'existe pas
+                    if (!file_exists($temp_dir)) {
+                        wp_mkdir_p($temp_dir);
+                    }
+                    
+                    // Génération d'un nom de fichier unique
+                    $filename = sanitize_file_name($file['name']);
+                    $filename = time() . '_' . $key . '_' . $filename;
+                    $temp_file = $temp_dir . '/' . $filename;
+                    
+                    // Déplacement du fichier
+                    if (move_uploaded_file($file['tmp_name'], $temp_file)) {
+                        $attachments[] = $temp_file;
+                        // Pas d'ajout au contenu texte car nous utilisons HTML
+                    } else {
+                        return '<div class="error-message">Erreur lors du téléchargement du fichier. Veuillez réessayer.</div>';
+                    }
                 }
             }
 
-            if (empty($_FILES['cenov_plaque']['name'])) {
-                $content .= "\r\n\r\nAucune plaque signalétique n'a été jointe à ce message.";
+            if (empty($_FILES['cenov_plaque']['name'][0])) {
+                $html_content .= '
+                <div style="margin-bottom: 25px;">
+                    <p style="color: #9a3412; font-style: italic;">Aucune plaque signalétique n\'a été jointe à ce message.</p>
+                </div>';
+            } else {
+                $html_content .= '
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Pièces jointes :</h3>
+                    <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                        <ul style="margin: 5px 0; padding-left: 20px;">';
+                
+                foreach($attachments as $index => $attachment) {
+                    $file_name = basename($attachment);
+                    $html_content .= '<li style="margin-bottom: 5px;"><strong>Fichier ' . ($index + 1) . ' :</strong> ' . $file_name . '</li>';
+                }
+                
+                $html_content .= '
+                        </ul>
+                    </div>
+                </div>';
             }
             
+            // Ajout du pied de page
+            $html_content .= '
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: rgb(68, 71, 75); font-size: 14px;">
+                <p>© Cenov Distribution - Tous droits réservés</p>
+            </div>
+        </div>';
+            
             // Envoi de l'email
-            $sent = wp_mail($to, $subject, $content, $headers, $attachments);
+            $sent = wp_mail($to, $subject, $html_content, $headers, $attachments);
             
             // Nettoyage des fichiers temporaires
             if (!empty($attachments)) {
@@ -373,14 +453,14 @@ $result = cenovContactForm();
             <div class="form-row full-width file-upload">
                 <label for="cenov-plaque">Votre plaque signalétique 📋 :</label>
                 <div class="file-input-container">
-                    <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf, .heic, .webp"/>
+                    <input type="file" id="cenov-plaque" name="cenov_plaque[]" multiple accept=".jpg, .jpeg, .png, .pdf, .heic, .webp"/>
                     <div class="file-upload-placeholder">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <span id="file-name-display">Choisir un fichier ou glisser-déposer</span>
+                        <span id="file-name-display">Choisir un ou plusieurs fichiers ou glisser-déposer</span>
                     </div>
                 </div>
                 
