@@ -293,9 +293,33 @@ if (!function_exists('cenovContactForm')) {
     }
     
     function sendEmail($content, $attachments) {
-        // Adresse email principal de l'entreprise
-        $to = 'ventes@cenov-distribution.fr';
+        // Préparation des données de base
+        $emailData = prepareEmailData();
         
+        // Génération du contenu HTML de l'email
+        $html_content = generateEmailHtml($content, $emailData, $attachments);
+        
+        // Envoyer les emails
+        $sent = sendEmails($html_content, $attachments, $emailData);
+        
+        // Si l'envoi a réussi, préparer et stocker les données
+        if ($sent) {
+            $fileData = storeOrderData($emailData, $attachments);
+            
+            // Fusionner les données de fichiers avec emailData pour la session
+            $emailData['file_names'] = $fileData['file_names'];
+            $emailData['file_paths'] = $fileData['file_paths'];
+            
+            setupSessionAndRedirect($emailData);
+        }
+        
+        return $sent;
+    }
+    
+    /**
+     * Prépare les données de base pour l'email
+     */
+    function prepareEmailData() {
         // Récupérer l'email du client
         $client_email = isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '';
         
@@ -313,17 +337,10 @@ if (!function_exists('cenovContactForm')) {
         
         $date_commande = date_i18n('j F Y');
         
-        $subject = 'Demande de prix : n°' . $commande_number . ' (' . $date_commande . ')';
-        
         // Prénom et nom du client pour l'affichage
         $client_firstname = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
         $client_lastname = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
         $client_name = $client_firstname . ' ' . $client_lastname;
-        
-        // Stocker des informations essentielles de la commande dans la base de données
-        update_option('cenov_order_date_' . $commande_number, time());
-        update_option('cenov_order_client_' . $commande_number, $client_name);
-        update_option('cenov_order_email_' . $commande_number, $client_email);
         
         // Créer l'URL sécurisée pour la page de récapitulatif
         $recap_url = add_query_arg(
@@ -334,59 +351,8 @@ if (!function_exists('cenovContactForm')) {
             home_url(CENOV_RECAP_URL)
         );
         
-        // Créer un contenu HTML plus formaté
-        $html_content = '
-        <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Demande de prix :</h1>
-                <p style="margin-top: 0; margin-bottom: 5px;">Référence : ' . $commande_number . ' - ' . $date_commande . '</p>
-                <p style="margin: 0;"><a href="' . esc_url($recap_url) . '" style="color: #2563eb; text-decoration: underline;">[Commande n°' . $commande_number . ']</a></p>
-                <p style="margin: 5px 0; font-size: 12px; color: #6b7280;">Ce lien est valable pendant 30 jours.</p>
-            </div>
-            
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles :</h3>
-                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
-                    <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $client_name . '</p>
-                    <p style="margin: 5px 0;"><strong>Email :</strong> ' . $client_email . '</p>
-                    <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Société :</strong> ' . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Ville :</strong> ' . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Pays :</strong> ' . (isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>';
-
-            // L'URL sécurisée pour la page de récapitulatif sera créée plus tard
-                    
-            $html_content .= '
-                    <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
-                    <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>';
-        
-        // Ajouter le message du client s'il existe
-        if (isset($_POST['billing_message']) && !empty($_POST['billing_message'])) {
-            $html_content .= '
-                    <p style="margin: 5px 0;"><strong>Message :</strong> ' . nl2br(esc_html(sanitize_textarea_field($_POST['billing_message']))) . '</p>';
-        }
-        
-        // Ajouter le contenu texte brut comme information supplémentaire
-        $html_content .= '
-                    <!-- Contenu brut original:
-                    ' . esc_html($content) . '
-                    -->';
-                    
-        $html_content .= '
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Détail de la commande :</h3>
-                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">';
-        
         // Préparation des produits pour la session
         $products_for_session = array();
-        
         if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
             foreach (WC()->cart->get_cart() as $cart_item) {
                 $product = $cart_item['data'];
@@ -404,40 +370,186 @@ if (!function_exists('cenovContactForm')) {
                     'quantity' => $quantity,
                     'image' => $image_url
                 );
-                
-                $html_content .= '
-                <div style="background-color: #fff; padding: 10px; margin-bottom: 10px; border-radius: 4px; display: flex; align-items: center;">
-                    <div style="width: 60px; min-width: 60px; height: 60px; margin-right: 15px; background-color: #fff; border-radius: 4px; overflow: hidden;">
-                        <img src="' . $image_url . '" alt="' . esc_attr($product->get_name()) . '" style="width: 100%; height: 100%; object-fit: contain;" />
-                    </div>
-                    <div>
-                        <p style="margin: 5px 0;"><strong>Produit :</strong> ' . esc_html($product->get_name()) . '</p>
-                        <p style="margin: 5px 0;"><strong>SKU :</strong> ' . $sku . '</p>
-                        <p style="margin: 5px 0;"><strong>Quantité :</strong> ' . $quantity . '</p>
-                    </div>
-                </div>';
             }
-        } else {
-            $html_content .= '<p>Aucun produit demandé</p>';
         }
         
-        $html_content .= '
+        return array(
+            'client_email' => $client_email,
+            'commande_number' => $commande_number,
+            'order_key' => $order_key,
+            'date_commande' => $date_commande,
+            'client_name' => $client_name,
+            'client_firstname' => $client_firstname,
+            'client_lastname' => $client_lastname,
+            'recap_url' => $recap_url,
+            'products_for_session' => $products_for_session,
+            'subject' => 'Demande de prix : n°' . $commande_number . ' (' . $date_commande . ')'
+        );
+    }
+    
+    /**
+     * Génère le contenu HTML de l'email
+     */
+    function generateEmailHtml($content, $emailData, $attachments = []) {
+        $html_header = generateEmailHeader($emailData);
+        $html_personal_info = generatePersonalInfoSection($emailData);
+        $html_order_details = generateOrderDetailsSection();
+        $html_attachments_info = generateAttachmentsInfo($attachments);
+        $html_footer = generateEmailFooter();
+        
+        // Ajouter une section pour le contenu brut si nécessaire
+        $html_raw_content = '<div style="margin-bottom: 25px; display: none;">
+            <pre>' . htmlspecialchars($content) . '</pre>
+        </div>';
+        
+        return $html_header . $html_personal_info . $html_order_details . $html_attachments_info . $html_raw_content . $html_footer;
+    }
+    
+    /**
+     * Génère l'en-tête de l'email
+     */
+    function generateEmailHeader($emailData) {
+        return '
+        <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Demande de prix :</h1>
+                <p style="margin-top: 0; margin-bottom: 5px;">Référence : ' . $emailData['commande_number'] . ' - ' . $emailData['date_commande'] . '</p>
+                <p style="margin: 0;"><a href="' . esc_url($emailData['recap_url']) . '" style="color: #2563eb; text-decoration: underline;">[Commande n°' . $emailData['commande_number'] . ']</a></p>
+                <p style="margin: 5px 0; font-size: 12px; color: #6b7280;">Ce lien est valable pendant 30 jours.</p>
+            </div>';
+    }
+    
+    /**
+     * Génère la section d'informations personnelles
+     */
+    function generatePersonalInfoSection($emailData) {
+        $html = '
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                    <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $emailData['client_name'] . '</p>
+                    <p style="margin: 5px 0;"><strong>Email :</strong> ' . $emailData['client_email'] . '</p>
+                    <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Société :</strong> ' . (isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . (isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . (isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Ville :</strong> ' . (isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Pays :</strong> ' . (isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
+                    <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>';
+        
+        // Ajouter le message du client s'il existe
+        if (isset($_POST['billing_message']) && !empty($_POST['billing_message'])) {
+            $html .= '
+                    <p style="margin: 5px 0;"><strong>Message :</strong> ' . nl2br(esc_html(sanitize_textarea_field($_POST['billing_message']))) . '</p>';
+        }
+        
+        $html .= '
                 </div>
             </div>';
             
-        // Informations sur les pièces jointes
+        return $html;
+    }
+    
+    /**
+     * Génère la section des détails de la commande
+     */
+    function generateOrderDetailsSection() {
+        $html = '
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Détail de la commande :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">';
+        
+        if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
+            $html .= generateProductList();
+        } else {
+            $html .= '<p>Aucun produit demandé</p>';
+        }
+        
+        $html .= '
+                </div>
+            </div>';
+            
+        return $html;
+    }
+    
+    /**
+     * Génère la liste des produits de la commande
+     */
+    function generateProductList() {
+        $html = '';
+        
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            $product = $cart_item['data'];
+            $quantity = $cart_item['quantity'];
+            $sku = $product->get_sku() ? $product->get_sku() : 'N/A';
+            
+            // Obtenir l'URL de l'image du produit
+            $image_id = $product->get_image_id();
+            $image_url = $image_id ? wp_get_attachment_image_url($image_id, 'thumbnail') : wc_placeholder_img_src();
+            
+            $html .= '
+            <div style="background-color: #fff; padding: 10px; margin-bottom: 10px; border-radius: 4px; display: flex; align-items: center;">
+                <div style="width: 60px; min-width: 60px; height: 60px; margin-right: 15px; background-color: #fff; border-radius: 4px; overflow: hidden;">
+                    <img src="' . $image_url . '" alt="' . esc_attr($product->get_name()) . '" style="width: 100%; height: 100%; object-fit: contain;" />
+                </div>
+                <div>
+                    <p style="margin: 5px 0;"><strong>Produit :</strong> ' . esc_html($product->get_name()) . '</p>
+                    <p style="margin: 5px 0;"><strong>SKU :</strong> ' . $sku . '</p>
+                    <p style="margin: 5px 0;"><strong>Quantité :</strong> ' . $quantity . '</p>
+                </div>
+            </div>';
+        }
+        
+        return $html;
+    }
+    
+    /**
+     * Génère les informations sur les pièces jointes
+     */
+    function generateAttachmentsInfo($attachments) {
         if (empty($attachments)) {
-            $html_content .= '
+            return '
             <div style="margin-bottom: 25px;">
                 <p>Aucune plaque signalétique n\'a été jointe à cette demande.</p>
             </div>';
         }
         
-        $html_content .= '
+        // Afficher la liste des pièces jointes
+        $html = '
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Pièces jointes :</h3>
+            <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">';
+        
+        foreach ($attachments as $file) {
+            $filename = basename($file);
+            $html .= '<p style="margin: 5px 0;"><strong>Fichier :</strong> ' . $filename . '</p>';
+        }
+        
+        $html .= '
+            </div>
+        </div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Génère le pied de page de l'email
+     */
+    function generateEmailFooter() {
+        return '
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">
                 <p>© Cenov Distribution - Tous droits réservés</p>
             </div>
         </div>';
+    }
+    
+    /**
+     * Envoie les emails à l'entreprise et au client
+     */
+    function sendEmails($html_content, $attachments, $emailData) {
+        // Adresse email principal de l'entreprise
+        $to = 'ventes@cenov-distribution.fr';
         
         $headers = [
             'From: Cenov Distribution <ventes@cenov-distribution.fr>',
@@ -446,11 +558,11 @@ if (!function_exists('cenovContactForm')) {
         ];
         
         // Envoi de l'email au service commercial - TOUJOURS à ventes@cenov-distribution.fr
-        $sent_to_company = wp_mail($to, $subject, $html_content, $headers, $attachments);
+        $sent_to_company = wp_mail($to, $emailData['subject'], $html_content, $headers, $attachments);
         
         // Envoi d'une copie au client s'il a fourni une adresse email
         $sent_to_client = false;
-        if (!empty($client_email)) {
+        if (!empty($emailData['client_email'])) {
             $client_headers = [
                 'From: Cenov Distribution <ventes@cenov-distribution.fr>',
                 'Reply-To: Cenov Distribution <ventes@cenov-distribution.fr>',
@@ -458,7 +570,7 @@ if (!function_exists('cenovContactForm')) {
             ];
             
             // Petit ajustement du message pour le client
-            $client_html_content = str_replace('Confirmation de votre demande de prix', 'Confirmation : ' . $subject, $html_content);
+            $client_html_content = str_replace('Confirmation de votre demande de prix', 'Confirmation : ' . $emailData['subject'], $html_content);
             
             // Ajouter le message de remerciement uniquement pour le client
             $client_html_content = str_replace(
@@ -470,12 +582,17 @@ if (!function_exists('cenovContactForm')) {
                 $client_html_content
             );
             
-            $sent_to_client = wp_mail($client_email, 'Confirmation : ' . $subject, $client_html_content, $client_headers, $attachments);
+            $sent_to_client = wp_mail($emailData['client_email'], 'Confirmation : ' . $emailData['subject'], $client_html_content, $client_headers, $attachments);
         }
         
         // Considérer l'envoi réussi si l'email à l'entreprise a été envoyé, peu importe celui au client
-        $sent = $sent_to_company && (!empty($client_email) ? $sent_to_client : true);
-        
+        return $sent_to_company && (!empty($emailData['client_email']) ? $sent_to_client : true);
+    }
+    
+    /**
+     * Stocke les données de la commande en base de données
+     */
+    function storeOrderData($emailData, $attachments) {
         // Préparer les noms de fichiers pour la session
         $file_names = array();
         $file_paths = array();
@@ -488,66 +605,79 @@ if (!function_exists('cenovContactForm')) {
         }
         
         // Stocker toutes les données client dans la base de données pour une récupération ultérieure
-        update_option('cenov_order_phone_' . $commande_number, isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : CENOV_NOT_PROVIDED);
-        update_option('cenov_order_company_' . $commande_number, isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : CENOV_NOT_PROVIDED);
-        update_option('cenov_order_address_' . $commande_number, isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : CENOV_NOT_PROVIDED);
-        update_option('cenov_order_postcode_' . $commande_number, isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : CENOV_NOT_PROVIDED);
-        update_option('cenov_order_city_' . $commande_number, isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : CENOV_NOT_PROVIDED);
-        update_option('cenov_order_country_' . $commande_number, isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : CENOV_NOT_PROVIDED);
-        update_option('cenov_order_reference_' . $commande_number, isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : '');
-        update_option('cenov_order_materiel_equivalent_' . $commande_number, isset($_POST['billing_materiel_equivalent']));
-        update_option('cenov_order_message_' . $commande_number, isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : '');
-        update_option('cenov_order_products_' . $commande_number, $products_for_session);
-        update_option('cenov_order_file_names_' . $commande_number, $file_names);
+        update_option('cenov_order_date_' . $emailData['commande_number'], time());
+        update_option('cenov_order_client_' . $emailData['commande_number'], $emailData['client_name']);
+        update_option('cenov_order_email_' . $emailData['commande_number'], $emailData['client_email']);
+        update_option('cenov_order_phone_' . $emailData['commande_number'], isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_company_' . $emailData['commande_number'], isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_address_' . $emailData['commande_number'], isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_postcode_' . $emailData['commande_number'], isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_city_' . $emailData['commande_number'], isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_country_' . $emailData['commande_number'], isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : CENOV_NOT_PROVIDED);
+        update_option('cenov_order_reference_' . $emailData['commande_number'], isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : '');
+        update_option('cenov_order_materiel_equivalent_' . $emailData['commande_number'], isset($_POST['billing_materiel_equivalent']));
+        update_option('cenov_order_message_' . $emailData['commande_number'], isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : '');
+        update_option('cenov_order_products_' . $emailData['commande_number'], $emailData['products_for_session']);
+        update_option('cenov_order_file_names_' . $emailData['commande_number'], $file_names);
         
-        // Stocker les données dans la session pour la page de récapitulatif
-        if ($sent) {
-            // Démarrer la session si ce n'est pas déjà fait
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
-            
-            // Préparer les données pour la session
-            $_SESSION['commande_data'] = array(
-                'commande_number' => $commande_number,
-                'date_commande' => $date_commande,
-                'client_name' => $client_name,
-                'client_email' => $client_email,
-                'client_phone' => isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : '',
-                'client_company' => isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : '',
-                'client_address' => isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : '',
-                'client_postcode' => isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '',
-                'client_city' => isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : '',
-                'client_country' => isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : '',
-                'client_reference' => isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : '',
-                'client_materiel_equivalent' => isset($_POST['billing_materiel_equivalent']),
-                'client_message' => isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : '',
-                'products' => $products_for_session,
-                'file_names' => $file_names,
-                'file_paths' => $file_paths, // Chemins des fichiers temporaires
-                'order_key' => $order_key // Ajouter la clé à la session
-            );
-            
-            // Vider le panier après envoi
-            if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
-                WC()->cart->empty_cart();
-            }
-            
-            // URL sécurisée pour la page de récapitulatif
-            $recap_url = add_query_arg(
-                array(
-                    'order' => $commande_number,
-                    'key' => $order_key
-                ),
-                home_url(CENOV_RECAP_URL)
-            );
-            
-            // Rediriger vers la page de récapitulatif avec les paramètres d'URL
-            wp_redirect($recap_url);
-            exit;
+        // Sauvegarder également les noms de fichiers et les chemins pour la session
+        return array(
+            'file_names' => $file_names,
+            'file_paths' => $file_paths
+        );
+    }
+    
+    /**
+     * Configure la session et redirige vers la page de récapitulatif
+     */
+    function setupSessionAndRedirect($emailData) {
+        // Démarrer la session si ce n'est pas déjà fait
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
         
-        return $sent;
+        // Récupérer les informations sur les fichiers
+        $file_names = isset($emailData['file_names']) ? $emailData['file_names'] : array();
+        $file_paths = isset($emailData['file_paths']) ? $emailData['file_paths'] : array();
+        
+        // Préparer les données pour la session
+        $_SESSION['commande_data'] = array(
+            'commande_number' => $emailData['commande_number'],
+            'date_commande' => $emailData['date_commande'],
+            'client_name' => $emailData['client_name'],
+            'client_email' => $emailData['client_email'],
+            'client_phone' => isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : '',
+            'client_company' => isset($_POST['billing_company']) ? sanitize_text_field($_POST['billing_company']) : '',
+            'client_address' => isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : '',
+            'client_postcode' => isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '',
+            'client_city' => isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : '',
+            'client_country' => isset($_POST['billing_country']) ? WC()->countries->get_countries()[$_POST['billing_country']] : '',
+            'client_reference' => isset($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : '',
+            'client_materiel_equivalent' => isset($_POST['billing_materiel_equivalent']),
+            'client_message' => isset($_POST['billing_message']) ? sanitize_textarea_field($_POST['billing_message']) : '',
+            'products' => $emailData['products_for_session'],
+            'file_names' => $file_names,
+            'file_paths' => $file_paths, // Chemins des fichiers temporaires
+            'order_key' => $emailData['order_key'] // Ajouter la clé à la session
+        );
+        
+        // Vider le panier après envoi
+        if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart) {
+            WC()->cart->empty_cart();
+        }
+        
+        // URL sécurisée pour la page de récapitulatif
+        $recap_url = add_query_arg(
+            array(
+                'order' => $emailData['commande_number'],
+                'key' => $emailData['order_key']
+            ),
+            home_url(CENOV_RECAP_URL)
+        );
+        
+        // Rediriger vers la page de récapitulatif avec les paramètres d'URL
+        wp_redirect($recap_url);
+        exit;
     }
     
     function cleanupAttachments($attachments) {
