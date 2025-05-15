@@ -86,7 +86,7 @@ $subject = 'Nouvelle plaque signalétique de ' . $nom;
 $html_content = '
 <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Nouvelle plaque signalétique</h1>
+        <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Nouvelle plaque signalétique :</h1>
         <p style="margin-top: 0; margin-bottom: 5px;">Demande de : ' . $nom . '</p>
     </div>
     
@@ -237,22 +237,6 @@ if (empty($_FILES['cenov_plaque']['name'][0])) {
                 $html_content .= '
                 <div style="margin-bottom: 25px;">
                     <p style="color: #9a3412; font-style: italic;">Aucune plaque signalétique n\'a été jointe à ce message.</p>
-                </div>';
-            } else {
-                $html_content .= '
-                <div style="margin-bottom: 25px;">
-                    <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Pièces jointes :</h3>
-                    <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
-                        <ul style="margin: 5px 0; padding-left: 20px;">';
-                
-                foreach($attachments as $index => $attachment) {
-                    $file_name = basename($attachment);
-                    $html_content .= '<li style="margin-bottom: 5px;"><strong>Fichier ' . ($index + 1) . ' :</strong> ' . $file_name . '</li>';
-                }
-                
-                $html_content .= '
-                        </ul>
-                    </div>
                 </div>';
             }
             
