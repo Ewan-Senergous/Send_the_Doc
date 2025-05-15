@@ -896,6 +896,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 .then(function(token) {
                     // Ajouter le token au champ caché
                     document.getElementById('g-recaptcha-response').value = token;
+                    // Supprimer les données du localStorage
+                    localStorage.removeItem(storageKey);
                     // Soumettre le formulaire
                     form.submit();
                 });
@@ -1120,5 +1122,66 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }, false);
     }
+    
+    // Fonctionnalité de localStorage pour les champs du formulaire
+    // Liste des IDs des champs à sauvegarder/restaurer
+    const champs = [
+        {id: "cenov-prenom", type: "input"},
+        {id: "cenov-nom", type: "input"},
+        {id: "cenov-email", type: "input"},
+        {id: "cenov-telephone", type: "input"},
+        {id: "cenov-societe", type: "input"},
+        {id: "cenov-adresse", type: "input"},
+        {id: "cenov-codepostal", type: "input"},
+        {id: "cenov-ville", type: "input"},
+        {id: "cenov-produit", type: "input"},
+        {id: "cenov-message", type: "textarea"},
+        {id: "cenov-gdpr", type: "checkbox"}
+    ];
+    const storageKey = "cenov_fx_form_data";
+
+    // Fonction pour sauvegarder les champs dans le localStorage
+    function saveFormData() {
+        const data = {};
+        champs.forEach(champ => {
+            const el = document.getElementById(champ.id);
+            if (!el) return;
+            if (champ.type === "checkbox") {
+                data[champ.id] = el.checked;
+            } else {
+                data[champ.id] = el.value;
+            }
+        });
+        localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    // Fonction pour restaurer les champs depuis le localStorage
+    function restoreFormData() {
+        const data = localStorage.getItem(storageKey);
+        if (!data) return;
+        let parsed;
+        try {
+            parsed = JSON.parse(data);
+        } catch (e) { return; }
+        champs.forEach(champ => {
+            const el = document.getElementById(champ.id);
+            if (!el || !(champ.id in parsed)) return;
+            if (champ.type === "checkbox") {
+                el.checked = !!parsed[champ.id];
+            } else {
+                el.value = parsed[champ.id];
+            }
+        });
+    }
+
+    // Sauvegarde à chaque modification
+    champs.forEach(champ => {
+        const el = document.getElementById(champ.id);
+        if (!el) return;
+        el.addEventListener(champ.type === "checkbox" ? "change" : "input", saveFormData);
+    });
+
+    // Restauration au chargement
+    restoreFormData();
 });
 </script>
