@@ -2,6 +2,7 @@
 if (!function_exists('cenovContactForm')) {
     // Définir une constante pour les champs non renseignés
     define('CENOV_NOT_PROVIDED', 'Non renseigné');
+    define('CENOV_RECAP_URL', '/recap-commande/');
     
     // Code pour gérer la suppression d'un article du panier
     if (isset($_GET['remove_item']) && !empty($_GET['remove_item'])) {
@@ -330,7 +331,7 @@ if (!function_exists('cenovContactForm')) {
                 'order' => $commande_number,
                 'key' => $order_key
             ),
-            home_url('/recap-commande/')
+            home_url(CENOV_RECAP_URL)
         );
         
         // Créer un contenu HTML plus formaté
@@ -357,14 +358,7 @@ if (!function_exists('cenovContactForm')) {
                     <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
                     <p style="margin: 5px 0;"><strong>Matériel équivalent :</strong> ' . (isset($_POST['billing_materiel_equivalent']) ? 'Oui' : 'Non') . '</p>';
 
-            // Créer l'URL sécurisée pour la page de récapitulatif
-            $recap_url = add_query_arg(
-                array(
-                    'order' => $commande_number,
-                    'key' => $order_key
-                ),
-                home_url('/recap-commande/')
-            );
+            // L'URL sécurisée pour la page de récapitulatif sera créée plus tard
                     
             $html_content .= '
                     <p style="margin: 5px 0;"><strong>Référence client :</strong> ' . (isset($_POST['billing_reference']) && !empty($_POST['billing_reference']) ? sanitize_text_field($_POST['billing_reference']) : CENOV_NOT_PROVIDED) . '</p>
@@ -545,7 +539,7 @@ if (!function_exists('cenovContactForm')) {
                     'order' => $commande_number,
                     'key' => $order_key
                 ),
-                home_url('/recap-commande/')
+                home_url(CENOV_RECAP_URL)
             );
             
             // Rediriger vers la page de récapitulatif avec les paramètres d'URL
