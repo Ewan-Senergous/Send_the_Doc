@@ -35,70 +35,71 @@ if (!function_exists('cenovContactForm')) {
     }
     
     function checkFormSecurity() {
-        // Vérifications basiques
-        $basic_checks = checkBasicSecurity();
-        if ($basic_checks !== true) {
-            return $basic_checks;
-        }
-        
-        // Vérification reCAPTCHA
-        return verifyRecaptcha();
-    }
-    
-   
-    function checkBasicSecurity() {
         $result = true;
         
-        // Vérification de la force brute et du nonce CSRF
-        if (!cenovCheckSubmissionRate()) {
-            $result = '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
-        } elseif (!isset($_POST['cenov_nonce']) || !wp_verify_nonce($_POST['cenov_nonce'], 'cenov_contact_action')) {
-            $result = '<div class="error-message">Erreur de sécurité. Veuillez rafraîchir la page et réessayer.</div>';
+        // Vérifications de base
+        if (checkSpamTraps()) {
+            $result = '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+        } elseif (checkBasicSecurityMeasures()) {
+            $result = checkRecaptcha();
         }
         
-        // Si déjà une erreur, retourner immédiatement
-        if ($result !== true) {
-            return $result;
+        return $result;
+    }
+    
+    function checkSpamTraps() {
+        // Court-circuit pour les bots (vérifications rapides)
+        return !empty($_POST['cenov_website']) || (isset($_POST['cenov_timestamp']) && time() - (int)$_POST['cenov_timestamp'] < 3);
+    }
+    
+    function checkBasicSecurityMeasures() {
+        // Protection contre les attaques de force brute
+        static $submission_rate_checked = null;
+        if ($submission_rate_checked === null) {
+            $submission_rate_checked = cenovCheckSubmissionRate();
         }
         
-        // Vérifications anti-spam (honeypot et temps de soumission)
-        if (!empty($_POST['cenov_website']) || time() - (isset($_POST['cenov_timestamp']) ? (int)$_POST['cenov_timestamp'] : 0) < 3) {
-            return '<div class="success-message">Votre message a été envoyé avec succès. Nous vous contacterons rapidement.</div>';
+        if (!$submission_rate_checked) {
+            return '<div class="error-message">Trop de tentatives. Veuillez réessayer dans une heure.</div>';
+        }
+        
+        // Vérification du nonce CSRF
+        if (!isset($_POST['cenov_nonce']) || !wp_verify_nonce($_POST['cenov_nonce'], 'cenov_contact_action')) {
+            return '<div class="error-message">Erreur de sécurité. Veuillez rafraîchir la page et réessayer.</div>';
         }
         
         return true;
     }
     
-    function verifyRecaptcha() {
-        $recaptcha_response = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
-        
-        // Vérification initiale de la réponse reCAPTCHA
+    function checkRecaptcha() {
+        // Vérification de reCAPTCHA (optimisée)
+        $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
         if (empty($recaptcha_response)) {
             return '<div class="error-message">Échec de la vérification de sécurité. Veuillez réessayer.</div>';
         }
         
-        // Requête à l'API reCAPTCHA et vérification
-        return processRecaptchaResponse($recaptcha_response);
+        // Préparer et vérifier la requête reCAPTCHA
+        return processRecaptchaVerification($recaptcha_response);
     }
     
-    /**
-     * Traite la réponse reCAPTCHA
-     * @param string $recaptcha_response La réponse reCAPTCHA à vérifier
-     * @return bool|string True si valide, message d'erreur sinon
-     */
-    function processRecaptchaResponse($recaptcha_response) {
-        $recaptcha_secret = get_option('cenov_recaptcha_secret', '');
+    function processRecaptchaVerification($recaptcha_response) {
+        // Cache pour la clé secrète
+        static $recaptcha_secret = null;
+        if ($recaptcha_secret === null) {
+            $recaptcha_secret = get_option('cenov_recaptcha_secret', '');
+        }
+        
         $verify_response = wp_remote_get(
             "https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}"
         );
         
+        // Vérifier l'erreur de requête ou le résultat du reCAPTCHA
         if (is_wp_error($verify_response)) {
             return '<div class="error-message">Erreur de vérification. Veuillez réessayer plus tard.</div>';
         }
         
         $recaptcha_result = json_decode(wp_remote_retrieve_body($verify_response));
         
-        // Vérifier le score reCAPTCHA
         if (!isset($recaptcha_result->success) || !$recaptcha_result->success ||
             (isset($recaptcha_result->score) && $recaptcha_result->score < 0.5)) {
             return '<div class="error-message">La vérification de sécurité a échoué. Veuillez réessayer.</div>';
