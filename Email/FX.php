@@ -281,22 +281,22 @@ $result = cenovContactForm();
 
             <!-- Deuxième ligne: Téléphone et Email côte à côte -->
             <div class="form-row">
-                <label for="cenov-telephone">* Téléphone :</label>
-                <div class="input-icon-wrapper">
-                    <span class="input-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    </span>
-                    <input type="tel" id="cenov-telephone" name="cenov_telephone" placeholder="Votre numéro de téléphone" required />
-                </div>
-            </div>
-
-            <div class="form-row">
                 <label for="cenov-email">* Email :</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     </span>
-                    <input type="email" id="cenov-email" name="cenov_email" placeholder="Votre adresse e-mail" required />
+                    <input type="email" id="cenov-email" name="billing_email" data-woocommerce-checkout="billing_email" placeholder="Votre adresse e-mail" required />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label for="cenov-telephone">* Téléphone :</label>
+                <div class="input-icon-wrapper">
+                    <span class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </span>
+                    <input type="tel" id="cenov-telephone" name="billing_phone" data-woocommerce-checkout="billing_phone" placeholder="Votre numéro de téléphone" required />
                 </div>
             </div>
 
@@ -367,57 +367,57 @@ $result = cenovContactForm();
 
             <!-- Upload de plaque signalétique (occupe toute la largeur) -->
             <div class="form-row full-width file-upload">
-    <label for="cenov-plaque">Votre plaque signalétique 📋 :</label>
-    <div class="file-input-container">
-    <input type="file" id="cenov-plaque" name="cenov_plaque" accept=".jpg, .jpeg, .png, .pdf, .heic, .webp"/>
-        <div class="file-upload-placeholder">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            <span id="file-name-display">Choisir un fichier ou glisser-déposer</span>
-        </div>
-    </div>
-    
-    <!-- Zone de prévisualisation du fichier -->
-    <div id="file-preview" class="file-preview-container" style="display: none;">
-        <div class="preview-header">
-            <span class="preview-title">Aperçu du fichier</span>
-            <button type="button" id="remove-file" class="remove-file-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
-                    <path d="M18 6 6 18"></path>
-                    <path d="m6 6 12 12"></path>
-                </svg>
-            </button>
-        </div>
-        <div class="preview-content">
-            <!-- Pour les images -->
-            <img id="image-preview" src="#" alt="Aperçu de l'img" />
-            <!-- Pour les PDF -->
-            <div id="pdf-preview">
-                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-type-pdf">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <path d="M9 13v-1h6v1"/>
-                    <path d="M11 15v4"/>
-                    <path d="M9 19h4"/>
-                </svg>
-                <p id="pdf-name"></p>
+                <label for="cenov-plaque">Votre plaque signalétique 📋 :</label>
+                <div class="file-input-container">
+                    <input type="file" id="cenov-plaque" name="cenov_plaque[]" multiple accept=".jpg, .jpeg, .png, .pdf, .heic, .webp" data-woocommerce-checkout="billing_plaque"/>
+                    <div class="file-upload-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <span id="file-name-display">Choisir un fichier ou glisser-déposer</span>
+                    </div>
+                </div>
+                
+                <!-- Zone de prévisualisation du fichier -->
+                <div id="file-preview" class="file-preview-container" style="display: none;">
+                    <div class="preview-header">
+                        <span class="preview-title">Aperçu du fichier</span>
+                        <button type="button" id="remove-file" class="remove-file-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="preview-content">
+                        <!-- Pour les images -->
+                        <img id="image-preview" src="#" alt="Aperçu de l'img" />
+                        <!-- Pour les PDF -->
+                        <div id="pdf-preview">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-type-pdf">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <path d="M9 13v-1h6v1"/>
+                                <path d="M11 15v4"/>
+                                <path d="M9 19h4"/>
+                            </svg>
+                            <p id="pdf-name"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="file-formats">
+                    <div class="format-item"><span class="format-icon"></span> JPG</div>
+                    <div class="format-item"><span class="format-icon"></span> JPEG</div>
+                    <div class="format-item"><span class="format-icon"></span> PNG</div>
+                    <div class="format-item"><span class="format-icon"></span> PDF</div>
+                    <div class="format-item"><span class="format-icon"></span> HEIC</div>
+                    <div class="format-item"><span class="format-icon"></span> WEBP</div>
+                    <div class="format-item"><span class="format-icon"></span> Max: 10 Mo</div>
+                </div>
             </div>
-        </div>
-    </div>
-    
-    <div class="file-formats">
-        <div class="format-item"><span class="format-icon"></span> JPG</div>
-        <div class="format-item"><span class="format-icon"></span> JPEG</div>
-        <div class="format-item"><span class="format-icon"></span> PNG</div>
-        <div class="format-item"><span class="format-icon"></span> PDF</div>
-        <div class="format-item"><span class="format-icon"></span> HEIC</div>
-        <div class="format-item"><span class="format-icon"></span> WEBP</div>
-        <div class="format-item"><span class="format-icon"></span> Max: 10 Mo</div>
-    </div>
-</div>
 
             <!-- RGPD (occupe toute la largeur) -->
             <div class="form-row full-width">
@@ -429,7 +429,7 @@ $result = cenovContactForm();
 
             <!-- Bouton d'envoi (occupe toute la largeur) -->
             <div class="form-row full-width form-submit">
-                <button type="submit" name="cenov_submit" value="1">Envoyer</button>
+                <button type="submit" name="cenov_submit" value="1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg> Envoyer</button>
             </div>
         </div>
     </form>
@@ -460,9 +460,10 @@ $result = cenovContactForm();
     max-width: 1000px;
     margin: 20px auto;
     padding: 30px;
-    background: #f9f9f9;
+    background: #f3f4f6 !important;
     border-radius: 8px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
+    border: 2px solid #2563eb !important;
   }
 
   .cenov-form-container h3 {
@@ -490,7 +491,7 @@ $result = cenovContactForm();
 
   .form-row label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     font-weight: 600;
     font-size: 0.95rem;
     color: #444;
@@ -528,7 +529,7 @@ $result = cenovContactForm();
   .input-icon-wrapper input[type="tel"] {
     width: 100%;
     padding: 12px 12px 12px 40px;
-    border: 1px solid #ddd !important;
+    border: 1px solid #6b7280 !important;
     border-radius: 6px;
     font-size: 15px;
     line-height: 1.4;
@@ -537,7 +538,7 @@ $result = cenovContactForm();
   .input-icon-wrapper textarea {
     width: 100%;
     padding: 12px 12px 12px 40px;
-    border: 1px solid #ddd !important;
+    border: 1px solid #6b7280 !important;
     border-radius: 6px;
     font-size: 15px;
     line-height: 1.4;
@@ -549,70 +550,247 @@ $result = cenovContactForm();
     outline: none;
   }
   
-  /* Styles pour le sélecteur de fichier */
+  /* Styles pour le glisser-déposer de fichiers */
   .file-input-container {
-    position: relative;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    padding: 35px 20px;
-    text-align: center;
-    background-color: white;
-    transition: border-color 0.3s, transform 0.2s;
-    margin-bottom: 10px;
+    position: relative !important;
+    border: 2px dashed #ccc !important;
+    border-radius: 8px !important;
+    padding: 35px 20px !important;
+    text-align: center !important;
+    background-color: white !important;
+    transition: border-color 0.3s, transform 0.2s !important;
+    margin-bottom: 10px !important;
+    cursor: pointer !important;
   }
 
   .file-input-container:hover {
-    border-color: #2563eb;
-    transform: translateY(-2px);
+    border-color: #2563eb !important;
+    transform: translateY(-2px) !important;
   }
 
   .file-input-container input[type="file"] {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+    z-index: 100 !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   .file-upload-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #6b7280;
+    position: relative !important;
+    z-index: 5 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    color: #6b7280 !important;
+    pointer-events: none !important;
   }
 
   .file-upload-placeholder svg {
-    margin-bottom: 12px;
-    color: #2563eb;
-    width: 28px;
-    height: 28px;
+    margin-bottom: 12px !important;
+    color: #2563eb !important;
+    width: 28px !important;
+    height: 28px !important;
   }
 
   .file-formats {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 12px;
-    gap: 10px;
+    display: flex !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    margin-top: 12px !important;
+    gap: 10px !important;
   }
 
   .format-item {
-    background-color: white;
-    padding: 5px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    color: #4b5563;
-    display: flex;
-    align-items: center;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    background-color: #fff !important;
+    padding: 5px 12px !important;
+    border-radius: 16px !important;
+    font-size: 12px !important;
+    color: #4b5563 !important;
+    display: flex !important;
+    align-items: center !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .05) !important;
+  }
+
+  .file-preview-container {
+    margin-top: 15px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background-color: #fff !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .05) !important;
+  }
+
+  .preview-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 10px 15px !important;
+    background-color: #f9fafb !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+
+  .preview-title {
+    font-weight: 600 !important;
+    font-size: .9rem !important;
+    color: #4b5563 !important;
+  }
+
+  .remove-file-btn {
+    background: 0 0 !important;
+    border: none !important;
+    color: #6b7280 !important;
+    cursor: pointer !important;
+    padding: 5px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: .2s !important;
+  }
+
+  .remove-file-btn:hover {
+    background-color: #f3f4f6 !important;
+    color: #ef4444 !important;
+  }
+
+  .preview-content {
+    padding: 15px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    max-height: 300px !important;
+    overflow: auto !important;
+  }
+
+  #image-preview {
+    max-width: 100% !important;
+    max-height: 270px !important;
+    object-fit: contain !important;
+  }
+
+  #pdf-preview {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 20px !important;
+  }
+
+  #pdf-name {
+    margin-top: 10px !important;
+    font-size: .9rem !important;
+    color: #4b5563 !important;
+    word-break: break-all !important;
+  }
+
+  /* Styles pour plusieurs fichiers */
+  .preview-content-multiple {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 15px !important;
+    padding: 15px !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+  }
+
+  .preview-item {
+    width: 150px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    background-color: #f9fafb !important;
+    overflow: hidden !important;
+    position: relative !important;
+    transition: .2s !important;
+  }
+
+  .preview-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .1) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  .preview-item-header {
+    padding: 8px !important;
+    font-size: .75rem !important;
+    color: #4b5563 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .preview-item-content {
+    height: 120px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #fff !important;
+    padding: 5px !important;
+  }
+
+  .preview-item-actions {
+    padding: 8px !important;
+    border-top: 1px solid #e5e7eb !important;
+    background-color: #f3f4f6 !important;
+  }
+
+  .remove-single-file {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 4px 8px !important;
+    border: none !important;
+    background-color: transparent !important;
+    color: #6b7280 !important;
+    font-size: .7rem !important;
+    cursor: pointer !important;
+    transition: .2s !important;
+    border-radius: 4px !important;
+  }
+
+  .remove-single-file:hover {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+  }
+
+  .thumbnail-preview {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .file-name {
+    font-weight: 600 !important;
+    display: block !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .file-size {
+    font-size: .7rem !important;
+    color: #6b7280 !important;
+  }
+
+  .pdf-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ef4444 !important;
   }
 
   .format-icon {
-    margin-right: 4px;
+    margin-right: 4px !important;
   }
 
   .cenov-gdpr-consent {
@@ -626,36 +804,38 @@ $result = cenovContactForm();
     margin-right: 10px;
   }
 
-  .form-submit {
-    margin-top: 10px;
+  .form-submit button {
+    width: auto !important;
+    max-width: 300px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    background-color: #2563eb !important;
+    border: none !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    font-size: 1rem !important;
+    padding: 12px 24px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2) !important;
   }
 
-  .form-submit button {
-    width: auto;
-    max-width: 300px;
-    margin: 0 auto;
-    display: block;
-    color: white;
-    background-color: #2563eb;
-    border: none;
-    font-weight: 600;
-    border-radius: 6px;
-    font-size: 1rem;
-    padding: 12px 24px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+  .form-submit button svg {
+    margin-right: 8px !important;
   }
 
   .form-submit button:hover {
-    background-color: #1e40af;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+    background-color: #1e40af !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3) !important;
   }
-  
+
   .form-submit button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
   }
 
   .success-message {
@@ -678,79 +858,6 @@ $result = cenovContactForm();
     border-left: 4px solid #ef4444;
   }
 
-  .file-preview-container {
-        margin-top: 15px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        overflow: hidden;
-        background-color: white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .preview-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 15px;
-        background-color: #f9fafb;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .preview-title {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #4b5563;
-    }
-
-    .remove-file-btn {
-        background: none;
-        border: none;
-        color: #6b7280;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-    }
-
-    .remove-file-btn:hover {
-        background-color: #f3f4f6;
-        color: #ef4444;
-    }
-
-    .preview-content {
-        padding: 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        max-height: 300px;
-        overflow: auto;
-    }
-
-    #image-preview {
-        max-width: 100%;
-        max-height: 270px;
-        object-fit: contain;
-    }
-
-    #pdf-preview {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 20px;
-    }
-
-    #pdf-name {
-        margin-top: 10px;
-        font-size: 0.9rem;
-        color: #4b5563;
-        word-break: break-all;
-    }
-  
   /* Responsive */
   @media (max-width: 768px) {
     .form-grid {
@@ -765,101 +872,231 @@ $result = cenovContactForm();
 
 <script src="https://www.google.com/recaptcha/api.js?render=6LcXl_sqAAAAAP5cz7w1iul0Bu18KnGqQ6u2DZ7W"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Références aux éléments DOM
-    const fileInput = document.getElementById('cenov-plaque');
-    const fileNameDisplay = document.getElementById('file-name-display');
-    const filePreview = document.getElementById('file-preview');
-    const imagePreview = document.getElementById('image-preview');
-    const pdfPreview = document.getElementById('pdf-preview');
-    const pdfName = document.getElementById('pdf-name');
-    const removeFileButton = document.getElementById('remove-file');
-    
-    // Fonction pour afficher la prévisualisation du fichier
-    function handleFileSelect(event) {
-        if (fileInput.files.length > 0) {
-            const selectedFile = fileInput.files[0];
-            const fileSize = (selectedFile.size / 1024 / 1024).toFixed(2); // Taille en MB
-            
-            // Mettre à jour le nom du fichier affiché
-            fileNameDisplay.textContent = selectedFile.name + ' (' + fileSize + ' MB)';
-            
-            // Vérifier le type de fichier
-            const fileType = selectedFile.type;
-            
-            // Réinitialiser les prévisualisations
-            imagePreview.style.display = 'none';
-            pdfPreview.style.display = 'none';
-            
-            if (fileType.startsWith('image/')) {
-                // Pour les images
-                const fileURL = URL.createObjectURL(selectedFile);
-                imagePreview.src = fileURL;
-                imagePreview.style.display = 'block';
-                filePreview.style.display = 'block';
-            } else if (fileType === 'application/pdf') {
-                // Pour les PDF
-                pdfName.textContent = selectedFile.name;
-                pdfPreview.style.display = 'flex';
-                filePreview.style.display = 'block';
+document.addEventListener("DOMContentLoaded", function() {
+    // Références aux éléments
+    const fileInput = document.getElementById("cenov-plaque");
+    const fileNameDisplay = document.getElementById("file-name-display");
+    const filePreview = document.getElementById("file-preview");
+    const fileInputContainer = document.querySelector(".file-input-container");
+    const form = document.querySelector(".cenov-form-container form");
+    const recaptchaResponse = document.getElementById("g-recaptcha-response");
+
+    // Variables pour gérer les fichiers
+    let selectedFiles = [];
+    let isInputClick = false;
+
+    // Fonction pour ajouter des fichiers sans doublons
+    function addFiles(files) {
+        const fileArray = Array.from(files);
+        for (let i = 0; i < fileArray.length; i++) {
+            const file = fileArray[i];
+            // Vérifier si le fichier n'existe pas déjà
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                selectedFiles.push(file);
             }
-        } else {
-            // Réinitialiser si aucun fichier n'est sélectionné
-            fileNameDisplay.textContent = 'Choisir un fichier ou glisser-déposer';
-            filePreview.style.display = 'none';
         }
     }
-    
-    // Fonction pour supprimer le fichier sélectionné
-    function removeFile() {
-        fileInput.value = ''; // Vider l'input de fichier
-        fileNameDisplay.textContent = 'Choisir un fichier ou glisser-déposer';
-        filePreview.style.display = 'none';
+
+    // Fonction pour créer une FileList personnalisée
+    function createFileList(files) {
+        const dt = new DataTransfer();
+        files.forEach(file => {
+            dt.items.add(file);
+        });
+        return dt.files;
+    }
+
+    // Fonction principale pour gérer la sélection de fichiers
+    function handleFileSelect(event) {
+        isInputClick = false;
         
-        // Révoquer les URLs d'objets pour libérer la mémoire
-        if (imagePreview.src && imagePreview.src.startsWith('blob:')) {
-            URL.revokeObjectURL(imagePreview.src);
-        }
-    }
-    
-    // Attacher les écouteurs d'événements
-    if (fileInput) {
-        fileInput.addEventListener('change', handleFileSelect);
-    }
-    
-    if (removeFileButton) {
-        removeFileButton.addEventListener('click', removeFile);
-    }
-    
-    // Vider le champ honeypot
-    const honeypotField = document.getElementById('cenov_website');
-    if (honeypotField) {
-        honeypotField.value = '';
-    }
-    
-    // Configuration reCAPTCHA
-    grecaptcha.ready(function() {
-        // Ajouter un écouteur d'événement pour le formulaire
-        const form = document.querySelector('.cenov-form-container form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                // Empêcher la soumission immédiate
-                e.preventDefault();
+        if (fileInput.files.length > 0) {
+            addFiles(fileInput.files);
+            fileInput.files = createFileList(selectedFiles);
+            
+            fileNameDisplay.textContent = `${selectedFiles.length} fichier(s) sélectionné(s)`;
+            filePreview.innerHTML = "";
+            filePreview.style.display = "block";
+            
+            // Créer l'en-tête
+            const header = document.createElement("div");
+            header.className = "preview-header";
+            header.innerHTML = `
+                <span class="preview-title">Aperçu des fichiers</span>
+                <button type="button" id="remove-all-files" class="remove-file-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
+                </button>
+            `;
+            filePreview.appendChild(header);
+            
+            // Créer le conteneur pour les prévisualisations
+            const contentContainer = document.createElement("div");
+            contentContainer.className = "preview-content-multiple";
+            filePreview.appendChild(contentContainer);
+            
+            // Afficher chaque fichier
+            selectedFiles.forEach((file, index) => {
+                const previewItem = document.createElement("div");
+                previewItem.className = "preview-item";
                 
-                // Exécuter reCAPTCHA et obtenir un token
-                grecaptcha.execute('6LcXl_sqAAAAAP5cz7w1iul0Bu18KnGqQ6u2DZ7W', {action: 'formulaire_contact'}).then(function(token) {
-                    // Mettre le token dans le champ caché
-                    document.getElementById('g-recaptcha-response').value = token;
-                    
-                    // Soumettre le formulaire
-                    form.submit();
-                }).catch(function(error) {
-                    console.error('Erreur reCAPTCHA:', error);
-                    // En cas d'erreur, permettre quand même la soumission
-                    form.submit();
-                });
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                
+                if (file.type.startsWith("image/")) {
+                    const fileURL = URL.createObjectURL(file);
+                    previewItem.innerHTML = `
+                        <div class="preview-item-header">
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">(${fileSize} MB)</span>
+                        </div>
+                        <div class="preview-item-content">
+                            <img src="${fileURL}" alt="Aperçu de l'image" class="thumbnail-preview" />
+                        </div>
+                        <div class="preview-item-actions">
+                            <button type="button" class="remove-single-file" data-index="${index}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2">
+                                    <path d="M3 6h18"/>
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                    <line x1="10" x2="10" y1="11" y2="17"/>
+                                    <line x1="14" x2="14" y1="11" y2="17"/>
+                                </svg>
+                                &nbsp;Supprimer
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    previewItem.innerHTML = `
+                        <div class="preview-item-header">
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">(${fileSize} MB)</span>
+                        </div>
+                        <div class="preview-item-content">
+                            <div class="pdf-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file">
+                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="preview-item-actions">
+                            <button type="button" class="remove-single-file" data-index="${index}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2">
+                                    <path d="M3 6h18"/>
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                    <line x1="10" x2="10" y1="11" y2="17"/>
+                                    <line x1="14" x2="14" y1="11" y2="17"/>
+                                </svg>
+                                &nbsp;Supprimer
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                contentContainer.appendChild(previewItem);
             });
+            
+            // Ajouter les écouteurs d'événements pour les boutons
+            document.getElementById("remove-all-files").addEventListener("click", removeAllFiles);
+            document.querySelectorAll(".remove-single-file").forEach(btn => {
+                btn.addEventListener("click", removeSingleFile);
+            });
+        } else {
+            if (selectedFiles.length === 0) {
+                fileNameDisplay.textContent = "Choisir un fichier ou glisser-déposer";
+                filePreview.style.display = "none";
+            }
         }
-    });
+    }
+
+    // Fonction pour supprimer un fichier spécifique
+    function removeSingleFile(event) {
+        const index = parseInt(event.currentTarget.getAttribute("data-index"));
+        selectedFiles.splice(index, 1);
+        fileInput.files = createFileList(selectedFiles);
+        
+        if (selectedFiles.length > 0) {
+            handleFileSelect();
+        } else {
+            fileNameDisplay.textContent = "Choisir un fichier ou glisser-déposer";
+            filePreview.style.display = "none";
+        }
+        
+        event.stopPropagation();
+    }
+
+    // Fonction pour supprimer tous les fichiers
+    function removeAllFiles(event) {
+        selectedFiles = [];
+        fileInput.value = "";
+        fileNameDisplay.textContent = "Choisir un fichier ou glisser-déposer";
+        filePreview.style.display = "none";
+        event.stopPropagation();
+    }
+
+    // Gestion du clic sur le conteneur
+    if (fileInputContainer) {
+        fileInputContainer.addEventListener("click", function(e) {
+            if (!isInputClick) {
+                fileInput.click();
+            }
+        });
+    }
+
+    // Gestion des événements de fichier
+    if (fileInput) {
+        fileInput.addEventListener("click", function() {
+            isInputClick = true;
+            setTimeout(function() {
+                isInputClick = false;
+            }, 500);
+        });
+        fileInput.addEventListener("change", handleFileSelect);
+    }
+
+    // Gestion du drag and drop
+    if (fileInputContainer) {
+        function preventDefault(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight() {
+            fileInputContainer.style.borderColor = "#2563eb";
+            fileInputContainer.style.backgroundColor = "#eff6ff";
+        }
+
+        function unhighlight() {
+            fileInputContainer.style.borderColor = "#ccc";
+            fileInputContainer.style.backgroundColor = "white";
+        }
+
+        ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+            fileInputContainer.addEventListener(eventName, preventDefault, false);
+        });
+
+        ["dragenter", "dragover"].forEach(eventName => {
+            fileInputContainer.addEventListener(eventName, highlight, false);
+        });
+
+        ["dragleave", "drop"].forEach(eventName => {
+            fileInputContainer.addEventListener(eventName, unhighlight, false);
+        });
+
+        fileInputContainer.addEventListener("drop", function(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+
+            if (files.length > 0) {
+                addFiles(files);
+                fileInput.files = createFileList(selectedFiles);
+                const changeEvent = new Event("change", {bubbles: true});
+                fileInput.dispatchEvent(changeEvent);
+            }
+        }, false);
+    }
 });
 </script>
