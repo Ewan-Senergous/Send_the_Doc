@@ -297,7 +297,7 @@ if (!function_exists('cenovContactForm')) {
         $emailData = prepareEmailData();
         
         // Génération du contenu HTML de l'email
-        $html_content = generateEmailHtml($content, $emailData, $attachments);
+        $html_content = generateEmailHtml($content, $emailData);
         
         // Envoyer les emails
         $sent = sendEmails($html_content, $attachments, $emailData);
@@ -390,11 +390,11 @@ if (!function_exists('cenovContactForm')) {
     /**
      * Génère le contenu HTML de l'email
      */
-    function generateEmailHtml($content, $emailData, $attachments = []) {
+    function generateEmailHtml($content, $emailData) {
         $html_header = generateEmailHeader($emailData);
         $html_personal_info = generatePersonalInfoSection($emailData);
         $html_order_details = generateOrderDetailsSection();
-        $html_attachments_info = generateAttachmentsInfo($attachments);
+        $html_attachments_info = generateAttachmentsInfo();
         $html_footer = generateEmailFooter();
         
         // Ajouter une section pour le contenu brut si nécessaire
@@ -507,30 +507,9 @@ if (!function_exists('cenovContactForm')) {
     /**
      * Génère les informations sur les pièces jointes
      */
-    function generateAttachmentsInfo($attachments) {
-        if (empty($attachments)) {
-            return '
-            <div style="margin-bottom: 25px;">
-                <p>Aucune plaque signalétique n\'a été jointe à cette demande.</p>
-            </div>';
-        }
-        
-        // Afficher la liste des pièces jointes
-        $html = '
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Pièces jointes :</h3>
-            <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">';
-        
-        foreach ($attachments as $file) {
-            $filename = basename($file);
-            $html .= '<p style="margin: 5px 0;"><strong>Fichier :</strong> ' . $filename . '</p>';
-        }
-        
-        $html .= '
-            </div>
-        </div>';
-        
-        return $html;
+    function generateAttachmentsInfo() {
+        // Ne renvoie rien du tout, selon la demande de l'utilisateur
+        return '';
     }
     
     /**
