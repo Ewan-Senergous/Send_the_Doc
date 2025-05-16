@@ -1930,8 +1930,73 @@ document.addEventListener("DOMContentLoaded", function() {
     // Nettoyage du localStorage après soumission réussie
     if (form) {
         form.addEventListener("submit", function() {
+            // Déclenchement des événements GA4 EEC Begin Checkout et Google Ads - Begin Checkout
+            window.dataLayer = window.dataLayer || [];
+            
+            // Récupération des produits du panier si disponible
+            let items = [];
+            if (typeof WC !== 'undefined' && WC.cart && WC.cart.cart_contents) {
+                // Construction du tableau d'items à partir du panier WooCommerce
+                Object.keys(WC.cart.cart_contents).forEach((key, index) => {
+                    const item = WC.cart.cart_contents[key];
+                    if (item && item.data) {
+                        items.push({
+                            item_id: item.data.sku || item.product_id,
+                            item_name: item.data.name || '',
+                            price: parseFloat(item.data.price) || 0,
+                            quantity: item.quantity || 1,
+                            index: index + 1
+                        });
+                    }
+                });
+            }
+            
+            // Événement GA4 EEC Begin Checkout
+            window.dataLayer.push({
+                event: 'begin_checkout',
+                ecommerce: {
+                    items: items
+                }
+            });
+            
+            // Événement pour déclencher Google Ads - Begin Checkout
+            window.dataLayer.push({
+                event: 'begin_checkout'
+            });
+            
             localStorage.removeItem(storageKey);
         });
+    }
+
+    // Déclenchement immédiat des événements au chargement de la page
+    if (window.location.pathname.includes('/validation-commande/')) {
+        // Récupération des produits du panier si disponible
+        let items = [];
+        if (typeof WC !== 'undefined' && WC.cart && WC.cart.cart_contents) {
+            // Construction du tableau d'items à partir du panier WooCommerce
+            Object.keys(WC.cart.cart_contents).forEach((key, index) => {
+                const item = WC.cart.cart_contents[key];
+                if (item && item.data) {
+                    items.push({
+                        item_id: item.data.sku || item.product_id,
+                        item_name: item.data.name || '',
+                        price: parseFloat(item.data.price) || 0,
+                        quantity: item.quantity || 1,
+                        index: index + 1
+                    });
+                }
+            });
+        }
+        
+        // Événement GA4 EEC Begin Checkout
+        window.dataLayer.push({
+            event: 'begin_checkout',
+            ecommerce: {
+                items: items
+            }
+        });
+        
+        console.log('Événement begin_checkout déclenché');
     }
 });
 </script>

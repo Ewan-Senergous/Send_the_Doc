@@ -627,3 +627,45 @@ if (isset($_SESSION['commande_data']['file_paths'])) {
 // Ne pas décommenter cette ligne pour préserver les données de session y compris les images en base64
 // unset($_SESSION['commande_data']);
 ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Déclenchement des événements GA4 EEC Purchase et Google Ads - Demande devis reçue
+    window.dataLayer = window.dataLayer || [];
+    
+    // Récupération des données de commande
+    const commandeNumber = '<?php echo esc_js($commande_number); ?>';
+    
+    // Création de l'array d'items à partir des produits en session
+    const items = [];
+    <?php if (!empty($products)) : ?>
+        <?php foreach ($products as $index => $product) : ?>
+        items.push({
+            item_id: '<?php echo esc_js($product['sku']); ?>',
+            item_name: '<?php echo esc_js($product['name']); ?>',
+            quantity: <?php echo (int)$product['quantity']; ?>,
+            price: 0,
+            index: <?php echo $index + 1; ?>
+        });
+        <?php endforeach; ?>
+    <?php endif; ?>
+    
+    // GA4 EEC Purchase
+    window.dataLayer.push({
+        event: 'purchase',
+        ecommerce: {
+            transaction_id: commandeNumber,
+            value: 0, // Pas de valeur car c'est un devis
+            currency: 'EUR',
+            items: items
+        }
+    });
+    
+    // Événement pour déclencher Google Ads - Demande devis reçue
+    window.dataLayer.push({
+        event: 'purchase',
+        conversion_id: 11194006632,
+        transaction_id: commandeNumber
+    });
+});
+</script>
