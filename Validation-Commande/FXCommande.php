@@ -1003,6 +1003,11 @@ $result = cenovContactForm();
         padding: 0 !important;
     }
 
+    .woocommerce form .form-row textarea {
+        color: #000 !important;
+        height: auto !important;
+    }
+
     /* Style pour le select de pays */
     .input-icon-wrapper select {
         width: 100% !important;
@@ -1410,7 +1415,6 @@ $result = cenovContactForm();
     }
 
     .cenov-gdpr-consent input {
-        margin-top: 4px !important;
         margin-right: 10px !important;
     }
 
