@@ -629,9 +629,14 @@ if (isset($_SESSION['commande_data']['file_paths'])) {
 ?>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Déclenchement des événements GA4 EEC Purchase et Google Ads - Demande devis reçue
-    window.dataLayer = window.dataLayer || [];
+// Un seul déclenchement des événements pour éviter les duplications
+window.dataLayer = window.dataLayer || [];
+
+// Flag pour éviter les déclenchements multiples
+let eventSent = false;
+
+function sendGAEvents() {
+    if (eventSent) return; // Éviter le déclenchement multiple
     
     // Récupération des données de commande
     const commandeNumber = '<?php echo esc_js($commande_number); ?>';
@@ -650,7 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php endforeach; ?>
     <?php endif; ?>
     
-    // GA4 EEC Purchase
+    // GA4 EEC Purchase - un seul push
     window.dataLayer.push({
         event: 'purchase',
         ecommerce: {
@@ -661,11 +666,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Événement pour déclencher Google Ads - Demande devis reçue
-    window.dataLayer.push({
-        event: 'purchase',
-        conversion_id: 11194006632,
-        transaction_id: commandeNumber
-    });
-});
+    console.log('Événement purchase déclenché');
+    eventSent = true; // Marquer comme envoyé
+}
+
+// Déclenchement au chargement de la page
+document.addEventListener('DOMContentLoaded', sendGAEvents);
+
+// Également en cas de chargement retardé du DOM
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(sendGAEvents, 100);
+}
 </script>

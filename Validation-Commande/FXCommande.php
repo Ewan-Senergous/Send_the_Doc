@@ -1927,49 +1927,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // Restauration au chargement
     restoreFormData();
 
-    // Nettoyage du localStorage après soumission réussie
-    if (form) {
-        form.addEventListener("submit", function() {
-            // Déclenchement des événements GA4 EEC Begin Checkout et Google Ads - Begin Checkout
-            window.dataLayer = window.dataLayer || [];
-            
-            // Récupération des produits du panier si disponible
-            let items = [];
-            if (typeof WC !== 'undefined' && WC.cart && WC.cart.cart_contents) {
-                // Construction du tableau d'items à partir du panier WooCommerce
-                Object.keys(WC.cart.cart_contents).forEach((key, index) => {
-                    const item = WC.cart.cart_contents[key];
-                    if (item && item.data) {
-                        items.push({
-                            item_id: item.data.sku || item.product_id,
-                            item_name: item.data.name || '',
-                            price: parseFloat(item.data.price) || 0,
-                            quantity: item.quantity || 1,
-                            index: index + 1
-                        });
-                    }
-                });
-            }
-            
-            // Événement GA4 EEC Begin Checkout
-            window.dataLayer.push({
-                event: 'begin_checkout',
-                ecommerce: {
-                    items: items
-                }
-            });
-            
-            // Événement pour déclencher Google Ads - Begin Checkout
-            window.dataLayer.push({
-                event: 'begin_checkout'
-            });
-            
-            localStorage.removeItem(storageKey);
-        });
-    }
+    // Flag pour éviter les déclenchements multiples
+    let beginCheckoutEventSent = false;
 
-    // Déclenchement immédiat des événements au chargement de la page
-    if (window.location.pathname.includes('/validation-commande/')) {
+    // Fonction pour envoyer les événements une seule fois
+    function sendBeginCheckoutEvents() {
+        if (beginCheckoutEventSent) return; // Éviter le déclenchement multiple
+        
         // Récupération des produits du panier si disponible
         let items = [];
         if (typeof WC !== 'undefined' && WC.cart && WC.cart.cart_contents) {
@@ -1988,7 +1952,8 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
         
-        // Événement GA4 EEC Begin Checkout
+        // Envoyer un seul push pour GA4 EEC Begin Checkout et Google Ads
+        window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
             event: 'begin_checkout',
             ecommerce: {
@@ -1997,6 +1962,25 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         
         console.log('Événement begin_checkout déclenché');
+        beginCheckoutEventSent = true; // Marquer comme envoyé
+    }
+
+    // Nettoyage du localStorage après soumission réussie
+    if (form) {
+        form.addEventListener("submit", function() {
+            localStorage.removeItem(storageKey);
+        });
+    }
+
+    // Déclenchement au chargement de la page si on est sur la page de validation
+    if (window.location.pathname.includes('/validation-commande/')) {
+        // Déclenchement au chargement de la page
+        document.addEventListener('DOMContentLoaded', sendBeginCheckoutEvents);
+        
+        // Également en cas de chargement retardé du DOM
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(sendBeginCheckoutEvents, 100);
+        }
     }
 });
 </script>
