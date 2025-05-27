@@ -527,6 +527,7 @@ if (!function_exists('cenovContactForm')) {
      * Envoie les emails à l'entreprise et au client
      */
     function sendEmails($html_content, $attachments, $emailData) {
+        
         // Adresse email principal de l'entreprise
         $to = 'ventes@cenov-distribution.fr';
         
