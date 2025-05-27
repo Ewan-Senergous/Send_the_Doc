@@ -342,7 +342,7 @@ if (!function_exists('cenovContactForm')) {
         $client_lastname = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
         $client_name = $client_firstname . ' ' . $client_lastname;
         
-        // Créer l'URL sécurisée pour la page de récapitulatif
+        // Créer l'URL sécurisée pour la page de récapitulatif1
         $recap_url = add_query_arg(
             array(
                 'order' => $commande_number,
