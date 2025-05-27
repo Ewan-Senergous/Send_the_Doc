@@ -1,0 +1,83 @@
+[33m856aae6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m :lock: fix smtp security
+[33mf88ae16[m :bug: fix wrong sens client email
+[33m90f75e8[m :zap: change name file
+[33mc2f7386[m ;sparkles: google tag manager done
+[33m1d10ec6[m :bug: balise FXComande work
+[33m799deb7[m :art: minor change before fixture tag manager
+[33m148ae2d[m :zap: 0 erreur sonarqube
+[33m167d23d[m :bug: corrige worn visulaisation iamge but wrong presentation email
+[33ma7b54a8[m :zap: small improve refacto
+[33mc50b825[m :zap: improve refacto code
+[33m8e1e824[m :zap: improve performance code 2
+[33m729f4a2[m :zap: improve performance code
+[33m9c26076[m :lipstick: good presentation email
+[33m0630ef4[m :lipstick: good presentation email with bugs pieces jointes
+[33m897ad82[m :sparkles: add localstorage fields
+[33ma84cde7[m :bug; good message work unlees 2 images and wrong presentaton email
+[33m5afd8ab[m :bug: wrong name php
+[33mbef87cd[m :lipstick: minor change css
+[33m93dec47[m :bug: fix good email presentation
+[33md56c6a4[m :bug: fix id products multiple non stable
+[33m9ad96c4[m :sparkles: add id unqiue for product
+[33mc8cdf70[m :lipstick: improve border color
+[33m7ca6a3b[m :sparkles: order confirmation
+[33m829e5b3[m :art: chaneg css basics
+[33m34f844e[m :lipstcik: fix border css
+[33m8eeaf0a[m :bug: rmeove sku from name producté
+[33m8b1adf6[m :sparkles: add localstorage fields
+[33m110b1bf[m :bug: fix to zero
+[33m77ee458[m :zap: refacto code
+[33m67a355d[m :lipstick: good presentation email
+[33maae800d[m :sparkles: add email preentation
+[33m9a124ba[m :sparkles add delete button refillable page
+[33ma88f518[m :art: change margin and input blue
+[33m630c59b[m :bug: add sku and new format email
+[33mbe0543a[m :lipstick: add card product in front
+[33m2931321[m :zap: refacto fonction
+[33m4fcfa21[m :lipstick change file uplaod css multi
+[33m05f3390[m :bug: done correct total
+[33mc81f1e5[m :bug: jump to the line product email
+[33m17db467[m :bug: goog field email but wrong presentation for product
+[33meb7bc74[m :bug: sens demail field but not product
+[33m526b09e[m :bug: wrong field receivein email for new validate command
+[33m34da18a[m :art: imporve css mobileé
+[33mfcf0439[m :hammer: useless li
+[33maaacac1[m :sparkles: add infobulles formula for results section
+[33md2b2880[m :sparkles: add formula for mortor and speed variator
+[33m7c893d0[m :sparkles: add tooltip economie energie anuelel
+[33m218b5d5[m :hammer: add tooltip env
+[33ma0023b4[m :hammer: fix pagespeedweb
+[33mce0f19c[m :hammer: add 15% and 25% for dynamical speed motor
+[33mdf007b5[m :bug: resolve wrong values dynalic values when small values
+[33m8a3cf6c[m :bug: resolve wrong animation toggle and wrong resulta toggle swith
+[33m7aed7e0[m :hammer: add error alert plaque signalétique
+[33m866d295[m :hammer: add true dynamical value efficaicte moteur doesn't work smal value
+[33m671840d[m :hammer: add dynamic motor efficacity
+[33mfe502ba[m :bug: fix wrong size info tootltip
+[33m4ccc199[m :art: add icon environmental and savings
+[33m3e3b408[m :bug: fix focus blue and calc bug
+[33me1506ae[m corrige N/A bugs and add new values to IE1 to IE5
+[33mf7a4738[m :bug: fix Nan Investissement
+[33m148e939[m :art: change css mobile with wrap
+[33m00ca590[m :hammer: add tootltip for technical infos
+[33md9b5835[m :art: add green circle economie
+[33mef0327f[m :art: add good mobile version
+[33m8c74fa9[m :hammer: add variateur de vitesse to moteur actuel
+[33m42ec3b1[m :bug: fix 0.12 and NaN
+[33mfccedc0[m :art: add lucid icon field select/input
+[33m5ff2dab[m :art: change grid disposition
+[33m00580d3[m Add bold economy
+[33m179c4da[m :sparkles: add economie motor features
+[33mc33549d[m :sparkles: add form with downlaod
+[33mef09e49[m :end: Tout fonctionne
+[33m4a15f4f[m :sparkles: osef
+[33m508d105[m :sparkles: add exclusion fields
+[33mf82128a[m :sparkles: add mobile version good
+[33m8afdcab[m :sparkles: add finaly table roulement
+[33m487eb9e[m :sparkles: restart
+[33ma3f84a9[m :zap: better performance tab and table
+[33m454b00c[m :sparkles: add table and red tabs for four attributes
+[33m90db375[m :sparkles: add table for attributes
+[33m00545db[m :art: add code products meilleurs ventes
+[33m63f5269[m :tadta: contruction test email
+[33m5083ae3[m :tadta: contruction test email
