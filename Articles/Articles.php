@@ -460,7 +460,7 @@ if (!function_exists('articles_page_display')) {
                 <div class="sidebar">
                     <div class="dropdown-container">
                         <button type="button" class="dropdown-button" onclick="toggleDropdown()">
-                            Filtrer par catégorie 
+                            Filtrer par catégorie
                             <svg width="10" height="6" fill="none" viewBox="0 0 10 6">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
                             </svg>
@@ -474,10 +474,10 @@ if (!function_exists('articles_page_display')) {
                                     <?php foreach ($categories as $category): ?>
                                     <li class="dropdown-item">
                                         <div class="checkbox-container">
-                                            <input 
-                                                id="checkbox-<?php echo $category->term_id; ?>" 
-                                                type="checkbox" 
-                                                name="categories[]" 
+                                            <input
+                                                id="checkbox-<?php echo $category->term_id; ?>"
+                                                type="checkbox"
+                                                name="categories[]"
                                                 value="<?php echo esc_attr($category->slug); ?>"
                                                 <?php echo in_array($category->slug, $selected_categories) ? 'checked' : ''; ?>
                                                 onchange="document.getElementById('categoryForm').submit();"
@@ -507,9 +507,9 @@ if (!function_exists('articles_page_display')) {
 
                         <?php if ($theme_articles->have_posts()): ?>
                         <div class="articles-grid">
-                            <?php 
+                            <?php
                             $count = 0;
-                            while ($theme_articles->have_posts() && $count < 2): 
+                            while ($theme_articles->have_posts() && $count < 2):
                                 $theme_articles->the_post();
                                 $count++;
                                 $featured_image = get_the_post_thumbnail_url(get_the_ID(), 'medium');
@@ -573,9 +573,9 @@ if (!function_exists('articles_page_display')) {
 
                         <?php if ($latest_articles->have_posts()): ?>
                         <div class="articles-grid">
-                            <?php 
+                            <?php
                             $count = 0;
-                            while ($latest_articles->have_posts() && $count < 2): 
+                            while ($latest_articles->have_posts() && $count < 2):
                                 $latest_articles->the_post();
                                 $count++;
                                 $featured_image = get_the_post_thumbnail_url(get_the_ID(), 'medium');
