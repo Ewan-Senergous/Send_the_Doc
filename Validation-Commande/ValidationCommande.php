@@ -1419,7 +1419,6 @@ $result = cenovContactForm();
 
     .cenov-gdpr-consent {
         display: flex !important;
-        align-items: flex-start !important;
     }
 
     .cenov-gdpr-consent input {
