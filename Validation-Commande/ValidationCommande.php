@@ -2,7 +2,7 @@
 if (!function_exists('cenovContactForm')) {
     // Définir une constante pour les champs non renseignés
     define('CENOV_NOT_PROVIDED', 'Non renseigné');
-    define('CENOV_RECAP_URL', '/recap-commande/');
+    define('CENOV_RECAP_URL', '/recap-demande-de-prix/');
     
     // Code pour gérer la suppression d'un article du panier
     if (isset($_GET['remove_item']) && !empty($_GET['remove_item'])) {
@@ -854,7 +854,14 @@ $result = cenovContactForm();
 
             <!-- Récapitulatif de la commande -->
             <div class="form-row full-width order-summary">
-                <h4 class="order-summary-title">Récapitulatif de ma demande :</h4>
+                <?php
+                $cart_count = 0;
+                if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
+                    $cart_count = WC()->cart->get_cart_contents_count();
+                }
+                $title = $cart_count <= 1 ? 'Récapitulatif de mon produit :' : 'Récapitulatif de mes produits :';
+                ?>
+                <h4 class="order-summary-title"><?php echo $title; ?></h4>
                 <div class="order-summary-content">
                     <?php
                     if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
