@@ -10,12 +10,11 @@ function cenov_toast_system() {
     <div id="cenov-toast-container"></div>
 
     <style>
-    /* Toast Container - Position top-center comme Sonner */
+    /* Toast Container - Position bottom-right */
     #cenov-toast-container {
         position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+        bottom: 70px;
+        right: 0px;
         z-index: 999999;
         pointer-events: none;
         max-width: 100vw;
@@ -40,9 +39,10 @@ function cenov_toast_system() {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 14px;
         line-height: 1.4;
-        transform: translateY(-100px);
+        transform: translateY(100px);
         opacity: 0;
         transition: all 0.3s cubic-bezier(0.21, 1.02, 0.73, 1);
+        cursor: pointer;
     }
 
     .cenov-toast.show {
@@ -51,8 +51,13 @@ function cenov_toast_system() {
     }
 
     .cenov-toast.hide {
-        transform: translateY(-20px);
+        transform: translateY(20px);
         opacity: 0;
+    }
+
+    .cenov-toast:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
     /* Icône Success */
@@ -110,6 +115,8 @@ function cenov_toast_system() {
     /* Responsive */
     @media (max-width: 640px) {
         #cenov-toast-container {
+            bottom: 60px;
+            right: 0px;
             padding: 0 12px;
         }
         
@@ -129,7 +136,7 @@ function cenov_toast_system() {
             this.container = document.getElementById('cenov-toast-container');
         },
         
-        success(message, duration = 4000) {
+        success(message, duration = 600000) {
             if (!this.container) this.init();
             
             const toast = document.createElement('div');
@@ -148,6 +155,15 @@ function cenov_toast_system() {
                     </svg>
                 </button>
             `;
+            
+            // Ajouter la redirection vers le panier au clic
+            toast.addEventListener('click', (e) => {
+                // Ne pas rediriger si on clique sur le bouton fermer
+                if (e.target.closest('.cenov-toast-close')) {
+                    return;
+                }
+                window.location.href = 'https://www.cenov-distribution.fr/panier/';
+            });
             
             this.container.appendChild(toast);
             
