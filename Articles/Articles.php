@@ -1,5 +1,129 @@
 <?php
 
+// Fonction pour extraire l'image principale du contenu HTML
+if (!function_exists('get_principal_image_from_content')) {
+    function get_principal_image_from_content($post_id) {
+        $post_content = get_post_field('post_content', $post_id);
+        $post_title = get_the_title($post_id);
+        
+        // Debug : Affichage direct dans la page (comme DiagPompe.php)
+        echo '<div style="background:#f0f0f0;padding:15px;margin:10px 0;border-radius:8px;font-size:12px;border-left:4px solid #2196F3;">';
+        echo '<h4 style="margin:0 0 10px 0;color:#333;">🔍 DEBUG IMAGE PRINCIPALE</h4>';
+        echo '<p><strong>Post ID:</strong> ' . $post_id . '</p>';
+        echo '<p><strong>Post Title:</strong> ' . htmlspecialchars($post_title) . '</p>';
+        echo '<p><strong>Content length:</strong> ' . strlen($post_content) . ' caractères</p>';
+        
+        // Détecter si c'est du contenu Divi
+        $is_divi = strpos($post_content, '[et_pb_') !== false;
+        echo '<p><strong>Type de contenu:</strong> ' . ($is_divi ? 'Divi Builder' : 'HTML standard') . '</p>';
+        
+        if ($is_divi) {
+            echo '<p><strong>🔍 Recherche dans les shortcodes Divi...</strong></p>';
+            
+            // Recherche des shortcodes et_pb_image avec alt ou title_text contenant "principal"
+            preg_match_all('/\[et_pb_image[^\]]*\]/i', $post_content, $divi_images);
+            echo '<p><strong>Nombre de shortcodes et_pb_image trouvés:</strong> ' . count($divi_images[0]) . '</p>';
+            
+            if (count($divi_images[0]) > 0) {
+                echo '<p><strong>Shortcodes Divi détectés:</strong></p>';
+                echo '<ol style="margin:0;padding-left:20px;">';
+                foreach ($divi_images[0] as $index => $shortcode) {
+                    echo '<li style="margin:5px 0;"><code style="background:#fff;padding:2px 4px;border-radius:2px;font-size:10px;">' . htmlspecialchars($shortcode) . '</code></li>';
+                }
+                echo '</ol>';
+                
+                // Analyser chaque shortcode pour trouver l'image principale
+                foreach ($divi_images[0] as $shortcode) {
+                    // Extraire les attributs du shortcode
+                    preg_match('/src="([^"]+)"/', $shortcode, $src_match);
+                    preg_match('/alt="([^"]*principal[^"]*)"/', $shortcode, $alt_match);
+                    preg_match('/title_text="([^"]*principal[^"]*)"/', $shortcode, $title_match);
+                    
+                    if ($src_match && ($alt_match || $title_match)) {
+                        $image_url = $src_match[1];
+                        $match_type = $alt_match ? 'alt' : 'title_text';
+                        $match_value = $alt_match ? $alt_match[1] : $title_match[1];
+                        
+                        echo '<p style="color:green;"><strong>✅ Trouvé image Divi avec ' . $match_type . ' principal:</strong></p>';
+                        echo '<p style="color:green;"><strong>URL:</strong> ' . htmlspecialchars($image_url) . '</p>';
+                        echo '<p style="color:green;"><strong>' . ucfirst($match_type) . ':</strong> ' . htmlspecialchars($match_value) . '</p>';
+                        echo '</div>';
+                        return $image_url;
+                    }
+                }
+                
+                // Fallback : première image Divi trouvée
+                if (isset($divi_images[0][0])) {
+                    preg_match('/src="([^"]+)"/', $divi_images[0][0], $first_src);
+                    if ($first_src) {
+                        echo '<p style="color:orange;"><strong>⚠️ Fallback première image Divi:</strong> ' . htmlspecialchars($first_src[1]) . '</p>';
+                        echo '</div>';
+                        return $first_src[1];
+                    }
+                }
+            }
+        } else {
+            // Traitement HTML standard (ancien code)
+            echo '<p><strong>Content preview:</strong></p>';
+            echo '<pre style="background:#fff;padding:10px;border-radius:4px;max-height:200px;overflow:auto;font-size:11px;">';
+            echo htmlspecialchars(substr($post_content, 0, 800)) . '...';
+            echo '</pre>';
+            
+            // Recherche toutes les images dans le contenu
+            preg_match_all('/<img[^>]*>/i', $post_content, $all_images);
+            echo '<p><strong>Nombre d\'images trouvées:</strong> ' . count($all_images[0]) . '</p>';
+            
+            if (count($all_images[0]) > 0) {
+                echo '<p><strong>Images détectées:</strong></p>';
+                echo '<ol style="margin:0;padding-left:20px;">';
+                foreach ($all_images[0] as $index => $img) {
+                    echo '<li style="margin:5px 0;"><code style="background:#fff;padding:2px 4px;border-radius:2px;font-size:10px;">' . htmlspecialchars($img) . '</code></li>';
+                }
+                echo '</ol>';
+            }
+            
+            // Recherche d'une image avec alt contenant "principal"
+            if (preg_match('/<img[^>]+alt=["\'][^"\']*principal[^"\']*["\'][^>]*src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image avec alt principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return $matches[1];
+            }
+            
+            // Recherche d'une image avec title contenant "principal"
+            if (preg_match('/<img[^>]+title=["\'][^"\']*principal[^"\']*["\'][^>]*src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image avec title principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return $matches[1];
+            }
+            
+            // Recherche d'une image avec src contenant "principal" et alt
+            if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]+alt=["\'][^"\']*principal[^"\']*["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image src+alt principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return $matches[1];
+            }
+            
+            // Recherche d'une image avec src contenant "principal" et title
+            if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]+title=["\'][^"\']*principal[^"\']*["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image src+title principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return $matches[1];
+            }
+            
+            // Fallback : première image du contenu
+            if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:orange;"><strong>⚠️ Fallback première image:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return $matches[1];
+            }
+        }
+        
+        echo '<p style="color:red;"><strong>❌ Aucune image trouvée dans le contenu</strong></p>';
+        echo '</div>';
+        return false;
+    }
+}
+
 if (!function_exists('articles_page_display')) {
     function articles_page_display() {
         ob_start();
@@ -513,10 +637,14 @@ if (!function_exists('articles_page_display')) {
                             while ($theme_articles->have_posts() && $count < 2):
                                 $theme_articles->the_post();
                                 $count++;
-                                $featured_image = get_the_post_thumbnail_url(get_the_ID(), 'medium');
+                                $featured_image = get_principal_image_from_content(get_the_ID());
                                 if (!$featured_image) {
                                     $featured_image = 'https://www.cenov-distribution.fr/wp-content/uploads/2024/01/default-article.jpg';
                                 }
+                                // Debug front-end
+                                echo '<script>console.log("🔍 DEBUG THÈMES - Article ID: ' . get_the_ID() . '");';
+                                echo 'console.log("🔍 DEBUG THÈMES - Article Title: ' . addslashes(get_the_title()) . '");';
+                                echo 'console.log("🔍 DEBUG THÈMES - Image trouvée: ' . addslashes($featured_image) . '");</script>';
                             ?>
                             <div class="article-card">
                                 <a href="<?php the_permalink(); ?>">
@@ -579,10 +707,14 @@ if (!function_exists('articles_page_display')) {
                             while ($latest_articles->have_posts() && $count < 2):
                                 $latest_articles->the_post();
                                 $count++;
-                                $featured_image = get_the_post_thumbnail_url(get_the_ID(), 'medium');
+                                $featured_image = get_principal_image_from_content(get_the_ID());
                                 if (!$featured_image) {
                                     $featured_image = 'https://www.cenov-distribution.fr/wp-content/uploads/2024/01/default-article.jpg';
                                 }
+                                // Debug front-end
+                                echo '<script>console.log("📰 DEBUG DERNIERS - Article ID: ' . get_the_ID() . '");';
+                                echo 'console.log("📰 DEBUG DERNIERS - Article Title: ' . addslashes(get_the_title()) . '");';
+                                echo 'console.log("📰 DEBUG DERNIERS - Image trouvée: ' . addslashes($featured_image) . '");</script>';
                             ?>
                             <div class="article-card">
                                 <a href="<?php the_permalink(); ?>">
