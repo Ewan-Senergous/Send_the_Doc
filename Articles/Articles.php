@@ -105,7 +105,7 @@ if (!function_exists('articles_page_display')) {
         
         .search-input:focus {
             outline: none;
-            border: 2px solid #3b82f6;
+            border: 3px solid #3b82f6;
         }
         
         .search-button {
@@ -353,6 +353,7 @@ if (!function_exists('articles_page_display')) {
         
         .read-more-icon {
             margin-left: 0.5rem;
+            margin-top: 0.2rem;
             width: 0.875rem;
             height: 0.875rem;
         }
