@@ -992,6 +992,7 @@
                         </div>
                         
                         <input type="hidden" name="diagnostic_data" id="diagnostic_data">
+                        <input type="hidden" name="form_token" id="form_token">
                         
                         <div class="form-row desktop-two-col">
                             <div class="form-group">
@@ -1190,6 +1191,10 @@
                     
                     // Capturer les logs de la console pour debug
                     diagnosticData.console_logs = window.debugLogs || [];
+                    
+                    // Générer un token unique pour éviter les doublons
+                    const formToken = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    document.getElementById('form_token').value = formToken;
                     
                     document.getElementById('diagnostic_data').value = JSON.stringify(diagnosticData);
                     
@@ -1527,222 +1532,258 @@
     </script>
 
     <?php
-    // Code PHP SIMPLIFIÉ pour traiter l'envoi du rapport
+    // Code PHP pour traiter l'envoi du rapport - PROTECTION CONTRE DOUBLONS
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cenov_submit'])) {
         
-        echo '<div style="background:#f0f0f0;padding:20px;margin:20px;border-radius:8px;">';
-        echo '<h3>🔍 DEBUG - Données reçues</h3>';
+        // Protection contre les doublons d'envoi
+        session_start();
+        $form_token = $_POST['form_token'] ?? '';
+        $session_token = $_SESSION['last_form_token'] ?? '';
         
-        // DEBUG COMPLET : Afficher $_FILES
-        echo '<h4>📁 DEBUG $_FILES:</h4>';
-        echo '<pre style="background:#fff;padding:10px;border-radius:4px;font-size:12px;max-height:300px;overflow:auto;">';
-        print_r($_FILES);
-        echo '</pre>';
-        
-        // DEBUG : Afficher $_POST (sans données sensibles)
-        echo '<h4>📝 DEBUG $_POST keys:</h4>';
-        echo '<pre style="background:#fff;padding:10px;border-radius:4px;font-size:12px;">';
-        foreach ($_POST as $key => $value) {
-            if (is_string($value) && strlen($value) > 100) {
-                echo $key . ' => [LONG DATA - ' . strlen($value) . ' chars]' . "\n";
-            } else {
-                echo $key . ' => ' . (is_array($value) ? '[ARRAY]' : $value) . "\n";
-            }
-        }
-        echo '</pre>';
-        
-        // LOGS JavaScript transférés via diagnostic_data
-        if (isset($_POST['diagnostic_data'])) {
-            $diagnostic_data = json_decode(stripslashes($_POST['diagnostic_data']), true);
-            if ($diagnostic_data && isset($diagnostic_data['console_logs'])) {
-                echo '<h4>🖥️ DEBUG Console Logs JavaScript:</h4>';
-                echo '<pre style="background:#fff;padding:10px;border-radius:4px;font-size:12px;max-height:200px;overflow:auto;">';
-                foreach ($diagnostic_data['console_logs'] as $log) {
-                    echo htmlspecialchars($log) . "\n";
-                }
-                echo '</pre>';
-            }
-        }
-        
-        // Vérification honeypot
-        if (!empty($_POST['cenov_website'])) {
-            echo '<div class="success-message">✅ Votre rapport a été envoyé avec succès.</div>';
-            exit;
-        }
-        
-        // Récupération des données
-        $email_destinataire = filter_var($_POST['cenov_email'], FILTER_SANITIZE_EMAIL);
-        $email_copie = isset($_POST['cenov_email_copie']) ? filter_var($_POST['cenov_email_copie'], FILTER_SANITIZE_EMAIL) : '';
-        $envoyeur_nom = htmlspecialchars($_POST['cenov_prenom']);
-        $envoyeur_telephone = htmlspecialchars($_POST['cenov_telephone']);
-        $message_accompagnement = htmlspecialchars($_POST['cenov_message']);
-        $diagnostic_data = isset($_POST['diagnostic_data']) ? json_decode(stripslashes($_POST['diagnostic_data']), true) : [];
-        
-        echo '<p>📧 Email destinataire: ' . $email_destinataire . '</p>';
-        echo '<p>👤 Envoyeur: ' . $envoyeur_nom . '</p>';
-        echo '<p>📊 Données diagnostic: ' . (empty($diagnostic_data) ? 'VIDES' : 'OK') . '</p>';
-        
-        // Compter les photos
-        $photoCount = 0;
-        $photoFields = array('plaque_photos', 'etat_photos', 'mesures_photos', 'diagnostic_photos', 'final_photos');
-        foreach ($photoFields as $field) {
-            if (isset($_FILES[$field]) && !empty($_FILES[$field]['name'][0])) {
-                $photoCount += count(array_filter($_FILES[$field]['name']));
-            }
-        }
-        echo '<p>📸 Photos jointes: ' . $photoCount . ' fichier(s)</p>';
-        
-        // Validation
-        if (empty($email_destinataire) || empty($envoyeur_nom)) {
-            echo '<div class="error-message">❌ Champs obligatoires manquants</div>';
+        if ($form_token === $session_token) {
+            echo '<div style="background:#fff3cd;padding:20px;margin:20px;border-radius:8px;border-left:4px solid #ffc107;">';
+            echo '<h3>⚠️ Email déjà envoyé</h3>';
+            echo '<p>Ce rapport a déjà été envoyé. Pas de doublon créé.</p>';
+            echo '</div>';
         } else {
-            // Construction de l'email
-            $subject = 'Rapport de Diagnostic Pompe à Palettes - ' . date('Y-m-d H:i:s');
+            // Marquer ce token comme utilisé
+            $_SESSION['last_form_token'] = $form_token;
             
-            $content = "=== RAPPORT DE DIAGNOSTIC POMPE À PALETTES ===\r\n\r\n";
+            echo '<div style="background:#f0f0f0;padding:20px;margin:20px;border-radius:8px;">';
+            echo '<h3>🔍 DEBUG - Données reçues</h3>';
             
-            if (!empty($diagnostic_data)) {
-                $content .= "--- INFORMATIONS GÉNÉRALES ---\r\n";
-                $content .= "GMAO Client: " . ($diagnostic_data['gmaoClient'] ?? 'N/A') . "\r\n";
-                $content .= "N° de dossier: " . ($diagnostic_data['numeroDossier'] ?? 'N/A') . "\r\n";
-                $content .= "Constructeur: " . ($diagnostic_data['constructeur'] ?? 'N/A') . "\r\n";
-                $content .= "Type: " . ($diagnostic_data['type'] ?? 'N/A') . "\r\n";
-                $content .= "Numéro de série: " . ($diagnostic_data['numeroSerie'] ?? 'N/A') . "\r\n\r\n";
-                
-                $content .= "--- ÉTAT DE LA POMPE ---\r\n";
-                $content .= "État général: " . ($diagnostic_data['etatGeneral'] ?? 'N/A') . "\r\n";
-                $content .= "État de la pompe: " . ($diagnostic_data['etatPompe'] ?? 'N/A') . "\r\n";
-                $content .= "Date du diagnostic: " . ($diagnostic_data['dateDiagnostic'] ?? 'N/A') . "\r\n";
-                $content .= "Technicien: " . ($diagnostic_data['technicienNom'] ?? 'N/A') . "\r\n\r\n";
+            // DEBUG COMPLET : Afficher $_FILES
+            echo '<h4>📁 DEBUG $_FILES:</h4>';
+            echo '<pre style="background:#fff;padding:10px;border-radius:4px;font-size:12px;max-height:300px;overflow:auto;">';
+            print_r($_FILES);
+            echo '</pre>';
+            
+            // DEBUG : Afficher $_POST (sans données sensibles)
+            echo '<h4>📝 DEBUG $_POST keys:</h4>';
+            echo '<pre style="background:#fff;padding:10px;border-radius:4px;font-size:12px;">';
+            foreach ($_POST as $key => $value) {
+                if (is_string($value) && strlen($value) > 100) {
+                    echo $key . ' => [LONG DATA - ' . strlen($value) . ' chars]' . "\n";
+                } else {
+                    echo $key . ' => ' . (is_array($value) ? '[ARRAY]' : $value) . "\n";
+                }
+            }
+            echo '</pre>';
+            
+            // LOGS JavaScript transférés via diagnostic_data
+            if (isset($_POST['diagnostic_data'])) {
+                $diagnostic_data = json_decode(stripslashes($_POST['diagnostic_data']), true);
+                if ($diagnostic_data && isset($diagnostic_data['console_logs'])) {
+                    echo '<h4>🖥️ DEBUG Console Logs JavaScript:</h4>';
+                    echo '<pre style="background:#fff;padding:10px;border-radius:4px;font-size:12px;max-height:200px;overflow:auto;">';
+                    foreach ($diagnostic_data['console_logs'] as $log) {
+                        echo htmlspecialchars($log) . "\n";
+                    }
+                    echo '</pre>';
+                }
             }
             
-            if (!empty($message_accompagnement)) {
-                $content .= "--- MESSAGE D'ACCOMPAGNEMENT ---\r\n";
-                $content .= $message_accompagnement . "\r\n\r\n";
+            // Vérification honeypot
+            if (!empty($_POST['cenov_website'])) {
+                echo '<div class="success-message">✅ Votre rapport a été envoyé avec succès.</div>';
+                exit;
             }
             
-            $content .= "--- INFORMATIONS ENVOYEUR ---\r\n";
-            $content .= "Nom: " . $envoyeur_nom . "\r\n";
-            $content .= "Téléphone: " . $envoyeur_telephone . "\r\n";
-            $content .= "Date de génération: " . date('d/m/Y H:i:s') . "\r\n";
+            // Récupération des données
+            $email_destinataire = filter_var($_POST['cenov_email'], FILTER_SANITIZE_EMAIL);
+            $email_copie = isset($_POST['cenov_email_copie']) ? filter_var($_POST['cenov_email_copie'], FILTER_SANITIZE_EMAIL) : '';
+            $envoyeur_nom = htmlspecialchars($_POST['cenov_prenom']);
+            $envoyeur_telephone = htmlspecialchars($_POST['cenov_telephone']);
+            $message_accompagnement = htmlspecialchars($_POST['cenov_message']);
+            $diagnostic_data = isset($_POST['diagnostic_data']) ? json_decode(stripslashes($_POST['diagnostic_data']), true) : [];
             
-            // Gestion des photos
-            $attachments = array();
+            echo '<p>📧 Email destinataire: ' . $email_destinataire . '</p>';
+            echo '<p>👤 Envoyeur: ' . $envoyeur_nom . '</p>';
+            echo '<p>📊 Données diagnostic: ' . (empty($diagnostic_data) ? 'VIDES' : 'OK') . '</p>';
+            
+            // Compter les photos
+            $photoCount = 0;
             $photoFields = array('plaque_photos', 'etat_photos', 'mesures_photos', 'diagnostic_photos', 'final_photos');
-            $photoLabels = array(
-                'plaque_photos' => 'Plaque signalétique',
-                'etat_photos' => 'État initial',
-                'mesures_photos' => 'Mesures techniques', 
-                'diagnostic_photos' => 'Diagnostic composants',
-                'final_photos' => 'Photos finales'
-            );
-            
-            $totalPhotos = 0;
-            $photosInfo = "\r\n--- PHOTOS JOINTES ---\r\n";
-            
-            $upload_dir = wp_upload_dir();
-            $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
-            
-            if (!file_exists($temp_dir)) {
-                wp_mkdir_p($temp_dir);
+            foreach ($photoFields as $field) {
+                if (isset($_FILES[$field]) && !empty($_FILES[$field]['name'][0])) {
+                    $photoCount += count(array_filter($_FILES[$field]['name']));
+                }
             }
+            echo '<p>📸 Photos jointes: ' . $photoCount . ' fichier(s)</p>';
             
-            foreach ($photoFields as $fieldName) {
-                if (isset($_FILES[$fieldName]) && !empty($_FILES[$fieldName]['name'][0])) {
-                    $fieldPhotos = 0;
-                    foreach ($_FILES[$fieldName]['name'] as $key => $name) {
-                        if (empty($name)) continue;
+            // Validation
+            if (empty($email_destinataire) || empty($envoyeur_nom)) {
+                echo '<div class="error-message">❌ Champs obligatoires manquants</div>';
+            } else {
+                // Construction de l'email avec formatage HTML pour meilleur rendu
+                $subject = 'Rapport de Diagnostic Pompe à Palettes - ' . date('Y-m-d H:i:s');
+                
+                $content = "<html><body style='font-family: Arial, sans-serif; line-height: 1.6;'>";
+                $content .= "<h2 style='color: #333; padding-bottom: 10px;'>";
+                $content .= "=== RAPPORT DE DIAGNOSTIC POMPE À PALETTES ===";
+                $content .= "</h2>";
+                
+                if (!empty($diagnostic_data)) {
+                    $content .= "<h3 style='color: #333; margin-top: 30px;'>--- INFORMATIONS GÉNÉRALES ---</h3>";
+                    $content .= "<p><strong>GMAO Client:</strong> " . ($diagnostic_data['gmaoClient'] ?? 'N/A') . "<br>";
+                    $content .= "<strong>N° de dossier:</strong> " . ($diagnostic_data['numeroDossier'] ?? 'N/A') . "<br>";
+                    $content .= "<strong>Constructeur:</strong> " . ($diagnostic_data['constructeur'] ?? 'N/A') . "<br>";
+                    $content .= "<strong>Type:</strong> " . ($diagnostic_data['type'] ?? 'N/A') . "<br>";
+                    $content .= "<strong>Numéro de série:</strong> " . ($diagnostic_data['numeroSerie'] ?? 'N/A') . "</p>";
+                    
+                    $content .= "<h3 style='color: #333; margin-top: 30px;'>--- ÉTAT DE LA POMPE ---</h3>";
+                    $content .= "<p><strong>État général:</strong> " . ($diagnostic_data['etatGeneral'] ?? 'N/A') . "<br>";
+                    $content .= "<strong>État de la pompe:</strong> " . ($diagnostic_data['etatPompe'] ?? 'N/A') . "<br>";
+                    $content .= "<strong>Date du diagnostic:</strong> " . ($diagnostic_data['dateDiagnostic'] ?? 'N/A') . "<br>";
+                    $content .= "<strong>Technicien:</strong> " . ($diagnostic_data['technicienNom'] ?? 'N/A') . "</p>";
+                }
+                
+                if (!empty($message_accompagnement)) {
+                    $content .= "<h3 style='color: #333; margin-top: 30px;'>--- MESSAGE D'ACCOMPAGNEMENT ---</h3>";
+                    $content .= "<p>" . nl2br(htmlspecialchars($message_accompagnement)) . "</p>";
+                }
+                
+                $content .= "<h3 style='color: #333; margin-top: 30px;'>--- INFORMATIONS ENVOYEUR ---</h3>";
+                $content .= "<p><strong>Nom:</strong> " . $envoyeur_nom . "<br>";
+                $content .= "<strong>Téléphone:</strong> " . $envoyeur_telephone . "<br>";
+                $content .= "<strong>Date de génération:</strong> " . date('d/m/Y H:i:s') . "</p>";
+                
+                // Gestion des photos
+                $attachments = array();
+                $photoFields = array('plaque_photos', 'etat_photos', 'mesures_photos', 'diagnostic_photos', 'final_photos');
+                $photoLabels = array(
+                    'plaque_photos' => 'Plaque signalétique',
+                    'etat_photos' => 'État initial',
+                    'mesures_photos' => 'Mesures techniques', 
+                    'diagnostic_photos' => 'Diagnostic composants',
+                    'final_photos' => 'Photos finales'
+                );
+                
+                $totalPhotos = 0;
+                $photosInfo = "<h3 style='color: #333; margin-top: 30px;'>--- PHOTOS JOINTES ---</h3><p>";
+                
+                $upload_dir = wp_upload_dir();
+                $temp_dir = $upload_dir['basedir'] . '/cenov_temp';
+                
+                if (!file_exists($temp_dir)) {
+                    wp_mkdir_p($temp_dir);
+                }
+                
+                foreach ($photoFields as $fieldName) {
+                    if (isset($_FILES[$fieldName]) && !empty($_FILES[$fieldName]['name'][0])) {
+                        $fieldPhotos = 0;
+                        foreach ($_FILES[$fieldName]['name'] as $key => $name) {
+                            if (empty($name)) continue;
+                            
+                            $file = array(
+                                'name' => $_FILES[$fieldName]['name'][$key],
+                                'type' => $_FILES[$fieldName]['type'][$key],
+                                'tmp_name' => $_FILES[$fieldName]['tmp_name'][$key],
+                                'error' => $_FILES[$fieldName]['error'][$key],
+                                'size' => $_FILES[$fieldName]['size'][$key]
+                            );
+                            
+                            // Vérifications de sécurité
+                            if ($file['error'] !== UPLOAD_ERR_OK) continue;
+                            
+                            $allowed_types = array('image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
+                            if (!in_array($file['type'], $allowed_types)) continue;
+                            
+                            $max_size = 10 * 1024 * 1024; // 10 Mo
+                            if ($file['size'] > $max_size) continue;
+                            
+                            // CORRECTION : Déplacer le fichier dans un dossier temporaire permanent
+                            $filename = sanitize_file_name($file['name']);
+                            $filename = time() . '_' . $key . '_' . $fieldName . '_' . $filename;
+                            $temp_file = $temp_dir . '/' . $filename;
+                            
+                            if (move_uploaded_file($file['tmp_name'], $temp_file)) {
+                                $attachments[] = $temp_file; // Utiliser le nouveau chemin permanent
+                                $fieldPhotos++;
+                                $totalPhotos++;
+                            }
+                        }
                         
-                        $file = array(
-                            'name' => $_FILES[$fieldName]['name'][$key],
-                            'type' => $_FILES[$fieldName]['type'][$key],
-                            'tmp_name' => $_FILES[$fieldName]['tmp_name'][$key],
-                            'error' => $_FILES[$fieldName]['error'][$key],
-                            'size' => $_FILES[$fieldName]['size'][$key]
-                        );
-                        
-                        // Vérifications de sécurité
-                        if ($file['error'] !== UPLOAD_ERR_OK) continue;
-                        
-                        $allowed_types = array('image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'image/heic', 'image/webp');
-                        if (!in_array($file['type'], $allowed_types)) continue;
-                        
-                        $max_size = 10 * 1024 * 1024; // 10 Mo
-                        if ($file['size'] > $max_size) continue;
-                        
-                        // CORRECTION : Déplacer le fichier dans un dossier temporaire permanent
-                        $filename = sanitize_file_name($file['name']);
-                        $filename = time() . '_' . $key . '_' . $fieldName . '_' . $filename;
-                        $temp_file = $temp_dir . '/' . $filename;
-                        
-                        if (move_uploaded_file($file['tmp_name'], $temp_file)) {
-                            $attachments[] = $temp_file; // Utiliser le nouveau chemin permanent
-                            $fieldPhotos++;
-                            $totalPhotos++;
+                        if ($fieldPhotos > 0) {
+                            $photosInfo .= "<strong>" . $photoLabels[$fieldName] . ":</strong> " . $fieldPhotos . " photo(s)<br>";
                         }
                     }
-                    
-                    if ($fieldPhotos > 0) {
-                        $photosInfo .= $photoLabels[$fieldName] . ": " . $fieldPhotos . " photo(s)\r\n";
-                    }
                 }
-            }
-            
-            if ($totalPhotos > 0) {
-                $photosInfo .= "Total: " . $totalPhotos . " photo(s)\r\n";
-                $content .= $photosInfo;
-            } else {
-                $content .= "\r\n--- AUCUNE PHOTO JOINTE ---\r\n";
-            }
-            
-            // Headers
-            $headers = [];
-            if (function_exists('get_bloginfo') && function_exists('get_option')) {
-                $headers[] = 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>';
-            } else {
-                $headers[] = 'From: Diagnostic Pompe <noreply@' . $_SERVER['HTTP_HOST'] . '>';
-            }
-            
-            if (!empty($email_copie)) {
-                $headers[] = 'Cc: ' . $email_copie;
-            }
-            
-            // Tentative d'envoi
-            $sent = false;
-            if (function_exists('wp_mail')) {
-                echo '<p>🚀 Tentative d\'envoi avec wp_mail...</p>';
+                
+                if ($totalPhotos > 0) {
+                    $photosInfo .= "<strong>Total:</strong> " . $totalPhotos . " photo(s)</p>";
+                    $content .= $photosInfo;
+                } else {
+                    $content .= "<h3 style='color: #333; margin-top: 30px;'>--- AUCUNE PHOTO JOINTE ---</h3>";
+                }
+                
+                // Fermer les balises HTML
+                $content .= "</body></html>";
+                
+                // Headers avec ventes@cenov-distribution.fr en copie
+                $headers = [];
+                $headers[] = 'From: Cenov Distribution <ventes@cenov-distribution.fr>';
+                $headers[] = 'Reply-To: ' . $envoyeur_nom . ' <' . $email_destinataire . '>';
+                $headers[] = 'Content-Type: text/html; charset=UTF-8';
+                
+                // Construire la liste des destinataires en copie (éviter les doublons)
+                $copy_emails = array();
+                
+                // Ajouter ventes@cenov-distribution.fr TOUJOURS en copie
+                $copy_emails[] = 'ventes@cenov-distribution.fr';
+                
+                // Ajouter l'email de copie optionnel s'il est différent
+                if (!empty($email_copie) && $email_copie !== 'ventes@cenov-distribution.fr' && $email_copie !== $email_destinataire) {
+                    $copy_emails[] = $email_copie;
+                }
+                
+                // Ajouter les headers CC si nécessaire
+                if (!empty($copy_emails)) {
+                    $headers[] = 'Cc: ' . implode(', ', $copy_emails);
+                    echo '<p>📋 Copie envoyée à: ' . implode(', ', $copy_emails) . '</p>';
+                }
+                
+                // Tentative d'envoi - UN SEUL ENVOI
+                $sent = false;
+                if (function_exists('wp_mail')) {
+                    echo '<p>🚀 Tentative d\'envoi avec wp_mail...</p>';
+                    if (!empty($attachments)) {
+                        echo '<p>📎 Pièces jointes: ' . count($attachments) . ' fichier(s)</p>';
+                    }
+                    $sent = wp_mail($email_destinataire, $subject, $content, $headers, $attachments);
+                } else {
+                    echo '<p>📧 Tentative d\'envoi avec mail() (sans pièces jointes)...</p>';
+                    $sent = mail($email_destinataire, $subject, $content, implode("\r\n", $headers));
+                }
+                
+                // Nettoyage des fichiers temporaires
                 if (!empty($attachments)) {
-                    echo '<p>📎 Pièces jointes: ' . count($attachments) . ' fichier(s)</p>';
+                    foreach ($attachments as $file) {
+                        if (file_exists($file)) {
+                            @unlink($file);
+                        }
+                    }
                 }
-                $sent = wp_mail($email_destinataire, $subject, $content, $headers, $attachments);
-            } else {
-                echo '<p>📧 Tentative d\'envoi avec mail() (sans pièces jointes)...</p>';
-                $sent = mail($email_destinataire, $subject, $content, implode("\r\n", $headers));
-            }
-            
-            if (!empty($attachments)) {
-                foreach ($attachments as $file) {
-                    if (file_exists($file)) {
-                        @unlink($file);
+                
+                if ($sent) {
+                    echo '<div class="success-message">✅ Rapport de diagnostic envoyé avec succès à ' . $email_destinataire . '</div>';
+                    if (!empty($copy_emails)) {
+                        echo '<p style="color: green;">📋 Copie envoyée à: ' . implode(', ', $copy_emails) . '</p>';
+                    }
+                    if ($totalPhotos > 0) {
+                        echo '<p style="color: green;">📸 ' . $totalPhotos . ' photo(s) incluse(s) dans l\'email</p>';
+                    }
+                } else {
+                    echo '<div class="error-message">❌ Erreur lors de l\'envoi du rapport.</div>';
+                    echo '<p>🔧 Vérifiez la configuration email de votre serveur</p>';
+                    if ($totalPhotos > 0) {
+                        echo '<p style="color: orange;">📸 ' . $totalPhotos . ' photo(s) n\'ont pas pu être envoyées</p>';
                     }
                 }
             }
             
-            if ($sent) {
-                echo '<div class="success-message">✅ Rapport de diagnostic envoyé avec succès à ' . $email_destinataire . '</div>';
-                if ($totalPhotos > 0) {
-                    echo '<p style="color: green;">📸 ' . $totalPhotos . ' photo(s) incluse(s) dans l\'email</p>';
-                }
-            } else {
-                echo '<div class="error-message">❌ Erreur lors de l\'envoi du rapport.</div>';
-                echo '<p>🔧 Vérifiez la configuration email de votre serveur</p>';
-                if ($totalPhotos > 0) {
-                    echo '<p style="color: orange;">📸 ' . $totalPhotos . ' photo(s) n\'ont pas pu être envoyées</p>';
-                }
-            }
+            echo '</div>';
         }
-        
-        echo '</div>';
     }
     ?>
 </body>
