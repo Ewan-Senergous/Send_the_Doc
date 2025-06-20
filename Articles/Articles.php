@@ -124,6 +124,117 @@ if (!function_exists('get_principal_image_from_content')) {
     }
 }
 
+// Fonction pour extraire un extrait intelligent du contenu
+if (!function_exists('get_smart_excerpt')) {
+    function get_smart_excerpt($post_id) {
+        $post_content = get_post_field('post_content', $post_id);
+        
+        // Détecter si c'est du contenu Divi
+        $is_divi = strpos($post_content, '[et_pb_') !== false;
+        
+        if ($is_divi) {
+            // Extraire le premier shortcode et_pb_text
+            preg_match('/\[et_pb_text[^\]]*\](.*?)\[\/et_pb_text\]/s', $post_content, $text_match);
+            if ($text_match) {
+                $raw_text = $text_match[1];
+            } else {
+                // Fallback : chercher n'importe quel texte entre shortcodes
+                $raw_text = strip_shortcodes($post_content);
+            }
+        } else {
+            // HTML standard : extraire le premier paragraphe
+            preg_match('/<p[^>]*>(.*?)<\/p>/s', $post_content, $p_match);
+            if ($p_match) {
+                $raw_text = $p_match[1];
+            } else {
+                $raw_text = $post_content;
+            }
+        }
+        
+        // Nettoyer le HTML et les shortcodes
+        $clean_text = strip_tags($raw_text);
+        $clean_text = strip_shortcodes($clean_text);
+        $clean_text = html_entity_decode($clean_text);
+        $clean_text = trim($clean_text);
+        
+        // Paramètres de longueur
+        $min_length = 150;
+        $ideal_length = 180;
+        $max_length = 220;
+        
+        // Si le texte est déjà court, le retourner tel quel avec ...
+        if (strlen($clean_text) <= $min_length) {
+            return $clean_text . '...';
+        }
+        
+        // Si le texte est dans la plage idéale, chercher le meilleur point de coupure
+        if (strlen($clean_text) <= $max_length) {
+            // Chercher le dernier point ou virgule
+            $last_period = strrpos(substr($clean_text, 0, $max_length), '. ');
+            $last_comma = strrpos(substr($clean_text, 0, $max_length), ', ');
+            
+            $best_cut = max($last_period, $last_comma);
+            
+            if ($best_cut && $best_cut >= $min_length) {
+                return substr($clean_text, 0, $best_cut + 1) . '..';
+            }
+        }
+        
+        // Algorithme de coupure intelligente pour textes longs
+        $target_pos = $ideal_length;
+        
+        // Points de coupure par ordre de priorité (chercher vers l'arrière depuis la position idéale)
+        $cut_points = [
+            '. ' => 2,  // Fin de phrase
+            ', ' => 1,  // Virgule
+            '; ' => 1,  // Point-virgule
+            ': ' => 1,  // Deux-points
+        ];
+        
+        $best_position = false;
+        $best_priority = 0;
+        
+        // Chercher vers l'arrière depuis la position idéale
+        for ($i = $target_pos; $i >= $min_length; $i--) {
+            foreach ($cut_points as $delimiter => $priority) {
+                if (substr($clean_text, $i, strlen($delimiter)) === $delimiter) {
+                    if ($priority > $best_priority) {
+                        $best_position = $i + strlen($delimiter);
+                        $best_priority = $priority;
+                    }
+                }
+            }
+        }
+        
+        // Si aucun bon point trouvé vers l'arrière, chercher vers l'avant
+        if (!$best_position) {
+            for ($i = $target_pos; $i <= $max_length; $i++) {
+                foreach ($cut_points as $delimiter => $priority) {
+                    if (substr($clean_text, $i, strlen($delimiter)) === $delimiter) {
+                        $best_position = $i + strlen($delimiter);
+                        break 2;
+                    }
+                }
+            }
+        }
+        
+        // Fallback : couper au dernier espace avant la limite max
+        if (!$best_position) {
+            $best_position = strrpos(substr($clean_text, 0, $max_length), ' ');
+            if (!$best_position || $best_position < $min_length) {
+                $best_position = $max_length;
+            }
+        }
+        
+        $excerpt = substr($clean_text, 0, $best_position);
+        
+        // Nettoyer les espaces en fin et ajouter les points de suspension
+        $excerpt = rtrim($excerpt, ' .,;:');
+        
+        return $excerpt . '...';
+    }
+}
+
 if (!function_exists('articles_page_display')) {
     function articles_page_display() {
         ob_start();
@@ -143,7 +254,7 @@ if (!function_exists('articles_page_display')) {
         // Arguments pour la requête des articles par thèmes
         $theme_args = array(
             'post_type' => 'post',
-            'posts_per_page' => 6,
+            'posts_per_page' => 12,
             'post_status' => 'publish',
             'meta_query' => array(),
             'tax_query' => array()
@@ -170,7 +281,7 @@ if (!function_exists('articles_page_display')) {
         // Requête pour les derniers articles publiés
         $latest_args = array(
             'post_type' => 'post',
-            'posts_per_page' => 6,
+            'posts_per_page' => 12,
             'post_status' => 'publish',
             'orderby' => 'date',
             'order' => 'DESC'
@@ -634,7 +745,7 @@ if (!function_exists('articles_page_display')) {
                         <div class="articles-grid">
                             <?php
                             $count = 0;
-                            while ($theme_articles->have_posts() && $count < 2):
+                            while ($theme_articles->have_posts() && $count < 6):
                                 $theme_articles->the_post();
                                 $count++;
                                 $featured_image = get_principal_image_from_content(get_the_ID());
@@ -653,7 +764,7 @@ if (!function_exists('articles_page_display')) {
                                 <div class="article-content">
                                     <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>
                                     <p class="article-excerpt">
-                                        <?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?>
+                                        <?php echo get_smart_excerpt(get_the_ID()); ?>
                                     </p>
                                     <div class="article-footer">
                                         <a href="<?php the_permalink(); ?>" class="read-more-button">
@@ -678,7 +789,7 @@ if (!function_exists('articles_page_display')) {
                             <?php endwhile; ?>
                         </div>
 
-                        <?php if ($theme_articles->found_posts > 2): ?>
+                        <?php if ($theme_articles->found_posts > 6): ?>
                         <div class="see-more-container">
                             <button type="button" onclick="loadMoreThemeArticles()" class="see-more-button">
                                 Voir plus
@@ -704,7 +815,7 @@ if (!function_exists('articles_page_display')) {
                         <div class="articles-grid">
                             <?php
                             $count = 0;
-                            while ($latest_articles->have_posts() && $count < 2):
+                            while ($latest_articles->have_posts() && $count < 6):
                                 $latest_articles->the_post();
                                 $count++;
                                 $featured_image = get_principal_image_from_content(get_the_ID());
@@ -723,7 +834,7 @@ if (!function_exists('articles_page_display')) {
                                 <div class="article-content">
                                     <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>
                                     <p class="article-excerpt">
-                                        <?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?>
+                                        <?php echo get_smart_excerpt(get_the_ID()); ?>
                                     </p>
                                     <div class="article-footer">
                                         <a href="<?php the_permalink(); ?>" class="read-more-button">
@@ -748,7 +859,7 @@ if (!function_exists('articles_page_display')) {
                             <?php endwhile; ?>
                         </div>
 
-                        <?php if ($latest_articles->found_posts > 2): ?>
+                        <?php if ($latest_articles->found_posts > 6): ?>
                         <div class="see-more-container">
                             <button type="button" onclick="loadMoreLatestArticles()" class="see-more-button">
                                 Voir plus
