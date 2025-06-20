@@ -60,6 +60,10 @@ function cenov_toast_system() {
         box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
+    .cenov-toast:hover .cenov-toast-content {
+        color: #1e40af;
+    }
+
     /* Icône Success */
     .cenov-toast-icon {
         flex-shrink: 0;
@@ -83,8 +87,10 @@ function cenov_toast_system() {
     /* Texte du toast */
     .cenov-toast-content {
         flex: 1;
-        color: #1f2937;
+        color: #2563eb;
         font-weight: 500;
+        text-decoration: underline;
+        transition: all 0.2s;
     }
 
     /* Bouton fermer */
@@ -136,7 +142,7 @@ function cenov_toast_system() {
             this.container = document.getElementById('cenov-toast-container');
         },
         
-        success(message, duration = 600000) {
+        success(message, duration = 5000) {
             if (!this.container) this.init();
             
             const toast = document.createElement('div');
@@ -205,7 +211,7 @@ add_action('wp_footer', 'cenov_toast_system');
 
 // Fonction pour déclencher le toast via AJAX (optionnel)
 function cenov_show_toast() {
-    $message = sanitize_text_field($_POST['message'] ?? 'Ajouté au panier');
+    $message = sanitize_text_field($_POST['message'] ?? 'Produit ajouté ! Voir le panier');
     
     wp_send_json_success([
         'message' => $message,
