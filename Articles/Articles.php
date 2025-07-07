@@ -1,5 +1,302 @@
 <?php
 
+// Fonction pour extraire l'image principale du contenu HTML
+if (!function_exists('get_principal_image_from_content')) {
+    function get_principal_image_from_content($post_id) {
+        $post_content = get_post_field('post_content', $post_id);
+        $post_title = get_the_title($post_id);
+        
+        // Debug : Affichage direct dans la page (comme DiagPompe.php)
+        echo '<div style="background:#f0f0f0;padding:15px;margin:10px 0;border-radius:8px;font-size:12px;border-left:4px solid #2196F3;">';
+        echo '<h4 style="margin:0 0 10px 0;color:#333;">🔍 DEBUG IMAGE PRINCIPALE</h4>';
+        echo '<p><strong>Post ID:</strong> ' . $post_id . '</p>';
+        echo '<p><strong>Post Title:</strong> ' . htmlspecialchars($post_title) . '</p>';
+        echo '<p><strong>Content length:</strong> ' . strlen($post_content) . ' caractères</p>';
+        
+        // Détecter si c'est du contenu Divi
+        $is_divi = strpos($post_content, '[et_pb_') !== false;
+        echo '<p><strong>Type de contenu:</strong> ' . ($is_divi ? 'Divi Builder' : 'HTML standard') . '</p>';
+        
+        if ($is_divi) {
+            echo '<p><strong>🔍 Recherche dans les shortcodes Divi...</strong></p>';
+            
+            // Recherche des shortcodes et_pb_image avec alt ou title_text contenant "principal"
+            preg_match_all('/\[et_pb_image[^\]]*\]/i', $post_content, $divi_images);
+            echo '<p><strong>Nombre de shortcodes et_pb_image trouvés:</strong> ' . count($divi_images[0]) . '</p>';
+            
+            if (count($divi_images[0]) > 0) {
+                echo '<p><strong>Shortcodes Divi détectés:</strong></p>';
+                echo '<ol style="margin:0;padding-left:20px;">';
+                foreach ($divi_images[0] as $index => $shortcode) {
+                    echo '<li style="margin:5px 0;"><code style="background:#fff;padding:2px 4px;border-radius:2px;font-size:10px;">' . htmlspecialchars($shortcode) . '</code></li>';
+                }
+                echo '</ol>';
+                
+                // Analyser chaque shortcode pour trouver l'image principale
+                foreach ($divi_images[0] as $shortcode) {
+                    // Extraire les attributs du shortcode
+                    preg_match('/src="([^"]+)"/', $shortcode, $src_match);
+                    preg_match('/alt="([^"]*)"/', $shortcode, $alt_match);
+                    preg_match('/title_text="([^"]*)"/', $shortcode, $title_match);
+
+                    // Nouvelle logique : détection cover1 ou contain
+                    $css_class = '';
+                    if (
+                        ($alt_match && stripos($alt_match[1], 'cover1') !== false) ||
+                        ($title_match && stripos($title_match[1], 'cover1') !== false)
+                    ) {
+                        $css_class = 'cover1';
+                    } elseif (
+                        ($alt_match && stripos($alt_match[1], 'contain') !== false) ||
+                        ($title_match && stripos($title_match[1], 'contain') !== false)
+                    ) {
+                        $css_class = 'contain';
+                    }
+
+                    if ($src_match && $css_class) {
+                        $image_url = $src_match[1];
+                        echo '<p style="color:green;"><strong>✅ Trouvé image Divi avec ' . $css_class . ' :</strong></p>';
+                        echo '<p style="color:green;"><strong>URL:</strong> ' . htmlspecialchars($image_url) . '</p>';
+                        echo '<p style="color:green;"><strong>Classe CSS:</strong> ' . htmlspecialchars($css_class) . '</p>';
+                        echo '</div>';
+                        return [
+                            'url' => $image_url,
+                            'class' => $css_class
+                        ];
+                    }
+
+                    // Ancienne logique : principal
+                    if ($src_match && ($alt_match && stripos($alt_match[1], 'principal') !== false || $title_match && stripos($title_match[1], 'principal') !== false)) {
+                        $image_url = $src_match[1];
+                        $match_type = $alt_match ? 'alt' : 'title_text';
+                        $match_value = $alt_match ? $alt_match[1] : $title_match[1];
+                        echo '<p style="color:green;"><strong>✅ Trouvé image Divi avec ' . $match_type . ' principal:</strong></p>';
+                        echo '<p style="color:green;"><strong>URL:</strong> ' . htmlspecialchars($image_url) . '</p>';
+                        echo '<p style="color:green;"><strong>' . ucfirst($match_type) . ':</strong> ' . htmlspecialchars($match_value) . '</p>';
+                        echo '</div>';
+                        return [
+                            'url' => $image_url,
+                            'class' => ''
+                        ];
+                    }
+                }
+                
+                // Fallback : première image Divi trouvée
+                if (isset($divi_images[0][0])) {
+                    preg_match('/src="([^"]+)"/', $divi_images[0][0], $first_src);
+                    if ($first_src) {
+                        echo '<p style="color:orange;"><strong>⚠️ Fallback première image Divi:</strong> ' . htmlspecialchars($first_src[1]) . '</p>';
+                        echo '</div>';
+                        return [
+                            'url' => $first_src[1],
+                            'class' => ''
+                        ];
+                    }
+                }
+            }
+        } else {
+            // Traitement HTML standard (ancien code)
+            echo '<p><strong>Content preview:</strong></p>';
+            echo '<pre style="background:#fff;padding:10px;border-radius:4px;max-height:200px;overflow:auto;font-size:11px;">';
+            echo htmlspecialchars(substr($post_content, 0, 800)) . '...';
+            echo '</pre>';
+            
+            // Recherche toutes les images dans le contenu
+            preg_match_all('/<img[^>]*>/i', $post_content, $all_images);
+            echo '<p><strong>Nombre d\'images trouvées:</strong> ' . count($all_images[0]) . '</p>';
+            
+            if (count($all_images[0]) > 0) {
+                echo '<p><strong>Images détectées:</strong></p>';
+                echo '<ol style="margin:0;padding-left:20px;">';
+                foreach ($all_images[0] as $index => $img) {
+                    echo '<li style="margin:5px 0;"><code style="background:#fff;padding:2px 4px;border-radius:2px;font-size:10px;">' . htmlspecialchars($img) . '</code></li>';
+                }
+                echo '</ol>';
+            }
+            
+            // Recherche d'une image avec alt contenant "principal"
+            if (preg_match('/<img[^>]+alt=["\'][^"\']*principal[^"\']*["\'][^>]*src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image avec alt principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return [
+                    'url' => $matches[1],
+                    'class' => ''
+                ];
+            }
+            
+            // Recherche d'une image avec title contenant "principal"
+            if (preg_match('/<img[^>]+title=["\'][^"\']*principal[^"\']*["\'][^>]*src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image avec title principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return [
+                    'url' => $matches[1],
+                    'class' => ''
+                ];
+            }
+            
+            // Recherche d'une image avec src contenant "principal" et alt
+            if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]+alt=["\'][^"\']*principal[^"\']*["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image src+alt principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return [
+                    'url' => $matches[1],
+                    'class' => ''
+                ];
+            }
+            
+            // Recherche d'une image avec src contenant "principal" et title
+            if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]+title=["\'][^"\']*principal[^"\']*["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image src+title principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return [
+                    'url' => $matches[1],
+                    'class' => ''
+                ];
+            }
+            
+            // Recherche image avec alt ou title contenant 'cover1'
+            if (preg_match('/<img[^>]+(alt|title)=["\\\']([^"\\\']*cover1[^"\\\']*)["\\\'][^>]*src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[3],
+                    'class' => 'cover1'
+                ];
+            }
+            // Recherche image avec alt ou title contenant 'contain'
+            if (preg_match('/<img[^>]+(alt|title)=["\\\']([^"\\\']*contain[^"\\\']*)["\\\'][^>]*src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[3],
+                    'class' => 'contain'
+                ];
+            }
+            
+            // Fallback : première image du contenu
+            if (preg_match('/<img[^>]+src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:orange;"><strong>⚠️ Fallback première image:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
+                return [
+                    'url' => $matches[1],
+                    'class' => ''
+                ];
+            }
+        }
+        
+        echo '<p style="color:red;"><strong>❌ Aucune image trouvée dans le contenu</strong></p>';
+        echo '</div>';
+        return false;
+    }
+}
+
+// Fonction pour extraire un extrait intelligent du contenu
+if (!function_exists('get_smart_excerpt')) {
+    function get_smart_excerpt($post_id) {
+        $post_content = get_post_field('post_content', $post_id);
+        
+        // Détecter si c'est du contenu Divi
+        $is_divi = strpos($post_content, '[et_pb_') !== false;
+        
+        if ($is_divi) {
+            // Extraire le premier shortcode et_pb_text
+            preg_match('/\[et_pb_text[^\]]*\](.*?)\[\/et_pb_text\]/s', $post_content, $text_match);
+            if ($text_match) {
+                $raw_text = $text_match[1];
+            } else {
+                // Fallback : chercher n'importe quel texte entre shortcodes
+                $raw_text = strip_shortcodes($post_content);
+            }
+        } else {
+            // HTML standard : extraire le premier paragraphe
+            preg_match('/<p[^>]*>(.*?)<\/p>/s', $post_content, $p_match);
+            if ($p_match) {
+                $raw_text = $p_match[1];
+            } else {
+                $raw_text = $post_content;
+            }
+        }
+        
+        // Nettoyer le HTML et les shortcodes
+        $clean_text = strip_tags($raw_text);
+        $clean_text = strip_shortcodes($clean_text);
+        $clean_text = html_entity_decode($clean_text);
+        $clean_text = trim($clean_text);
+        
+        // Paramètres de longueur
+        $min_length = 150;
+        $ideal_length = 180;
+        $max_length = 220;
+        
+        // Si le texte est déjà court, le retourner tel quel avec ...
+        if (strlen($clean_text) <= $min_length) {
+            return $clean_text . '...';
+        }
+        
+        // Si le texte est dans la plage idéale, chercher le meilleur point de coupure
+        if (strlen($clean_text) <= $max_length) {
+            // Chercher le dernier point ou virgule
+            $last_period = strrpos(substr($clean_text, 0, $max_length), '. ');
+            $last_comma = strrpos(substr($clean_text, 0, $max_length), ', ');
+            
+            $best_cut = max($last_period, $last_comma);
+            
+            if ($best_cut && $best_cut >= $min_length) {
+                return substr($clean_text, 0, $best_cut + 1) . '..';
+            }
+        }
+        
+        // Algorithme de coupure intelligente pour textes longs
+        $target_pos = $ideal_length;
+        
+        // Points de coupure par ordre de priorité (chercher vers l'arrière depuis la position idéale)
+        $cut_points = [
+            '. ' => 2,  // Fin de phrase
+            ', ' => 1,  // Virgule
+            '; ' => 1,  // Point-virgule
+            ': ' => 1,  // Deux-points
+        ];
+        
+        $best_position = false;
+        $best_priority = 0;
+        
+        // Chercher vers l'arrière depuis la position idéale
+        for ($i = $target_pos; $i >= $min_length; $i--) {
+            foreach ($cut_points as $delimiter => $priority) {
+                if (substr($clean_text, $i, strlen($delimiter)) === $delimiter) {
+                    if ($priority > $best_priority) {
+                        $best_position = $i + strlen($delimiter);
+                        $best_priority = $priority;
+                    }
+                }
+            }
+        }
+        
+        // Si aucun bon point trouvé vers l'arrière, chercher vers l'avant
+        if (!$best_position) {
+            for ($i = $target_pos; $i <= $max_length; $i++) {
+                foreach ($cut_points as $delimiter => $priority) {
+                    if (substr($clean_text, $i, strlen($delimiter)) === $delimiter) {
+                        $best_position = $i + strlen($delimiter);
+                        break 2;
+                    }
+                }
+            }
+        }
+        
+        // Fallback : couper au dernier espace avant la limite max
+        if (!$best_position) {
+            $best_position = strrpos(substr($clean_text, 0, $max_length), ' ');
+            if (!$best_position || $best_position < $min_length) {
+                $best_position = $max_length;
+            }
+        }
+        
+        $excerpt = substr($clean_text, 0, $best_position);
+        
+        // Nettoyer les espaces en fin et ajouter les points de suspension
+        $excerpt = rtrim($excerpt, ' .,;:');
+        
+        return $excerpt . '...';
+    }
+}
+
 if (!function_exists('articles_page_display')) {
     function articles_page_display() {
         ob_start();
@@ -60,7 +357,6 @@ if (!function_exists('articles_page_display')) {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem 1rem;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
         .articles-header {
@@ -427,6 +723,16 @@ if (!function_exists('articles_page_display')) {
         .dropdown-list li {
             list-style: none;
         }
+        
+        .article-image.cover1 {
+            object-fit: cover;
+        }
+        
+        .article-image.contain {
+            object-fit: contain;
+            background: #fff;
+            padding: 1.5rem;
+        }
         </style>
 
         <div class="articles-container">
@@ -512,14 +818,18 @@ if (!function_exists('articles_page_display')) {
                             while ($theme_articles->have_posts() && $count < 2):
                                 $theme_articles->the_post();
                                 $count++;
-                                $featured_image = get_the_post_thumbnail_url(get_the_ID(), 'medium');
-                                if (!$featured_image) {
+                                $featured_image_data = get_principal_image_from_content(get_the_ID());
+                                if ($featured_image_data) {
+                                    $featured_image = $featured_image_data['url'];
+                                    $image_class = $featured_image_data['class'];
+                                } else {
                                     $featured_image = 'https://www.cenov-distribution.fr/wp-content/uploads/2024/01/default-article.jpg';
+                                    $image_class = '';
                                 }
                             ?>
                             <div class="article-card">
                                 <a href="<?php the_permalink(); ?>">
-                                    <img class="article-image" src="<?php echo esc_url($featured_image); ?>" alt="<?php the_title_attribute(); ?>" />
+                                    <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php the_title_attribute(); ?>" />
                                 </a>
                                 <div class="article-content">
                                     <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>
@@ -578,14 +888,18 @@ if (!function_exists('articles_page_display')) {
                             while ($latest_articles->have_posts() && $count < 2):
                                 $latest_articles->the_post();
                                 $count++;
-                                $featured_image = get_the_post_thumbnail_url(get_the_ID(), 'medium');
-                                if (!$featured_image) {
+                                $featured_image_data = get_principal_image_from_content(get_the_ID());
+                                if ($featured_image_data) {
+                                    $featured_image = $featured_image_data['url'];
+                                    $image_class = $featured_image_data['class'];
+                                } else {
                                     $featured_image = 'https://www.cenov-distribution.fr/wp-content/uploads/2024/01/default-article.jpg';
+                                    $image_class = '';
                                 }
                             ?>
                             <div class="article-card">
                                 <a href="<?php the_permalink(); ?>">
-                                    <img class="article-image" src="<?php echo esc_url($featured_image); ?>" alt="<?php the_title_attribute(); ?>" />
+                                    <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php the_title_attribute(); ?>" />
                                 </a>
                                 <div class="article-content">
                                     <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>

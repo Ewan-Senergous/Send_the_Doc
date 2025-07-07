@@ -22,7 +22,7 @@
   "javascript.updateImportsOnFileMove.enabled": "always",
   "editor.accessibilitySupport": "off",
   "git.enableSmartCommit": true,
-  "window.zoomLevel": 0.4,
+  "window.zoomLevel": 0.2,
   "editor.unicodeHighlight.invisibleCharacters": false,
   "workbench.iconTheme": "material-icon-theme",
   "tailwindCSS.experimental.classRegex": [
