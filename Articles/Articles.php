@@ -603,6 +603,7 @@ if (!function_exists('articles_page_display')) {
         
         .read-more-icon {
             margin-left: 0.5rem;
+            margin-top: 0.1rem;
             width: 0.875rem;
             height: 0.875rem;
         }
@@ -706,7 +707,12 @@ if (!function_exists('articles_page_display')) {
                         </svg>
                     </div>
                     <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" class="search-input" placeholder="Rechercher un article, une référence..." />
-                    <button type="submit" class="search-button">Rechercher</button>
+                    <button type="submit" class="search-button">
+                        <svg style="margin-right:0.4em;vertical-align:middle;" width="16" height="16" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                        Rechercher
+                    </button>
                 </div>
                 
                 <!-- Champs cachés pour maintenir les filtres de catégories -->
@@ -762,7 +768,7 @@ if (!function_exists('articles_page_display')) {
                     <div class="section">
                         <div class="section-header">
                             <span class="section-icon">📋</span>
-                            <h2 class="section-title">Thèmes articles</h2>
+                            <h2 class="section-title">Thèmes articles :</h2>
                         </div>
 
                         <?php if ($theme_articles->have_posts()): ?>
@@ -829,10 +835,10 @@ if (!function_exists('articles_page_display')) {
                     </div>
 
                     <!-- Section Derniers Articles Publiés -->
-                    <div class="section">
+                    <div class="section"></div>
                         <div class="section-header">
                             <span class="section-icon">📋</span>
-                            <h2 class="section-title">Derniers Articles Publiés</h2>
+                            <h2 class="section-title">Derniers Articles Publiés :</h2>
                         </div>
 
                         <?php if ($latest_articles->have_posts()): ?>
