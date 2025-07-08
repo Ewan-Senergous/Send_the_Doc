@@ -245,6 +245,11 @@ if (!function_exists('articles_page_display')) {
         // Récupération des paramètres de recherche et filtres
         $search_query = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
         $selected_categories = isset($_GET['categories']) ? array_map('sanitize_text_field', $_GET['categories']) : array();
+        
+        // Paramètres de pagination
+        $theme_page = isset($_GET['theme_page']) ? max(1, intval($_GET['theme_page'])) : 1;
+        $latest_page = isset($_GET['latest_page']) ? max(1, intval($_GET['latest_page'])) : 1;
+        $per_page = 6;
 
         // Récupération des catégories d'articles (minimum 1 article)
         $categories = get_categories(array(
@@ -262,7 +267,7 @@ if (!function_exists('articles_page_display')) {
         // Arguments pour la requête des articles par thèmes
         $theme_args = array(
             'post_type' => 'post',
-            'posts_per_page' => 15,
+            'posts_per_page' => $per_page * $theme_page,
             'post_status' => 'publish',
             'meta_query' => array(),
             'tax_query' => array()
@@ -290,7 +295,7 @@ if (!function_exists('articles_page_display')) {
         // Requête pour les derniers articles publiés
         $latest_args = array(
             'post_type' => 'post',
-            'posts_per_page' => 15,
+            'posts_per_page' => $per_page * $latest_page,
             'post_status' => 'publish',
             'orderby' => 'date',
             'order' => 'DESC'
@@ -647,10 +652,15 @@ if (!function_exists('articles_page_display')) {
             cursor: pointer;
             margin: 0.5rem;
             transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 700;
         }
         
         .see-more-button:hover {
             background-color: #1e40af;
+            color: white;
+            text-decoration: none;
         }
         
         .see-more-button:focus {
@@ -728,7 +738,7 @@ if (!function_exists('articles_page_display')) {
             cursor: pointer;
             transition: background 0.2s, box-shadow 0.2s;
             box-shadow: 0 0 0 0 rgba(0,0,0,0);
-            max-width: 200px;
+            max-width: 220px;
             width: 100%;
         }
         .reset-search-btn svg {
@@ -809,7 +819,7 @@ if (!function_exists('articles_page_display')) {
             <div style="text-align:center;">
                 <a href="/articles-ewan/" class="reset-search-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-                    Réinitialiser filtre
+                    Réinitialiser la page
                 </a>
             </div>
 
@@ -867,7 +877,7 @@ if (!function_exists('articles_page_display')) {
                         <div class="articles-grid">
                             <?php
                             $count = 0;
-                            while ($theme_articles->have_posts() && $count < 15):
+                            while ($theme_articles->have_posts()):
                                 $theme_articles->the_post();
                                 $count++;
                                 $featured_image_data = get_principal_image_from_content(get_the_ID());
@@ -925,11 +935,15 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                             <?php endwhile; ?>
                         </div>
 
-                        <?php if ($theme_articles->found_posts > 15): ?>
+                        <?php if ($theme_articles->found_posts > ($per_page * $theme_page)): ?>
                         <div class="see-more-container">
-                            <button type="button" onclick="loadMoreThemeArticles()" class="see-more-button">
+                            <a href="<?php 
+                                $params = $_GET;
+                                $params['theme_page'] = $theme_page + 1;
+                                echo '?' . http_build_query($params);
+                            ?>" class="see-more-button">
                                 Voir plus
-                            </button>
+                            </a>
                         </div>
                         <?php endif; ?>
 
@@ -951,7 +965,7 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                         <div class="articles-grid">
                             <?php
                             $count = 0;
-                            while ($latest_articles->have_posts() && $count < 15):
+                            while ($latest_articles->have_posts()):
                                 $latest_articles->the_post();
                                 $count++;
                                 $featured_image_data = get_principal_image_from_content(get_the_ID());
@@ -1009,11 +1023,15 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                             <?php endwhile; ?>
                         </div>
 
-                        <?php if ($latest_articles->found_posts > 15): ?>
+                        <?php if ($latest_articles->found_posts > ($per_page * $latest_page)): ?>
                         <div class="see-more-container">
-                            <button type="button" onclick="loadMoreLatestArticles()" class="see-more-button">
+                            <a href="<?php 
+                                $params = $_GET;
+                                $params['latest_page'] = $latest_page + 1;
+                                echo '?' . http_build_query($params);
+                            ?>" class="see-more-button">
                                 Voir plus
-                            </button>
+                            </a>
                         </div>
                         <?php endif; ?>
 
@@ -1056,16 +1074,7 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
         window.addEventListener('resize', adaptSearchPlaceholder);
         window.addEventListener('DOMContentLoaded', adaptSearchPlaceholder);
 
-        // Fonctions pour charger plus d'articles (à implémenter avec AJAX si nécessaire)
-        function loadMoreThemeArticles() {
-            console.log('Chargement de plus d\'articles par thèmes...');
-            // Implémentation AJAX à ajouter
-        }
 
-        function loadMoreLatestArticles() {
-            console.log('Chargement de plus d\'articles récents...');
-            // Implémentation AJAX à ajouter
-        }
         </script>
 
         <?php
