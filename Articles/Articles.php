@@ -522,6 +522,8 @@ if (!function_exists('articles_page_display')) {
         
         .article-card {
             max-width: 42rem;
+            display: flex;
+            flex-direction: column;
             background-color: white;
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
@@ -543,6 +545,9 @@ if (!function_exists('articles_page_display')) {
         
         .article-content {
             padding: 1.25rem;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
         }
         
         .article-title {
@@ -568,6 +573,7 @@ if (!function_exists('articles_page_display')) {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-top: auto;
         }
         
         .read-more-button {
