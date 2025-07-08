@@ -702,6 +702,37 @@ if (!function_exists('articles_page_display')) {
                 top: 54%;
             }
         }
+        .reset-search-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.2rem auto 0 auto;
+            margin-bottom: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            background-color: #1f2937;
+            color: #fff;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 0 0 rgba(0,0,0,0);
+            max-width: 160px;
+            width: 100%;
+        }
+        .reset-search-btn svg {
+            margin-right: 0.6em;
+            width: 1.5em;
+            height: 1.5em;
+        }
+        .reset-search-btn:hover {
+            background-color: #111827;
+        }
+        .reset-search-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px #a3a3a3;
+        }
         </style>
 
         <div class="articles-container">
@@ -734,6 +765,14 @@ if (!function_exists('articles_page_display')) {
                     <input type="hidden" name="categories[]" value="<?php echo esc_attr($cat); ?>" class="hidden-input">
                 <?php endforeach; ?>
             </form>
+
+            <!-- Bouton réinitialiser la recherche -->
+            <div style="text-align:center;">
+                <a href="/articles-ewan/" class="reset-search-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                    Réinitialiser
+                </a>
+            </div>
 
             <div class="main-layout">
                 <!-- Sidebar avec filtres -->
