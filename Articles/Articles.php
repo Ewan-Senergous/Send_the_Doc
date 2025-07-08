@@ -266,6 +266,7 @@ if (!function_exists('articles_page_display')) {
         // Ajout de la recherche si présente
         if (!empty($search_query)) {
             $theme_args['s'] = $search_query;
+            $theme_args['search_columns'] = ['post_title'];
         }
 
         // Ajout des filtres de catégories si sélectionnées
@@ -688,13 +689,26 @@ if (!function_exists('articles_page_display')) {
             background: #fff;
             padding: 1.5rem;
         }
+        
+        .article-separator {
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            margin: 0;
+        }
+        
+        @media (max-width: 640px) {
+            .search-icon {
+                top: 54%;
+            }
+        }
         </style>
 
         <div class="articles-container">
             <!-- En-tête de la page -->
             <div class="articles-header">
                 <h1 class="articles-title">
-                    Découvrez l'ensemble de la documentation technique que vous pouvez télécharger.
+                    Parcourez nos articles, guides et actualités pour tout savoir sur nos produits et solutions.
                 </h1>
             </div>
 
@@ -706,7 +720,7 @@ if (!function_exists('articles_page_display')) {
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                         </svg>
                     </div>
-                    <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" class="search-input" placeholder="Rechercher un article, une référence..." />
+                    <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" class="search-input" placeholder="Rechercher un article, une référence..." data-placeholder-mobile="Rechercher un article" data-placeholder-desktop="Rechercher un article, une référence..." />
                     <button type="submit" class="search-button">
                         <svg style="margin-right:0.4em;vertical-align:middle;" width="16" height="16" fill="none" viewBox="0 0 20 20">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
@@ -791,6 +805,9 @@ if (!function_exists('articles_page_display')) {
                                 <a href="<?php the_permalink(); ?>">
                                     <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php echo ($featured_image_data) ? the_title_attribute() : 'Image par défaut'; ?>" />
                                 </a>
+                                <?php if ($image_class === 'contain') : ?>
+                                    <div class="article-separator"></div>
+                                <?php endif; ?>
                                 <div class="article-content">
                                     <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>
                                     <p class="article-excerpt">
@@ -861,6 +878,7 @@ if (!function_exists('articles_page_display')) {
                                 <a href="<?php the_permalink(); ?>">
                                     <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php echo ($featured_image_data) ? the_title_attribute() : 'Image par défaut'; ?>" />
                                 </a>
+                                <div class="article-separator"></div>
                                 <div class="article-content">
                                     <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>
                                     <p class="article-excerpt">
@@ -922,6 +940,19 @@ if (!function_exists('articles_page_display')) {
                 dropdown.classList.remove('show');
             }
         });
+
+        // Placeholder adaptatif mobile/desktop pour le champ de recherche principal
+        function adaptSearchPlaceholder() {
+            const input = document.querySelector('.search-input');
+            if (!input) return;
+            if (window.innerWidth <= 640) {
+                input.placeholder = input.getAttribute('data-placeholder-mobile');
+            } else {
+                input.placeholder = input.getAttribute('data-placeholder-desktop');
+            }
+        }
+        window.addEventListener('resize', adaptSearchPlaceholder);
+        window.addEventListener('DOMContentLoaded', adaptSearchPlaceholder);
 
         // Fonctions pour charger plus d'articles (à implémenter avec AJAX si nécessaire)
         function loadMoreThemeArticles() {
