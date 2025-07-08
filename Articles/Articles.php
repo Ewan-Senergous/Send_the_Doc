@@ -758,7 +758,7 @@ if (!function_exists('articles_page_display')) {
             display: block;
             margin-left: auto;
             margin-right: auto;
-            margin-top: 0.7rem;
+            margin-top: 1rem;
             text-align: center;
         }
         .search-badge-green {
