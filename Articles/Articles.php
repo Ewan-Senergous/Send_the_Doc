@@ -266,7 +266,7 @@ if (!function_exists('articles_page_display')) {
         // Ajout de la recherche si présente
         if (!empty($search_query)) {
             $theme_args['s'] = $search_query;
-            $theme_args['search_columns'] = ['post_title'];
+            $theme_args['search_columns'] = ['post_title', 'post_content', 'post_excerpt'];
         }
 
         // Ajout des filtres de catégories si sélectionnées
@@ -315,7 +315,7 @@ if (!function_exists('articles_page_display')) {
         
         .search-form {
             max-width: 28rem;
-            margin: 0 auto 2rem auto;
+            margin: 0 auto;
         }
         
         .search-container {
@@ -564,6 +564,11 @@ if (!function_exists('articles_page_display')) {
             color: #1d4ed8;
         }
         
+        .article-title.search-match {
+            color: #22c55e;
+            font-weight: 900;
+        }
+        
         .article-excerpt {
             color: #6b7280;
             margin-bottom: 0.75rem;
@@ -586,7 +591,7 @@ if (!function_exists('articles_page_display')) {
             border-radius: 0.5rem;
             text-decoration: none;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 700;
             transition: all 0.2s;
             border: none;
             cursor: pointer;
@@ -706,8 +711,8 @@ if (!function_exists('articles_page_display')) {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 1.2rem auto 0 auto;
-            margin-bottom: 0.5rem;
+            margin: 1rem auto 0 auto;
+            margin-bottom: 1rem;
             padding: 0.6rem 1.4rem;
             background-color: #1f2937;
             color: #fff;
@@ -732,6 +737,35 @@ if (!function_exists('articles_page_display')) {
         .reset-search-btn:focus {
             outline: none;
             box-shadow: 0 0 0 4px #a3a3a3;
+        }
+        .article-content {
+            position: relative;
+        }
+        .search-badge {
+            position: static;
+            display: inline-block;
+            margin: 0.7rem auto 0 auto;
+            padding: 0.25rem 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            letter-spacing: 0.01em;
+        }
+        .search-badge-bottom {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 0.7rem;
+            text-align: center;
+        }
+        .search-badge-green {
+            background: #22c55e;
+        }
+        .search-badge-black {
+            background: #000000;
         }
         </style>
 
@@ -840,6 +874,11 @@ if (!function_exists('articles_page_display')) {
                                     $image_class = 'contain';
                                 }
                             ?>
+                            <?php 
+// Détection pour badge
+$hasTitleMatch = !empty($search_query) && stripos(get_the_title(), $search_query) !== false;
+$hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_query) !== false;
+?>
                             <div class="article-card">
                                 <a href="<?php the_permalink(); ?>">
                                     <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php echo ($featured_image_data) ? the_title_attribute() : 'Image par défaut'; ?>" />
@@ -848,7 +887,7 @@ if (!function_exists('articles_page_display')) {
                                     <div class="article-separator"></div>
                                 <?php endif; ?>
                                 <div class="article-content">
-                                    <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>
+                                    <a href="<?php the_permalink(); ?>" class="article-title <?php echo $hasTitleMatch ? 'search-match' : ''; ?>"><?php the_title(); ?></a>
                                     <p class="article-excerpt">
                                         <?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?>
                                     </p>
@@ -870,6 +909,12 @@ if (!function_exists('articles_page_display')) {
                                             <?php echo get_the_date('j F Y'); ?>
                                         </div>
                                     </div>
+                                    <?php if ($hasTitleMatch): ?>
+                                        <div class="search-badge search-badge-green search-badge-bottom">Mot trouvé dans le titre</div>
+                                    <?php endif; ?>
+                                    <?php if ($hasContentMatch && !$hasTitleMatch): ?>
+                                        <div class="search-badge search-badge-black search-badge-bottom">Mot trouvé dans l'article</div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <?php endwhile; ?>
@@ -913,13 +958,20 @@ if (!function_exists('articles_page_display')) {
                                     $image_class = 'contain';
                                 }
                             ?>
+                            <?php 
+// Détection pour badge
+$hasTitleMatch = !empty($search_query) && stripos(get_the_title(), $search_query) !== false;
+$hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_query) !== false;
+?>
                             <div class="article-card">
                                 <a href="<?php the_permalink(); ?>">
                                     <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php echo ($featured_image_data) ? the_title_attribute() : 'Image par défaut'; ?>" />
                                 </a>
-                                <div class="article-separator"></div>
+                                <?php if ($image_class === 'contain') : ?>
+                                    <div class="article-separator"></div>
+                                <?php endif; ?>
                                 <div class="article-content">
-                                    <a href="<?php the_permalink(); ?>" class="article-title"><?php the_title(); ?></a>
+                                    <a href="<?php the_permalink(); ?>" class="article-title <?php echo $hasTitleMatch ? 'search-match' : ''; ?>"><?php the_title(); ?></a>
                                     <p class="article-excerpt">
                                         <?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?>
                                     </p>
@@ -941,6 +993,12 @@ if (!function_exists('articles_page_display')) {
                                             <?php echo get_the_date('j F Y'); ?>
                                         </div>
                                     </div>
+                                    <?php if ($hasTitleMatch): ?>
+                                        <div class="search-badge search-badge-green search-badge-bottom">Mot trouvé dans le titre</div>
+                                    <?php endif; ?>
+                                    <?php if ($hasContentMatch && !$hasTitleMatch): ?>
+                                        <div class="search-badge search-badge-black search-badge-bottom">Mot trouvé dans l'article</div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <?php endwhile; ?>
