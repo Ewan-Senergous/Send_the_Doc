@@ -6,14 +6,32 @@ if (!function_exists('get_principal_image_from_content')) {
         $post_content = get_post_field('post_content', $post_id);
         $post_title = get_the_title($post_id);
         
+        // Debug : Affichage direct dans la page (comme DiagPompe.php)
+        echo '<div style="background:#f0f0f0;padding:15px;margin:10px 0;border-radius:8px;font-size:12px;border-left:4px solid #2196F3;">';
+        echo '<h4 style="margin:0 0 10px 0;color:#333;">🔍 DEBUG IMAGE PRINCIPALE</h4>';
+        echo '<p><strong>Post ID:</strong> ' . $post_id . '</p>';
+        echo '<p><strong>Post Title:</strong> ' . htmlspecialchars($post_title) . '</p>';
+        echo '<p><strong>Content length:</strong> ' . strlen($post_content) . ' caractères</p>';
+        
         // Détecter si c'est du contenu Divi
         $is_divi = strpos($post_content, '[et_pb_') !== false;
+        echo '<p><strong>Type de contenu:</strong> ' . ($is_divi ? 'Divi Builder' : 'HTML standard') . '</p>';
         
         if ($is_divi) {
+            echo '<p><strong>🔍 Recherche dans les shortcodes Divi...</strong></p>';
+            
             // Recherche des shortcodes et_pb_image avec alt ou title_text contenant "principal"
             preg_match_all('/\[et_pb_image[^\]]*\]/i', $post_content, $divi_images);
+            echo '<p><strong>Nombre de shortcodes et_pb_image trouvés:</strong> ' . count($divi_images[0]) . '</p>';
             
             if (count($divi_images[0]) > 0) {
+                echo '<p><strong>Shortcodes Divi détectés:</strong></p>';
+                echo '<ol style="margin:0;padding-left:20px;">';
+                foreach ($divi_images[0] as $index => $shortcode) {
+                    echo '<li style="margin:5px 0;"><code style="background:#fff;padding:2px 4px;border-radius:2px;font-size:10px;">' . htmlspecialchars($shortcode) . '</code></li>';
+                }
+                echo '</ol>';
+                
                 // Analyser chaque shortcode pour trouver l'image principale
                 foreach ($divi_images[0] as $shortcode) {
                     // Extraire les attributs du shortcode
@@ -37,6 +55,10 @@ if (!function_exists('get_principal_image_from_content')) {
 
                     if ($src_match && $css_class) {
                         $image_url = $src_match[1];
+                        echo '<p style="color:green;"><strong>✅ Trouvé image Divi avec ' . $css_class . ' :</strong></p>';
+                        echo '<p style="color:green;"><strong>URL:</strong> ' . htmlspecialchars($image_url) . '</p>';
+                        echo '<p style="color:green;"><strong>Classe CSS:</strong> ' . htmlspecialchars($css_class) . '</p>';
+                        echo '</div>';
                         return [
                             'url' => $image_url,
                             'class' => $css_class
@@ -46,6 +68,12 @@ if (!function_exists('get_principal_image_from_content')) {
                     // Ancienne logique : principal
                     if ($src_match && ($alt_match && stripos($alt_match[1], 'principal') !== false || $title_match && stripos($title_match[1], 'principal') !== false)) {
                         $image_url = $src_match[1];
+                        $match_type = $alt_match ? 'alt' : 'title_text';
+                        $match_value = $alt_match ? $alt_match[1] : $title_match[1];
+                        echo '<p style="color:green;"><strong>✅ Trouvé image Divi avec ' . $match_type . ' principal:</strong></p>';
+                        echo '<p style="color:green;"><strong>URL:</strong> ' . htmlspecialchars($image_url) . '</p>';
+                        echo '<p style="color:green;"><strong>' . ucfirst($match_type) . ':</strong> ' . htmlspecialchars($match_value) . '</p>';
+                        echo '</div>';
                         return [
                             'url' => $image_url,
                             'class' => ''
@@ -57,6 +85,8 @@ if (!function_exists('get_principal_image_from_content')) {
                 if (isset($divi_images[0][0])) {
                     preg_match('/src="([^"]+)"/', $divi_images[0][0], $first_src);
                     if ($first_src) {
+                        echo '<p style="color:orange;"><strong>⚠️ Fallback première image Divi:</strong> ' . htmlspecialchars($first_src[1]) . '</p>';
+                        echo '</div>';
                         return [
                             'url' => $first_src[1],
                             'class' => ''
@@ -66,9 +96,28 @@ if (!function_exists('get_principal_image_from_content')) {
             }
         } else {
             // Traitement HTML standard (ancien code)
+            echo '<p><strong>Content preview:</strong></p>';
+            echo '<pre style="background:#fff;padding:10px;border-radius:4px;max-height:200px;overflow:auto;font-size:11px;">';
+            echo htmlspecialchars(substr($post_content, 0, 800)) . '...';
+            echo '</pre>';
+            
+            // Recherche toutes les images dans le contenu
+            preg_match_all('/<img[^>]*>/i', $post_content, $all_images);
+            echo '<p><strong>Nombre d\'images trouvées:</strong> ' . count($all_images[0]) . '</p>';
+            
+            if (count($all_images[0]) > 0) {
+                echo '<p><strong>Images détectées:</strong></p>';
+                echo '<ol style="margin:0;padding-left:20px;">';
+                foreach ($all_images[0] as $index => $img) {
+                    echo '<li style="margin:5px 0;"><code style="background:#fff;padding:2px 4px;border-radius:2px;font-size:10px;">' . htmlspecialchars($img) . '</code></li>';
+                }
+                echo '</ol>';
+            }
             
             // Recherche d'une image avec alt contenant "principal"
             if (preg_match('/<img[^>]+alt=["\'][^"\']*principal[^"\']*["\'][^>]*src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image avec alt principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
                 return [
                     'url' => $matches[1],
                     'class' => ''
@@ -77,6 +126,8 @@ if (!function_exists('get_principal_image_from_content')) {
             
             // Recherche d'une image avec title contenant "principal"
             if (preg_match('/<img[^>]+title=["\'][^"\']*principal[^"\']*["\'][^>]*src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image avec title principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
                 return [
                     'url' => $matches[1],
                     'class' => ''
@@ -85,6 +136,8 @@ if (!function_exists('get_principal_image_from_content')) {
             
             // Recherche d'une image avec src contenant "principal" et alt
             if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]+alt=["\'][^"\']*principal[^"\']*["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image src+alt principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
                 return [
                     'url' => $matches[1],
                     'class' => ''
@@ -93,6 +146,8 @@ if (!function_exists('get_principal_image_from_content')) {
             
             // Recherche d'une image avec src contenant "principal" et title
             if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]+title=["\'][^"\']*principal[^"\']*["\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:green;"><strong>✅ Trouvé image src+title principal:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
                 return [
                     'url' => $matches[1],
                     'class' => ''
@@ -116,6 +171,8 @@ if (!function_exists('get_principal_image_from_content')) {
             
             // Fallback : première image du contenu
             if (preg_match('/<img[^>]+src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
+                echo '<p style="color:orange;"><strong>⚠️ Fallback première image:</strong> ' . htmlspecialchars($matches[1]) . '</p>';
+                echo '</div>';
                 return [
                     'url' => $matches[1],
                     'class' => ''
@@ -123,6 +180,8 @@ if (!function_exists('get_principal_image_from_content')) {
             }
         }
         
+        echo '<p style="color:red;"><strong>❌ Aucune image trouvée dans le contenu</strong></p>';
+        echo '</div>';
         return false;
     }
 }
@@ -295,7 +354,7 @@ if (!function_exists('articles_page_display')) {
 
         <style>
         .articles-container {
-            max-width: 1650px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 2rem 1rem;
         }
@@ -380,10 +439,10 @@ if (!function_exists('articles_page_display')) {
                 flex-direction: row;
             }
             .sidebar {
-                width: 16%;
+                width: 25%;
             }
             .content {
-                width: 84%;
+                width: 75%;
             }
         }
         
@@ -516,12 +575,11 @@ if (!function_exists('articles_page_display')) {
         @media (min-width: 1024px) {
             .articles-grid {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 2.8rem;
             }
         }
         
         .article-card {
-            max-width: 42rem;
+            max-width: 24rem;
             background-color: white;
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
