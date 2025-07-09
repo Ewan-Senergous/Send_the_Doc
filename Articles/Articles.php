@@ -302,25 +302,72 @@ if (!function_exists('articles_page_display')) {
         );
 
         $latest_articles = new WP_Query($latest_args);
-        ?>
+        
+        // Calculer les compteurs de catégories basés sur les articles visibles
+        $category_counts = array();
+        
+        // Compter dans les articles par thèmes
+        if ($theme_articles->have_posts()) {
+            while ($theme_articles->have_posts()) {
+                $theme_articles->the_post();
+                $post_categories = get_the_category();
+                foreach ($post_categories as $cat) {
+                    if (!isset($category_counts[$cat->slug])) {
+                        $category_counts[$cat->slug] = 0;
+                    }
+                    $category_counts[$cat->slug]++;
+                }
+            }
+            wp_reset_postdata();
+        }
+        
+        // Compter dans les derniers articles (en évitant les doublons)
+        $processed_post_ids = array();
+        if ($theme_articles->have_posts()) {
+            while ($theme_articles->have_posts()) {
+                $theme_articles->the_post();
+                $processed_post_ids[] = get_the_ID();
+            }
+            wp_reset_postdata();
+        }
+        
+        if ($latest_articles->have_posts()) {
+            while ($latest_articles->have_posts()) {
+                $latest_articles->the_post();
+                if (!in_array(get_the_ID(), $processed_post_ids)) {
+                    $post_categories = get_the_category();
+                    foreach ($post_categories as $cat) {
+                        if (!isset($category_counts[$cat->slug])) {
+                            $category_counts[$cat->slug] = 0;
+                        }
+                        $category_counts[$cat->slug]++;
+                    }
+                }
+            }
+                         wp_reset_postdata();
+         }
+         
+         // Filtrer les catégories pour ne montrer que celles avec des articles visibles
+         $categories = array_filter($categories, function($category) use ($category_counts) {
+             return isset($category_counts[$category->slug]) && $category_counts[$category->slug] > 0;
+         });
+         ?>
 
         <style>
         .articles-container {
             max-width: 1650px;
             margin: 0 auto;
-            padding: 2rem 1rem;
         }
         
         .articles-header {
             text-align: center;
-            margin-bottom: 2rem;
         }
         
         .articles-title {
             font-size: 1.875rem;
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 1rem;
+            margin-bottom: 0.7rem;
         }
         
         .search-form {
@@ -438,6 +485,9 @@ if (!function_exists('articles_page_display')) {
             margin-top: 0.5rem;
             z-index: 10;
             display: none;
+            height: auto !important;
+            min-height: unset !important;
+            padding-bottom: 0 !important;
         }
         
         .dropdown-menu.show {
@@ -448,6 +498,8 @@ if (!function_exists('articles_page_display')) {
             padding: 0.75rem;
             margin: 0;
             list-style: none;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
         }
         
         .dropdown-item {
@@ -565,7 +617,7 @@ if (!function_exists('articles_page_display')) {
             font-size: 1.25rem;
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
             text-decoration: none;
             display: block;
         }
@@ -726,8 +778,8 @@ if (!function_exists('articles_page_display')) {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 1rem auto 0 auto;
-            margin-bottom: 1rem;
+            margin: 1.5rem auto 0 auto;
+            margin-bottom: 1.5rem;
             padding: 0.6rem 1.4rem;
             background-color: #1f2937;
             color: #fff;
@@ -853,7 +905,7 @@ if (!function_exists('articles_page_display')) {
                                             >
                                             <label for="checkbox-<?php echo $category->term_id; ?>" class="checkbox-label">
                                                 <?php echo esc_html($category->name); ?>
-                                                <span class="category-count">(<?php echo $category->count; ?>)</span>
+                                                <span class="category-count">(<?php echo isset($category_counts[$category->slug]) ? $category_counts[$category->slug] : 0; ?>)</span>
                                             </label>
                                         </div>
                                     </li>
