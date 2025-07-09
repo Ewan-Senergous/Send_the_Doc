@@ -248,7 +248,6 @@ if (!function_exists('articles_page_display')) {
         
         // Paramètres de pagination
         $theme_page = isset($_GET['theme_page']) ? max(1, intval($_GET['theme_page'])) : 1;
-        $latest_page = isset($_GET['latest_page']) ? max(1, intval($_GET['latest_page'])) : 1;
         $per_page = 6;
 
         // Récupération des catégories d'articles (minimum 1 article)
@@ -291,17 +290,6 @@ if (!function_exists('articles_page_display')) {
 
         // Requête pour les articles par thèmes
         $theme_articles = new WP_Query($theme_args);
-
-        // Requête pour les derniers articles publiés
-        $latest_args = array(
-            'post_type' => 'post',
-            'posts_per_page' => $per_page * $latest_page,
-            'post_status' => 'publish',
-            'orderby' => 'date',
-            'order' => 'DESC'
-        );
-
-        $latest_articles = new WP_Query($latest_args);
         
         // Calculer les compteurs de catégories basés sur les articles visibles
         $category_counts = array();
@@ -321,31 +309,7 @@ if (!function_exists('articles_page_display')) {
             wp_reset_postdata();
         }
         
-        // Compter dans les derniers articles (en évitant les doublons)
-        $processed_post_ids = array();
-        if ($theme_articles->have_posts()) {
-            while ($theme_articles->have_posts()) {
-                $theme_articles->the_post();
-                $processed_post_ids[] = get_the_ID();
-            }
-            wp_reset_postdata();
-        }
-        
-        if ($latest_articles->have_posts()) {
-            while ($latest_articles->have_posts()) {
-                $latest_articles->the_post();
-                if (!in_array(get_the_ID(), $processed_post_ids)) {
-                    $post_categories = get_the_category();
-                    foreach ($post_categories as $cat) {
-                        if (!isset($category_counts[$cat->slug])) {
-                            $category_counts[$cat->slug] = 0;
-                        }
-                        $category_counts[$cat->slug]++;
-                    }
-                }
-            }
-                         wp_reset_postdata();
-         }
+        wp_reset_postdata();
          
          // Filtrer les catégories pour ne montrer que celles avec des articles visibles
          $categories = array_filter($categories, function($category) use ($category_counts) {
@@ -1006,93 +970,7 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                         <?php endif; ?>
                     </div>
 
-                    <!-- Section Derniers Articles Publiés -->
-                    <div class="section"></div>
-                        <div class="section-header">
-                            <span class="section-icon">📋</span>
-                            <h2 class="section-title">Derniers Articles Publiés :</h2>
-                        </div>
 
-                        <?php if ($latest_articles->have_posts()): ?>
-                        <div class="articles-grid">
-                            <?php
-                            $count = 0;
-                            while ($latest_articles->have_posts()):
-                                $latest_articles->the_post();
-                                $count++;
-                                $featured_image_data = get_principal_image_from_content(get_the_ID());
-                                if ($featured_image_data) {
-                                    $featured_image = $featured_image_data['url'];
-                                    $image_class = $featured_image_data['class'];
-                                } else {
-                                    $featured_image = 'https://www.cenov-distribution.fr/wp-content/uploads/2025/07/Defaut.svg_.png';
-                                    $image_class = 'contain';
-                                }
-                            ?>
-                            <?php 
-// Détection pour badge
-$hasTitleMatch = !empty($search_query) && stripos(get_the_title(), $search_query) !== false;
-$hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_query) !== false;
-?>
-                            <div class="article-card">
-                                <a href="<?php the_permalink(); ?>">
-                                    <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php echo ($featured_image_data) ? the_title_attribute() : 'Image par défaut'; ?>" />
-                                </a>
-                                <?php if ($image_class === 'contain') : ?>
-                                    <div class="article-separator"></div>
-                                <?php endif; ?>
-                                <div class="article-content">
-                                    <a href="<?php the_permalink(); ?>" class="article-title <?php echo $hasTitleMatch ? 'search-match' : ''; ?>"><?php the_title(); ?></a>
-                                    <p class="article-excerpt">
-                                        <?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?>
-                                    </p>
-                                    <div class="article-footer">
-                                        <a href="<?php the_permalink(); ?>" class="read-more-button">
-                                            Lire la suite
-                                            <svg class="read-more-icon" fill="none" viewBox="0 0 14 10">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
-                                            </svg>
-                                        </a>
-                                        
-                                        <div class="article-date">
-                                            <svg class="date-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                                                <path d="M8 2v4"/>
-                                                <path d="M16 2v4"/>
-                                                <rect width="18" height="18" x="3" y="4" rx="2"/>
-                                                <path d="M3 10h18"/>
-                                            </svg>
-                                            <?php echo get_the_date('j F Y'); ?>
-                                        </div>
-                                    </div>
-                                    <?php if ($hasTitleMatch): ?>
-                                        <div class="search-badge search-badge-green search-badge-bottom">Mot trouvé dans le titre</div>
-                                    <?php endif; ?>
-                                    <?php if ($hasContentMatch && !$hasTitleMatch): ?>
-                                        <div class="search-badge search-badge-black search-badge-bottom">Mot trouvé dans l'article</div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                            <?php endwhile; ?>
-                        </div>
-
-                        <?php if ($latest_articles->found_posts > ($per_page * $latest_page)): ?>
-                        <div class="see-more-container">
-                            <a href="<?php 
-                                $params = $_GET;
-                                $params['latest_page'] = $latest_page + 1;
-                                echo '?' . http_build_query($params);
-                            ?>" class="see-more-button">
-                                Voir plus
-                            </a>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php else: ?>
-                        <div class="no-articles">
-                            <p>Aucun article récent trouvé.</p>
-                        </div>
-                        <?php endif; ?>
-                    </div>
                 </div>
             </div>
         </div>
