@@ -444,14 +444,14 @@ if (!function_exists('articles_page_display')) {
         
         .search-input:focus {
             outline: none;
-            border: 2px solid #000000;
+            border: 2px solid #3399ff;
         }
         
         .search-button {
             position: absolute;
             right: 0.5rem;
             bottom: 0.5rem;
-            background-color: #000000;
+            background-color: #0066cc;
             color: white;
             padding: 0.5rem 1rem;
             border: none;
@@ -463,12 +463,12 @@ if (!function_exists('articles_page_display')) {
         }
         
         .search-button:hover {
-            background-color: #1f2937;
+            background-color: #0052a3;
         }
         
         .search-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #6b7280;
+            box-shadow: 0 0 0 4px #3399ff;
         }
         
         .main-layout {
@@ -495,7 +495,7 @@ if (!function_exists('articles_page_display')) {
         
         .dropdown-button {
             width: 100%;
-            background-color: #000000;
+            background-color: #0066cc;
             color: white;
             padding: 0.625rem 1.25rem;
             border: none;
@@ -510,12 +510,12 @@ if (!function_exists('articles_page_display')) {
         }
         
         .dropdown-button:hover {
-            background-color: #1f2937;
+            background-color: #0052a3;
         }
         
         .dropdown-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #6b7280;
+            box-shadow: 0 0 0 4px #3399ff;
         }
         
         .dropdown-menu {
@@ -567,7 +567,7 @@ if (!function_exists('articles_page_display')) {
             width: 1rem;
             height: 1rem;
             margin-right: 0.5rem;
-            accent-color: #000000;
+            accent-color: #3399ff;
             list-style: none;
         }
         
@@ -691,7 +691,7 @@ if (!function_exists('articles_page_display')) {
         .read-more-button {
             display: inline-flex;
             align-items: center;
-            background-color: #000000;
+            background-color: #0066cc;
             color: white;
             padding: 0.5rem 0.75rem;
             border-radius: 0.5rem;
@@ -704,13 +704,13 @@ if (!function_exists('articles_page_display')) {
         }
         
         .read-more-button:hover {
-            background-color: #1f2937;
+            background-color: #0052a3;
             color: white;
         }
         
         .read-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #6b7280;
+            box-shadow: 0 0 0 4px #3399ff;
         }
         
         .read-more-icon {
@@ -738,7 +738,7 @@ if (!function_exists('articles_page_display')) {
         }
         
         .see-more-button {
-            background-color: #000000;
+            background-color: #0066cc;
             color: white;
             padding: 0.625rem 1.25rem;
             border: none;
@@ -754,14 +754,14 @@ if (!function_exists('articles_page_display')) {
         }
         
         .see-more-button:hover {
-            background-color: #1f2937;
+            background-color: #0052a3;
             color: white;
             text-decoration: none;
         }
         
         .see-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #6b7280;
+            box-shadow: 0 0 0 4px #3399ff;
         }
         
         .no-articles {
