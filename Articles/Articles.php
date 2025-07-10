@@ -10,62 +10,148 @@ if (!function_exists('get_principal_image_from_content')) {
         $is_divi = strpos($post_content, '[et_pb_') !== false;
         
         if ($is_divi) {
-            // Recherche des shortcodes et_pb_image avec alt ou title_text contenant "principal"
-            preg_match_all('/\[et_pb_image[^\]]*\]/i', $post_content, $divi_images);
+            // PRIORITÉ 1 : Rechercher 'cover1' partout (HTML + Divi)
             
+            // Recherche cover1 dans les balises HTML
+            if (preg_match('/<img[^>]+(alt|title)="[^"]*cover1[^"]*"[^>]*src="([^"]+)"[^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[2],
+                    'class' => 'cover1'
+                ];
+            }
+            if (preg_match('/<img[^>]+src="([^"]+)"[^>]+(alt|title)="[^"]*cover1[^"]*"[^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[1],
+                    'class' => 'cover1'
+                ];
+            }
+            
+            // Recherche cover1 dans les shortcodes Divi
+            preg_match_all('/\[et_pb_image[^\]]*\]/i', $post_content, $divi_images);
             if (count($divi_images[0]) > 0) {
-                // Analyser chaque shortcode pour trouver l'image principale
                 foreach ($divi_images[0] as $shortcode) {
-                    // Extraire les attributs du shortcode
                     preg_match('/src="([^"]+)"/', $shortcode, $src_match);
                     preg_match('/alt="([^"]*)"/', $shortcode, $alt_match);
                     preg_match('/title_text="([^"]*)"/', $shortcode, $title_match);
-
-                    // Nouvelle logique : détection cover1 ou contain
-                    $css_class = '';
-                    if (
+                    
+                    if ($src_match && (
                         ($alt_match && stripos($alt_match[1], 'cover1') !== false) ||
                         ($title_match && stripos($title_match[1], 'cover1') !== false)
-                    ) {
-                        $css_class = 'cover1';
-                    } elseif (
-                        ($alt_match && stripos($alt_match[1], 'contain') !== false) ||
-                        ($title_match && stripos($title_match[1], 'contain') !== false)
-                    ) {
-                        $css_class = 'contain';
-                    }
-
-                    if ($src_match && $css_class) {
-                        $image_url = $src_match[1];
+                    )) {
                         return [
-                            'url' => $image_url,
-                            'class' => $css_class
-                        ];
-                    }
-
-                    // Ancienne logique : principal
-                    if ($src_match && ($alt_match && stripos($alt_match[1], 'principal') !== false || $title_match && stripos($title_match[1], 'principal') !== false)) {
-                        $image_url = $src_match[1];
-                        return [
-                            'url' => $image_url,
-                            'class' => ''
+                            'url' => $src_match[1],
+                            'class' => 'cover1'
                         ];
                     }
                 }
-                
-                // Fallback : première image Divi trouvée
-                if (isset($divi_images[0][0])) {
-                    preg_match('/src="([^"]+)"/', $divi_images[0][0], $first_src);
-                    if ($first_src) {
+            }
+            
+            // PRIORITÉ 2 : Rechercher 'contain' partout (HTML + Divi)
+            
+            // Recherche contain dans les balises HTML
+            if (preg_match('/<img[^>]+(alt|title)="[^"]*contain[^"]*"[^>]*src="([^"]+)"[^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[2],
+                    'class' => 'contain'
+                ];
+            }
+            if (preg_match('/<img[^>]+src="([^"]+)"[^>]+(alt|title)="[^"]*contain[^"]*"[^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[1],
+                    'class' => 'contain'
+                ];
+            }
+            
+            // Recherche contain dans les shortcodes Divi
+            if (count($divi_images[0]) > 0) {
+                foreach ($divi_images[0] as $shortcode) {
+                    preg_match('/src="([^"]+)"/', $shortcode, $src_match);
+                    preg_match('/alt="([^"]*)"/', $shortcode, $alt_match);
+                    preg_match('/title_text="([^"]*)"/', $shortcode, $title_match);
+                    
+                    if ($src_match && (
+                        ($alt_match && stripos($alt_match[1], 'contain') !== false) ||
+                        ($title_match && stripos($title_match[1], 'contain') !== false)
+                    )) {
                         return [
-                            'url' => $first_src[1],
+                            'url' => $src_match[1],
+                            'class' => 'contain'
+                        ];
+                    }
+                }
+            }
+            
+            // PRIORITÉ 3 : Rechercher 'principal' partout (HTML + Divi)
+            
+            // Recherche principal dans les balises HTML
+            if (preg_match('/<img[^>]+(alt|title)="[^"]*principal[^"]*"[^>]*src="([^"]+)"[^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[2],
+                    'class' => ''
+                ];
+            }
+            if (preg_match('/<img[^>]+src="([^"]+)"[^>]+(alt|title)="[^"]*principal[^"]*"[^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[1],
+                    'class' => ''
+                ];
+            }
+            
+            // Recherche principal dans les shortcodes Divi
+            if (count($divi_images[0]) > 0) {
+                foreach ($divi_images[0] as $shortcode) {
+                    preg_match('/src="([^"]+)"/', $shortcode, $src_match);
+                    preg_match('/alt="([^"]*)"/', $shortcode, $alt_match);
+                    preg_match('/title_text="([^"]*)"/', $shortcode, $title_match);
+                    
+                    if ($src_match && (
+                        ($alt_match && stripos($alt_match[1], 'principal') !== false) ||
+                        ($title_match && stripos($title_match[1], 'principal') !== false)
+                    )) {
+                        return [
+                            'url' => $src_match[1],
                             'class' => ''
                         ];
                     }
                 }
             }
+            
+            // PRIORITÉ 4 : Première image HTML normale trouvée
+            if (preg_match('/<img[^>]+src="([^"]+)"[^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[1],
+                    'class' => ''
+                ];
+            }
+            
+            // PRIORITÉ 5 : Première image Divi shortcode trouvée
+            if (count($divi_images[0]) > 0 && isset($divi_images[0][0])) {
+                preg_match('/src="([^"]+)"/', $divi_images[0][0], $first_src);
+                if ($first_src) {
+                    return [
+                        'url' => $first_src[1],
+                        'class' => ''
+                    ];
+                }
+            }
         } else {
             // Traitement HTML standard (ancien code)
+            
+            // Recherche image avec alt ou title contenant 'cover1'
+            if (preg_match('/<img[^>]+(alt|title)=["\\\']([^"\\\']*cover1[^"\\\']*)["\\\'][^>]*src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[3],
+                    'class' => 'cover1'
+                ];
+            }
+            
+            // Recherche image avec alt ou title contenant 'contain'
+            if (preg_match('/<img[^>]+(alt|title)=["\\\']([^"\\\']*contain[^"\\\']*)["\\\'][^>]*src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
+                return [
+                    'url' => $matches[3],
+                    'class' => 'contain'
+                ];
+            }
             
             // Recherche d'une image avec alt contenant "principal"
             if (preg_match('/<img[^>]+alt=["\'][^"\']*principal[^"\']*["\'][^>]*src=["\']([^"\']+)["\'][^>]*>/i', $post_content, $matches)) {
@@ -96,21 +182,6 @@ if (!function_exists('get_principal_image_from_content')) {
                 return [
                     'url' => $matches[1],
                     'class' => ''
-                ];
-            }
-            
-            // Recherche image avec alt ou title contenant 'cover1'
-            if (preg_match('/<img[^>]+(alt|title)=["\\\']([^"\\\']*cover1[^"\\\']*)["\\\'][^>]*src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
-                return [
-                    'url' => $matches[3],
-                    'class' => 'cover1'
-                ];
-            }
-            // Recherche image avec alt ou title contenant 'contain'
-            if (preg_match('/<img[^>]+(alt|title)=["\\\']([^"\\\']*contain[^"\\\']*)["\\\'][^>]*src=["\\\']([^"\\\']+)["\\\'][^>]*>/i', $post_content, $matches)) {
-                return [
-                    'url' => $matches[3],
-                    'class' => 'contain'
                 ];
             }
             
@@ -892,7 +963,7 @@ if (!function_exists('articles_page_display')) {
                     <div class="section">
                         <div class="section-header">
                             <span class="section-icon">📋</span>
-                            <h2 class="section-title">Thèmes articles :</h2>
+                            <h2 class="section-title">Liste des articles :</h2>
                         </div>
 
                         <?php if ($theme_articles->have_posts()): ?>
