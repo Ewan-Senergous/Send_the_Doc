@@ -364,14 +364,14 @@ if (!function_exists('articles_page_display')) {
         
         .search-input:focus {
             outline: none;
-            border: 2px solid #3b82f6;
+            border: 2px solid #000000;
         }
         
         .search-button {
             position: absolute;
             right: 0.5rem;
             bottom: 0.5rem;
-            background-color: #1d4ed8;
+            background-color: #000000;
             color: white;
             padding: 0.5rem 1rem;
             border: none;
@@ -383,12 +383,12 @@ if (!function_exists('articles_page_display')) {
         }
         
         .search-button:hover {
-            background-color: #1e40af;
+            background-color: #1f2937;
         }
         
         .search-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #93c5fd;
+            box-shadow: 0 0 0 4px #6b7280;
         }
         
         .main-layout {
@@ -415,7 +415,7 @@ if (!function_exists('articles_page_display')) {
         
         .dropdown-button {
             width: 100%;
-            background-color: #1d4ed8;
+            background-color: #000000;
             color: white;
             padding: 0.625rem 1.25rem;
             border: none;
@@ -430,12 +430,12 @@ if (!function_exists('articles_page_display')) {
         }
         
         .dropdown-button:hover {
-            background-color: #1e40af;
+            background-color: #1f2937;
         }
         
         .dropdown-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #93c5fd;
+            box-shadow: 0 0 0 4px #6b7280;
         }
         
         .dropdown-menu {
@@ -487,7 +487,7 @@ if (!function_exists('articles_page_display')) {
             width: 1rem;
             height: 1rem;
             margin-right: 0.5rem;
-            accent-color: #3b82f6;
+            accent-color: #000000;
             list-style: none;
         }
         
@@ -587,7 +587,7 @@ if (!function_exists('articles_page_display')) {
         }
         
         .article-title:hover {
-            color: #1d4ed8;
+            color: #000000;
         }
         
         .article-title.search-match {
@@ -611,7 +611,7 @@ if (!function_exists('articles_page_display')) {
         .read-more-button {
             display: inline-flex;
             align-items: center;
-            background-color: #1d4ed8;
+            background-color: #000000;
             color: white;
             padding: 0.5rem 0.75rem;
             border-radius: 0.5rem;
@@ -624,13 +624,13 @@ if (!function_exists('articles_page_display')) {
         }
         
         .read-more-button:hover {
-            background-color: #1e40af;
+            background-color: #1f2937;
             color: white;
         }
         
         .read-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #93c5fd;
+            box-shadow: 0 0 0 4px #6b7280;
         }
         
         .read-more-icon {
@@ -658,7 +658,7 @@ if (!function_exists('articles_page_display')) {
         }
         
         .see-more-button {
-            background-color: #1d4ed8;
+            background-color: #000000;
             color: white;
             padding: 0.625rem 1.25rem;
             border: none;
@@ -674,14 +674,14 @@ if (!function_exists('articles_page_display')) {
         }
         
         .see-more-button:hover {
-            background-color: #1e40af;
+            background-color: #1f2937;
             color: white;
             text-decoration: none;
         }
         
         .see-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #93c5fd;
+            box-shadow: 0 0 0 4px #6b7280;
         }
         
         .no-articles {
@@ -767,7 +767,7 @@ if (!function_exists('articles_page_display')) {
         }
         .reset-search-btn:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #a3a3a3;
+            box-shadow: 0 0 0 4px #6b7280;
         }
         .article-content {
             position: relative;
@@ -937,7 +937,7 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                                                 <rect width="18" height="18" x="3" y="4" rx="2"/>
                                                 <path d="M3 10h18"/>
                                             </svg>
-                                            <?php echo get_the_date('j F Y'); ?>
+                                            <?php echo get_the_date('j F Y', get_the_ID()); ?>
                                         </div>
                                     </div>
                                     <?php if ($hasTitleMatch): ?>
