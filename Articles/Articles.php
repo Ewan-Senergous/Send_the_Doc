@@ -269,7 +269,13 @@ if (!function_exists('articles_page_display')) {
             'posts_per_page' => $per_page * $theme_page,
             'post_status' => 'publish',
             'meta_query' => array(),
-            'tax_query' => array()
+            'tax_query' => array(),
+            'post__not_in' => get_posts(array(
+                'post_type' => 'product',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'post_status' => 'any'
+            ))
         );
 
         // Ajout de la recherche si présente
@@ -896,7 +902,14 @@ if (!function_exists('articles_page_display')) {
                             while ($theme_articles->have_posts()):
                                 $theme_articles->the_post();
                                 $count++;
-                                $featured_image_data = get_principal_image_from_content(get_the_ID());
+                                
+                                // Sauvegarder l'ID de l'article avant toute autre manipulation
+                                $current_post_id = get_the_ID();
+                                $current_post_date = get_the_date('j F Y', $current_post_id);
+                                $current_post_title = get_the_title($current_post_id);
+                                $current_post_permalink = get_permalink($current_post_id);
+                                
+                                $featured_image_data = get_principal_image_from_content($current_post_id);
                                 if ($featured_image_data) {
                                     $featured_image = $featured_image_data['url'];
                                     $image_class = $featured_image_data['class'];
@@ -907,23 +920,23 @@ if (!function_exists('articles_page_display')) {
                             ?>
                             <?php 
 // Détection pour badge
-$hasTitleMatch = !empty($search_query) && stripos(get_the_title(), $search_query) !== false;
+$hasTitleMatch = !empty($search_query) && stripos($current_post_title, $search_query) !== false;
 $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_query) !== false;
 ?>
                             <div class="article-card">
-                                <a href="<?php the_permalink(); ?>">
-                                    <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php echo ($featured_image_data) ? the_title_attribute() : 'Image par défaut'; ?>" />
+                                <a href="<?php echo esc_url($current_post_permalink); ?>">
+                                    <img class="article-image <?php echo esc_attr($image_class); ?>" src="<?php echo esc_url($featured_image); ?>" alt="<?php echo ($featured_image_data) ? esc_attr($current_post_title) : 'Image par défaut'; ?>" />
                                 </a>
                                 <?php if ($image_class === 'contain') : ?>
                                     <div class="article-separator"></div>
                                 <?php endif; ?>
                                 <div class="article-content">
-                                    <a href="<?php the_permalink(); ?>" class="article-title <?php echo $hasTitleMatch ? 'search-match' : ''; ?>"><?php the_title(); ?></a>
+                                    <a href="<?php echo esc_url($current_post_permalink); ?>" class="article-title <?php echo $hasTitleMatch ? 'search-match' : ''; ?>"><?php echo esc_html($current_post_title); ?></a>
                                     <p class="article-excerpt">
                                         <?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?>
                                     </p>
                                     <div class="article-footer">
-                                        <a href="<?php the_permalink(); ?>" class="read-more-button">
+                                        <a href="<?php echo esc_url($current_post_permalink); ?>" class="read-more-button">
                                             Lire la suite
                                             <svg class="read-more-icon" fill="none" viewBox="0 0 14 10">
                                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
@@ -937,7 +950,7 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                                                 <rect width="18" height="18" x="3" y="4" rx="2"/>
                                                 <path d="M3 10h18"/>
                                             </svg>
-                                            <?php echo get_the_date('j F Y', get_the_ID()); ?>
+                                            <?php echo esc_html($current_post_date); ?>
                                         </div>
                                     </div>
                                     <?php if ($hasTitleMatch): ?>
