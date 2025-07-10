@@ -316,6 +316,7 @@ if (!function_exists('articles_page_display')) {
         // Récupération des paramètres de recherche et filtres
         $search_query = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
         $selected_categories = isset($_GET['categories']) ? array_map('sanitize_text_field', $_GET['categories']) : array();
+        $sort_desc = isset($_GET['sort_desc']) ? true : false;
         
         // Paramètres de pagination
         $theme_page = isset($_GET['theme_page']) ? max(1, intval($_GET['theme_page'])) : 1;
@@ -339,6 +340,8 @@ if (!function_exists('articles_page_display')) {
             'post_type' => 'post',
             'posts_per_page' => $per_page * $theme_page,
             'post_status' => 'publish',
+            'orderby' => 'date',
+            'order' => $sort_desc ? 'DESC' : 'ASC',
             'meta_query' => array(),
             'tax_query' => array(),
             'post__not_in' => get_posts(array(
@@ -906,6 +909,9 @@ if (!function_exists('articles_page_display')) {
                 <?php foreach ($selected_categories as $cat): ?>
                     <input type="hidden" name="categories[]" value="<?php echo esc_attr($cat); ?>" class="hidden-input">
                 <?php endforeach; ?>
+                <?php if ($sort_desc): ?>
+                    <input type="hidden" name="sort_desc" value="1" class="hidden-input">
+                <?php endif; ?>
             </form>
 
             <!-- Bouton réinitialiser la recherche -->
@@ -932,6 +938,24 @@ if (!function_exists('articles_page_display')) {
                             <form method="GET" id="categoryForm">
                                 <input type="hidden" name="search" value="<?php echo esc_attr($search_query); ?>" class="hidden-input">
                                 <ul class="dropdown-list">
+                                    <!-- Option de tri -->
+                                    <li class="dropdown-item">
+                                        <div class="checkbox-container">
+                                            <input
+                                                id="sort-desc"
+                                                type="checkbox"
+                                                name="sort_desc"
+                                                value="1"
+                                                <?php echo $sort_desc ? 'checked' : ''; ?>
+                                                onchange="document.getElementById('categoryForm').submit();"
+                                                class="checkbox-input"
+                                            >
+                                            <label for="sort-desc" class="checkbox-label">
+                                                Du plus récent au plus ancien
+                                            </label>
+                                        </div>
+                                    </li>
+                                    
                                     <?php foreach ($categories as $category): ?>
                                     <li class="dropdown-item">
                                         <div class="checkbox-container">
@@ -1040,6 +1064,10 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                             <a href="<?php 
                                 $params = $_GET;
                                 $params['theme_page'] = $theme_page + 1;
+                                // Maintenir le tri si activé
+                                if ($sort_desc && !isset($params['sort_desc'])) {
+                                    $params['sort_desc'] = '1';
+                                }
                                 echo '?' . http_build_query($params);
                             ?>" class="see-more-button">
                                 Voir plus
