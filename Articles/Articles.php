@@ -567,8 +567,20 @@ if (!function_exists('articles_page_display')) {
             width: 1rem;
             height: 1rem;
             margin-right: 0.5rem;
-            accent-color: #3399ff;
             list-style: none;
+            background-color: white;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+        
+        .checkbox-input:checked {
+            background-color: white;
+            border-color: #3399ff;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='%233399ff' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+            background-size: 0.75rem;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         
         .checkbox-input:focus {
