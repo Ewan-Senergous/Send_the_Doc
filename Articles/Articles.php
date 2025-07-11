@@ -444,7 +444,7 @@ if (!function_exists('articles_page_display')) {
         
         .search-input:focus {
             outline: none;
-            border: 2px solid #3399ff;
+            border: 2px solid #93c5fd;
         }
         
         .search-button {
@@ -468,7 +468,7 @@ if (!function_exists('articles_page_display')) {
         
         .search-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .main-layout {
@@ -515,7 +515,7 @@ if (!function_exists('articles_page_display')) {
         
         .dropdown-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .dropdown-menu {
@@ -667,7 +667,7 @@ if (!function_exists('articles_page_display')) {
         }
         
         .article-title:hover {
-            color: #000000;
+            color: #3399ff;
         }
         
         .article-title.search-match {
@@ -710,7 +710,7 @@ if (!function_exists('articles_page_display')) {
         
         .read-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .read-more-icon {
@@ -761,7 +761,7 @@ if (!function_exists('articles_page_display')) {
         
         .see-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .no-articles {
