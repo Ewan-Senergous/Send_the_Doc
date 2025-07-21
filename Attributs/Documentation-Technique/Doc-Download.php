@@ -20,52 +20,121 @@ if (!function_exists('doc_download_display')) {
         $page = isset($_GET['doc_page']) ? max(1, intval($_GET['doc_page'])) : 1;
         $per_page = 12; // Limiter à 12 produits par page
         
-        // Récupérer les produits avec LIMITATION pour éviter les bugs
-        $products = wc_get_products(array(
-            'status' => 'publish',
-            'limit' => 100, // Limiter à 100 au lieu de -1 pour éviter les problèmes mémoire
-            'page' => 1
-        ));
-        
-        // Debug simplifié
-        echo '<script>console.log("Debug: Nombre de produits récupérés:", ' . count($products) . ');</script>';
-
-        // Filtrer les produits qui ont réellement une documentation
-        $products_with_docs = array();
-        
-        foreach ($products as $product) {
-            $product_id = $product->get_id();
-            $product_name = $product->get_name();
+        // SOLUTION CORRIGÉE : Récupération via taxonomies WooCommerce
+        function get_products_with_documentation_optimized() {
+            global $wpdb;
             
-            // Récupérer les attributs
-            $documentation_url = $product->get_attribute('documentation-technique');
-            $documentation_url_alt = $product->get_attribute('Documentation-technique');
-            $famille = $product->get_attribute('famille');
-            $famille_alt = $product->get_attribute('Famille');
-            $sous_famille = $product->get_attribute('sous-famille');
-            $sous_famille_alt = $product->get_attribute('Sous-Famille');
-            $sous_sous_famille = $product->get_attribute('sous-sous-famille');
-            $sous_sous_famille_alt = $product->get_attribute('Sous-sous-Famille');
+            // Cache de 30 minutes
+            $cache_key = 'products_with_docs_taxonomies_v1';
+            $cached_result = wp_cache_get($cache_key);
             
-            // Essayer les deux variantes de nom d'attribut
-            $final_doc_url = !empty($documentation_url) ? $documentation_url : $documentation_url_alt;
-            $final_famille = !empty($famille) ? $famille : $famille_alt;
-            $final_sous_famille = !empty($sous_famille) ? $sous_famille : $sous_famille_alt;
-            $final_sous_sous_famille = !empty($sous_sous_famille) ? $sous_sous_famille : $sous_sous_famille_alt;
-            
-            if (!empty($final_doc_url)) {
-                $products_with_docs[] = array(
-                    'id' => $product_id,
-                    'name' => $product_name,
-                    'documentation_url' => $final_doc_url,
-                    'famille' => $final_famille,
-                    'sous_famille' => $final_sous_famille,
-                    'sous_sous_famille' => $final_sous_sous_famille,
-                    'permalink' => $product->get_permalink()
-                );
+            if (false !== $cached_result) {
+                return $cached_result;
             }
+            
+            // Requête SQL corrigée pour les taxonomies WooCommerce
+            $sql = "
+                SELECT DISTINCT 
+                    p.ID as id,
+                    p.post_title as name,
+                    p.post_name as slug,
+                    
+                    -- Documentation depuis taxonomie pa_documentation-technique
+                    MAX(CASE WHEN tt_doc.taxonomy = 'pa_documentation-technique' THEN t_doc.name END) as documentation_url,
+                    
+                    -- Famille depuis taxonomie pa_famille  
+                    MAX(CASE WHEN tt_famille.taxonomy = 'pa_famille' THEN t_famille.name END) as famille,
+                    
+                    -- Sous-famille depuis taxonomie pa_sous-famille
+                    MAX(CASE WHEN tt_sous_famille.taxonomy = 'pa_sous-famille' THEN t_sous_famille.name END) as sous_famille,
+                    
+                    -- Sous-sous-famille depuis taxonomie pa_sous-sous-famille
+                    MAX(CASE WHEN tt_sous_sous_famille.taxonomy = 'pa_sous-sous-famille' THEN t_sous_sous_famille.name END) as sous_sous_famille
+                    
+                FROM {$wpdb->posts} p
+                
+                -- Documentation technique (OBLIGATOIRE)
+                INNER JOIN {$wpdb->term_relationships} tr_doc ON p.ID = tr_doc.object_id
+                INNER JOIN {$wpdb->term_taxonomy} tt_doc ON tr_doc.term_taxonomy_id = tt_doc.term_taxonomy_id 
+                    AND tt_doc.taxonomy = 'pa_documentation-technique'
+                INNER JOIN {$wpdb->terms} t_doc ON tt_doc.term_id = t_doc.term_id
+                
+                -- Famille (OPTIONNEL)
+                LEFT JOIN {$wpdb->term_relationships} tr_famille ON p.ID = tr_famille.object_id
+                LEFT JOIN {$wpdb->term_taxonomy} tt_famille ON tr_famille.term_taxonomy_id = tt_famille.term_taxonomy_id 
+                    AND tt_famille.taxonomy = 'pa_famille'
+                LEFT JOIN {$wpdb->terms} t_famille ON tt_famille.term_id = t_famille.term_id
+                
+                -- Sous-famille (OPTIONNEL)
+                LEFT JOIN {$wpdb->term_relationships} tr_sous_famille ON p.ID = tr_sous_famille.object_id
+                LEFT JOIN {$wpdb->term_taxonomy} tt_sous_famille ON tr_sous_famille.term_taxonomy_id = tt_sous_famille.term_taxonomy_id 
+                    AND tt_sous_famille.taxonomy = 'pa_sous-famille'
+                LEFT JOIN {$wpdb->terms} t_sous_famille ON tt_sous_famille.term_id = t_sous_famille.term_id
+                
+                -- Sous-sous-famille (OPTIONNEL)
+                LEFT JOIN {$wpdb->term_relationships} tr_sous_sous_famille ON p.ID = tr_sous_sous_famille.object_id
+                LEFT JOIN {$wpdb->term_taxonomy} tt_sous_sous_famille ON tr_sous_sous_famille.term_taxonomy_id = tt_sous_sous_famille.term_taxonomy_id 
+                    AND tt_sous_sous_famille.taxonomy = 'pa_sous-sous-famille'
+                LEFT JOIN {$wpdb->terms} t_sous_sous_famille ON tt_sous_sous_famille.term_id = t_sous_sous_famille.term_id
+                
+                WHERE p.post_type = 'product' 
+                AND p.post_status IN ('publish', 'draft')
+                AND t_doc.name IS NOT NULL 
+                AND t_doc.name != ''
+                AND t_doc.name != 'N/A'
+                AND t_doc.name NOT LIKE '%non%'
+                
+                GROUP BY p.ID, p.post_title, p.post_name
+                ORDER BY p.post_title ASC
+            ";
+            
+            $results = $wpdb->get_results($sql, ARRAY_A);
+            
+            // Debug temporaire
+            echo '<div style="background: lightgreen; padding: 10px; margin: 10px; border: 2px solid green;">';
+            echo '<h3>🎯 SOLUTION CORRIGÉE - Résultats :</h3>';
+            echo '<p><strong>Nombre de produits trouvés:</strong> ' . count($results) . '</p>';
+            if (!empty($results)) {
+                echo '<ul style="max-height: 200px; overflow-y: auto;">';
+                foreach (array_slice($results, 0, 10) as $row) {
+                    echo '<li><strong>' . $row['name'] . '</strong><br>';
+                    echo 'Doc: ' . substr($row['documentation_url'], 0, 60) . '...<br>';
+                    echo 'Famille: ' . ($row['famille'] ?: 'N/A') . ' | Sous-famille: ' . ($row['sous_famille'] ?: 'N/A') . '</li><hr>';
+                }
+                echo '</ul>';
+            }
+            echo '</div>';
+            
+            // Formater les résultats
+            $products_with_docs = array();
+            foreach ($results as $row) {
+                if (!empty($row['documentation_url']) && 
+                    filter_var($row['documentation_url'], FILTER_VALIDATE_URL)) {
+                    
+                    $products_with_docs[] = array(
+                        'id' => $row['id'],
+                        'name' => $row['name'],
+                        'documentation_url' => $row['documentation_url'],
+                        'famille' => $row['famille'] ?? '',
+                        'sous_famille' => $row['sous_famille'] ?? '',
+                        'sous_sous_famille' => $row['sous_sous_famille'] ?? '',
+                        'permalink' => get_permalink($row['id'])
+                    );
+                }
+            }
+            
+            // Cache pendant 30 minutes
+            wp_cache_set($cache_key, $products_with_docs, '', 1800);
+            
+            return $products_with_docs;
         }
-        
+
+        // Récupérer TOUS les produits avec documentation (optimisé)
+        $products_with_docs = get_products_with_documentation_optimized();
+
+        // Debug simplifié
+        echo '<script>console.log("Debug: Produits avec docs (OPTIMISÉ):", ' . count($products_with_docs) . ');</script>';
+
         // Appliquer les filtres de recherche et famille
         $filtered_products = $products_with_docs;
         
@@ -144,6 +213,7 @@ if (!function_exists('doc_download_display')) {
                     margin: 0 0 10px 0;
                     font-size: 2.5em;
                     font-weight: bold;
+                    color: white;
                 }
                 
                 .doc-header p {
@@ -164,7 +234,7 @@ if (!function_exists('doc_download_display')) {
                 .search-icon {
                     position: absolute;
                     left: 0.95rem;
-                    top: 50%;
+                    top: 59%;
                     transform: translateY(-50%);
                     pointer-events: none;
                     color: #6b7280;
@@ -217,7 +287,7 @@ if (!function_exists('doc_download_display')) {
                     display: flex;
                     gap: 15px;
                     flex-wrap: wrap;
-                    align-items: center;
+                    align-items: flex-end;
                 }
                 
                 .filter-group {
@@ -239,12 +309,13 @@ if (!function_exists('doc_download_display')) {
                     border-radius: 5px;
                     font-size: 14px;
                     background: white;
-                    transition: border-color 0.3s;
                 }
                 
                 .filter-group select:focus {
                     border-color: #0066cc;
                     outline: none;
+                    border: 2px solid #0066cc !important;
+                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
                 }
                 
                 .filter-actions {
@@ -503,7 +574,15 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-actions">
-                        <a href="?" class="btn-reset">Réinitialiser</a>
+                        <a href="?" class="btn-reset">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw" style="vertical-align: middle; margin-right: 5px;">
+                                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                <path d="M3 3v5h5"/>
+                                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                                <path d="M16 16h5v5"/>
+                            </svg>
+                            Réinitialiser
+                        </a>
                     </div>
                 </form>
             </div>
