@@ -25,6 +25,12 @@ if (!function_exists('doc_download_display')) {
         // Référence fabriquant
         $selected_reference_fabriquant = isset($_GET['reference_fabriquant']) ? sanitize_text_field($_GET['reference_fabriquant']) : '';
         
+        // Catégorie WordPress
+        $selected_categorie_wp = isset($_GET['categorie_wp']) ? sanitize_text_field($_GET['categorie_wp']) : '';
+        
+        // Marque (brand)
+        $selected_brand = isset($_GET['brand']) ? sanitize_text_field($_GET['brand']) : '';
+        
         // Paramètres de pagination
         $page = isset($_GET['doc_page']) ? max(1, intval($_GET['doc_page'])) : 1;
         $per_page = 12; // Limiter à 12 produits par page
@@ -118,6 +124,8 @@ if (!function_exists('doc_download_display')) {
                     $datasheet = '';
                     $manuel_reparation = '';
                     $reference_fabriquant = '';
+                    $categorie_wp = '';
+                    $brand = '';
                     
                     // Récupération avec vérification d'existence des taxonomies
                     if (taxonomy_exists('pa_vue-eclatee')) {
@@ -155,6 +163,18 @@ if (!function_exists('doc_download_display')) {
                         }
                     }
                     
+                    // Catégorie WordPress (WooCommerce)
+                    $terms = get_the_terms($product_id, 'product_cat');
+                    if ($terms && !is_wp_error($terms)) {
+                        $categorie_wp = $terms[0]->name;
+                    }
+                    
+                    // Marque (Brand) - Taxonomie pwb-brand
+                    $terms = get_the_terms($product_id, 'pwb-brand');
+                    if ($terms && !is_wp_error($terms)) {
+                        $brand = $terms[0]->name;
+                    }
+                    
                     $products_with_docs[] = array(
                         'id' => $product_id,
                         'name' => $row['name'],
@@ -167,6 +187,8 @@ if (!function_exists('doc_download_display')) {
                         'datasheet' => $datasheet,
                         'manuel_reparation' => $manuel_reparation,
                         'reference_fabriquant' => $reference_fabriquant,
+                        'categorie_wp' => $categorie_wp,
+                        'brand' => $brand,
                         'permalink' => get_permalink($product_id)
                     );
                 }
@@ -241,6 +263,18 @@ if (!function_exists('doc_download_display')) {
                 return $product['reference_fabriquant'] === $selected_reference_fabriquant;
             });
         }
+        
+        if (!empty($selected_categorie_wp)) {
+            $filtered_products = array_filter($filtered_products, function($product) use ($selected_categorie_wp) {
+                return $product['categorie_wp'] === $selected_categorie_wp;
+            });
+        }
+        
+        if (!empty($selected_brand)) {
+            $filtered_products = array_filter($filtered_products, function($product) use ($selected_brand) {
+                return $product['brand'] === $selected_brand;
+            });
+        }
 
         // Récupérer les valeurs uniques pour les filtres (limiter à 5 par catégorie)
         $familles = array_unique(array_column($products_with_docs, 'famille'));
@@ -261,6 +295,24 @@ if (!function_exists('doc_download_display')) {
         $references_count = array_count_values($references_fabriquant);
         arsort($references_count); // Trier par nombre d'occurrences décroissant
         $references_fabriquant = array_slice(array_keys($references_count), 0, 10);
+        
+        // Catégories WordPress (beaucoup de valeurs - gestion spéciale)
+        $categories_wp = array_column($products_with_docs, 'categorie_wp');
+        $categories_wp = array_filter($categories_wp); // Enlever les valeurs vides
+        
+        // Compter les occurrences et garder seulement les 10 plus courantes
+        $categories_count = array_count_values($categories_wp);
+        arsort($categories_count); // Trier par nombre d'occurrences décroissant
+        $categories_wp = array_slice(array_keys($categories_count), 0, 10);
+        
+        // Marques (47 valeurs - gestion spéciale)
+        $brands = array_column($products_with_docs, 'brand');
+        $brands = array_filter($brands); // Enlever les valeurs vides
+        
+        // Compter les occurrences et garder seulement les 10 plus courantes
+        $brands_count = array_count_values($brands);
+        arsort($brands_count); // Trier par nombre d'occurrences décroissant
+        $brands = array_slice(array_keys($brands_count), 0, 10);
 
         // Nettoyer les valeurs vides et limiter à 5 éléments
         $familles = array_filter($familles);
@@ -558,6 +610,8 @@ if (!function_exists('doc_download_display')) {
                 .sous-famille { border-left: 4px solid #28a745; }
                 .sous-sous-famille { border-left: 4px solid #ffc107; }
                 .reference-fabriquant { border-left: 4px solid #6f42c1; background-color: #f8f9fc; }
+                .categorie-wp { border-left: 4px solid #e31206; background-color: #fef2f2; }
+                .brand { border-left: 4px solid #17a2b8; background-color: #e6f7ff; }
                 
                 .download-links {
                     margin-top: 15px;
@@ -723,6 +777,8 @@ if (!function_exists('doc_download_display')) {
                 <input type="hidden" name="datasheet" value="<?php echo esc_attr($selected_datasheet); ?>">
                 <input type="hidden" name="manuel_reparation" value="<?php echo esc_attr($selected_manuel_reparation); ?>">
                 <input type="hidden" name="reference_fabriquant" value="<?php echo esc_attr($selected_reference_fabriquant); ?>">
+                <input type="hidden" name="categorie_wp" value="<?php echo esc_attr($selected_categorie_wp); ?>">
+                <input type="hidden" name="brand" value="<?php echo esc_attr($selected_brand); ?>">
             </form>
             
             <div class="filters-container">
@@ -809,6 +865,26 @@ if (!function_exists('doc_download_display')) {
                         </select>
                     </div>
                     
+                    <div class="filter-group">
+                        <label for="filter-categorie-wp">Catégorie produit (top 10)</label>
+                        <select id="filter-categorie-wp" name="categorie_wp" onchange="this.form.submit()">
+                            <option value="">Toutes les catégories</option>
+                            <?php foreach ($categories_wp as $categorie): ?>
+                                <option value="<?php echo esc_attr($categorie); ?>" <?php selected($selected_categorie_wp, $categorie); ?>><?php echo esc_html($categorie); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-brand">Marque (top 10)</label>
+                        <select id="filter-brand" name="brand" onchange="this.form.submit()">
+                            <option value="">Toutes les marques</option>
+                            <?php foreach ($brands as $brand): ?>
+                                <option value="<?php echo esc_attr($brand); ?>" <?php selected($selected_brand, $brand); ?>><?php echo esc_html($brand); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
                     <div class="filter-actions">
                         <a href="?" class="btn-reset">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw" style="vertical-align: middle; margin-right: 5px;">
@@ -858,6 +934,12 @@ if (!function_exists('doc_download_display')) {
                                 <?php endif; ?>
                                 <?php if (!empty($product['reference_fabriquant'])): ?>
                                     <span class="category-tag reference-fabriquant"><?php echo esc_html($product['reference_fabriquant']); ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($product['categorie_wp'])): ?>
+                                    <span class="category-tag categorie-wp"><?php echo esc_html($product['categorie_wp']); ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($product['brand'])): ?>
+                                    <span class="category-tag brand"><?php echo esc_html($product['brand']); ?></span>
                                 <?php endif; ?>
                             </div>
                             
