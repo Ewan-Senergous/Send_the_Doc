@@ -15,24 +15,85 @@ if (!function_exists('doc_download_display')) {
         $selected_famille = isset($_GET['famille']) ? sanitize_text_field($_GET['famille']) : '';
         $selected_sous_famille = isset($_GET['sous_famille']) ? sanitize_text_field($_GET['sous_famille']) : '';
         $selected_sous_sous_famille = isset($_GET['sous_sous_famille']) ? sanitize_text_field($_GET['sous_sous_famille']) : '';
+        $selected_manuel_utilisation = isset($_GET['manuel_utilisation']) ? sanitize_text_field($_GET['manuel_utilisation']) : '';
+        $selected_datasheet = isset($_GET['datasheet']) ? sanitize_text_field($_GET['datasheet']) : '';
+        $selected_vue_eclatee = isset($_GET['vue_eclatee']) ? sanitize_text_field($_GET['vue_eclatee']) : '';
+        $selected_manuel_reparation = isset($_GET['manuel_reparation']) ? sanitize_text_field($_GET['manuel_reparation']) : '';
+        $selected_category = isset($_GET['product_category']) ? sanitize_text_field($_GET['product_category']) : '';
+        $selected_brand = isset($_GET['brand']) ? sanitize_text_field($_GET['brand']) : '';
+        $selected_ref_fabricant = isset($_GET['ref_fabricant']) ? sanitize_text_field($_GET['ref_fabricant']) : '';
         
-        // Paramètres de pagination
+        // Paramètres de pagination ultra simplifiés
         $page = isset($_GET['doc_page']) ? max(1, intval($_GET['doc_page'])) : 1;
-        $per_page = 12; // Limiter à 12 produits par page
+        $per_page = 5; // Limiter à 5 produits par page pour le debug
         
-        // SOLUTION CORRIGÉE : Récupération via taxonomies WooCommerce
+        // SOLUTION ULTRA SIMPLIFIÉE pour éviter les boucles infinies
         function get_products_with_documentation_optimized() {
             global $wpdb;
             
-            // Cache de 30 minutes
-            $cache_key = 'products_with_docs_taxonomies_v1';
-            $cached_result = wp_cache_get($cache_key);
+            echo '<div style="background: orange; padding: 10px; margin: 10px; border: 2px solid red;">';
+            echo '<h3>🔴 DEBUG - Début de la fonction</h3>';
+            echo '</div>';
             
-            if (false !== $cached_result) {
-                return $cached_result;
+            // DIAGNOSTIC 1: Vérifier les produits disponibles
+            $diagnostic1 = $wpdb->get_results("
+                SELECT COUNT(*) as total, p.post_status 
+                FROM {$wpdb->posts} p 
+                WHERE p.post_type = 'product' 
+                GROUP BY p.post_status
+            ", ARRAY_A);
+            
+            echo '<div style="background: cyan; padding: 10px; margin: 10px; border: 2px solid teal;">';
+            echo '<h3>🔬 DIAGNOSTIC 1 - Produits disponibles</h3>';
+            foreach ($diagnostic1 as $row) {
+                echo '<p>Status: ' . $row['post_status'] . ' = ' . $row['total'] . ' produits</p>';
             }
+            echo '</div>';
             
-            // Requête SQL corrigée pour les taxonomies WooCommerce
+            // DIAGNOSTIC 2: Vérifier les taxonomies disponibles
+            $diagnostic2 = $wpdb->get_results("
+                SELECT DISTINCT taxonomy, COUNT(*) as count
+                FROM {$wpdb->term_taxonomy} 
+                WHERE taxonomy LIKE 'pa_%' OR taxonomy = 'product_cat'
+                GROUP BY taxonomy
+                ORDER BY taxonomy
+            ", ARRAY_A);
+            
+            echo '<div style="background: pink; padding: 10px; margin: 10px; border: 2px solid magenta;">';
+            echo '<h3>🔬 DIAGNOSTIC 2 - Taxonomies disponibles</h3>';
+            foreach ($diagnostic2 as $row) {
+                echo '<p>' . $row['taxonomy'] . ' = ' . $row['count'] . ' termes</p>';
+            }
+            echo '</div>';
+            
+            // DIAGNOSTIC 3: Vérifier spécifiquement pa_documentation-technique
+            $diagnostic3 = $wpdb->get_results("
+                SELECT t.name, t.slug, COUNT(tr.object_id) as product_count
+                FROM {$wpdb->term_taxonomy} tt
+                LEFT JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
+                LEFT JOIN {$wpdb->term_relationships} tr ON tt.term_taxonomy_id = tr.term_taxonomy_id
+                WHERE tt.taxonomy = 'pa_documentation-technique'
+                GROUP BY t.term_id
+                ORDER BY product_count DESC
+                LIMIT 10
+            ", ARRAY_A);
+            
+            echo '<div style="background: khaki; padding: 10px; margin: 10px; border: 2px solid olive;">';
+            echo '<h3>🔬 DIAGNOSTIC 3 - Taxonomie pa_documentation-technique</h3>';
+            if (empty($diagnostic3)) {
+                echo '<p style="color: red;"><strong>⚠️ PROBLÈME: Taxonomie "pa_documentation-technique" introuvable !</strong></p>';
+            } else {
+                echo '<ul>';
+                foreach ($diagnostic3 as $row) {
+                    echo '<li>' . $row['name'] . ' (' . $row['slug'] . ') = ' . $row['product_count'] . ' produits</li>';
+                }
+                echo '</ul>';
+            }
+            echo '</div>';
+            
+            // PAS DE CACHE pour le debugging
+            
+            // Requête SQL EXACTEMENT comme Test-Doc-Download (SANS les nouveaux LEFT JOIN qui causent la boucle)
             $sql = "
                 SELECT DISTINCT 
                     p.ID as id,
@@ -86,45 +147,60 @@ if (!function_exists('doc_download_display')) {
                 
                 GROUP BY p.ID, p.post_title, p.post_name
                 ORDER BY p.post_title ASC
+                LIMIT 10
             ";
+            
+            echo '<div style="background: yellow; padding: 10px; margin: 10px; border: 2px solid orange;">';
+            echo '<h3>🔍 DEBUG - Execution de la requête SQL</h3>';
+            echo '<p>SQL: ' . substr($sql, 0, 200) . '...</p>';
+            echo '</div>';
             
             $results = $wpdb->get_results($sql, ARRAY_A);
             
-            // Debug temporaire
             echo '<div style="background: lightgreen; padding: 10px; margin: 10px; border: 2px solid green;">';
-            echo '<h3>🎯 SOLUTION CORRIGÉE - Résultats :</h3>';
+            echo '<h3>👍 RESULTATS SQL</h3>';
             echo '<p><strong>Nombre de produits trouvés:</strong> ' . count($results) . '</p>';
             if (!empty($results)) {
                 echo '<ul style="max-height: 200px; overflow-y: auto;">';
-                foreach (array_slice($results, 0, 10) as $row) {
+                foreach ($results as $row) {
                     echo '<li><strong>' . $row['name'] . '</strong><br>';
-                    echo 'Doc: ' . substr($row['documentation_url'], 0, 60) . '...<br>';
-                    echo 'Famille: ' . ($row['famille'] ?: 'N/A') . ' | Sous-famille: ' . ($row['sous_famille'] ?: 'N/A') . '</li><hr>';
+                    echo 'Doc: ' . substr($row['documentation_url'], 0, 60) . '...</li>';
                 }
                 echo '</ul>';
+            } else {
+                echo '<p style="color: red;">AUCUN RESULTAT TROUVE !</p>';
             }
             echo '</div>';
             
-            // Formater les résultats
+            // Formater les résultats TRES SIMPLEMENT
             $products_with_docs = array();
             foreach ($results as $row) {
-                if (!empty($row['documentation_url']) && 
-                    filter_var($row['documentation_url'], FILTER_VALIDATE_URL)) {
-                    
+                if (!empty($row['documentation_url'])) {
                     $products_with_docs[] = array(
                         'id' => $row['id'],
                         'name' => $row['name'],
                         'documentation_url' => $row['documentation_url'],
-                        'famille' => $row['famille'] ?? '',
-                        'sous_famille' => $row['sous_famille'] ?? '',
-                        'sous_sous_famille' => $row['sous_sous_famille'] ?? '',
+                        'famille' => '',
+                        'sous_famille' => '',
+                        'sous_sous_famille' => '',
+                        'manuel_utilisation' => '',
+                        'datasheet' => '',
+                        'vue_eclatee' => '',
+                        'manuel_reparation' => '',
+                        'product_category' => '',
+                        'brand' => '',
+                        'reference_fabricant' => '',
                         'permalink' => get_permalink($row['id'])
                     );
                 }
             }
             
-            // Cache pendant 30 minutes
-            wp_cache_set($cache_key, $products_with_docs, '', 1800);
+            // PAS DE CACHE pour le debugging
+            
+            echo '<div style="background: lightblue; padding: 10px; margin: 10px; border: 2px solid blue;">';
+            echo '<h3>📊 PRODUITS FORMATES</h3>';
+            echo '<p><strong>Nombre de produits formatés:</strong> ' . count($products_with_docs) . '</p>';
+            echo '</div>';
             
             return $products_with_docs;
         }
@@ -132,10 +208,13 @@ if (!function_exists('doc_download_display')) {
         // Récupérer TOUS les produits avec documentation (optimisé)
         $products_with_docs = get_products_with_documentation_optimized();
 
-        // Debug simplifié
-        echo '<script>console.log("Debug: Produits avec docs (OPTIMISÉ):", ' . count($products_with_docs) . ');</script>';
-
-        // Appliquer les filtres de recherche et famille
+        echo '<div style="background: purple; color: white; padding: 10px; margin: 10px; border: 2px solid purple;">';
+        echo '<h3>🔍 DEBUG - Après récupération</h3>';
+        echo '<p><strong>Produits récupérés:</strong> ' . count($products_with_docs) . '</p>';
+        echo '<p><strong>Recherche:</strong> ' . ($search_query ?: 'Aucune') . '</p>';
+        echo '</div>';
+        
+        // FILTRAGE ULTRA SIMPLIFIE - juste la recherche
         $filtered_products = $products_with_docs;
         
         if (!empty($search_query)) {
@@ -144,38 +223,34 @@ if (!function_exists('doc_download_display')) {
             });
         }
         
-        if (!empty($selected_famille)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_famille) {
-                return $product['famille'] === $selected_famille;
-            });
-        }
+        // TOUS LES AUTRES FILTRES DESACTIVES
+        // if (!empty($selected_famille)) {
+        // if (!empty($selected_sous_famille)) {
+        // if (!empty($selected_sous_sous_famille)) {
         
-        if (!empty($selected_sous_famille)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_sous_famille) {
-                return $product['sous_famille'] === $selected_sous_famille;
-            });
-        }
-        
-        if (!empty($selected_sous_sous_famille)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_sous_sous_famille) {
-                return $product['sous_sous_famille'] === $selected_sous_sous_famille;
-            });
-        }
+        // TOUS LES NOUVEAUX FILTRES DESACTIVES pour éviter les problèmes
+        // if (!empty($selected_manuel_utilisation)) {
+        // if (!empty($selected_datasheet)) {
+        // if (!empty($selected_vue_eclatee)) {
+        // if (!empty($selected_manuel_reparation)) {
+        // if (!empty($selected_category)) {
+        // if (!empty($selected_brand)) {
+        // if (!empty($selected_ref_fabricant)) {
 
-        // Récupérer les valeurs uniques pour les filtres (limiter à 5 par catégorie)
-        $familles = array_unique(array_column($products_with_docs, 'famille'));
-        $sous_familles = array_unique(array_column($products_with_docs, 'sous_famille'));
-        $sous_sous_familles = array_unique(array_column($products_with_docs, 'sous_sous_famille'));
+        // FILTRES SIMPLIFIES - pas de traitement complexe pour éviter les boucles
+        $familles = array(); // Désactivé
+        $sous_familles = array(); // Désactivé
+        $sous_sous_familles = array(); // Désactivé
+        $product_categories = array(); // Désactivé
+        $brands = array(); // Désactivé
+        
+        // TOUS les nouveaux filtres désactivés
+        $manuel_utilisations = array();
+        $datasheets = array();
+        $vue_eclatees = array();
+        $manuel_reparations = array();
+        $references_fabricant = array();
 
-        // Nettoyer les valeurs vides et limiter à 5 éléments
-        $familles = array_filter($familles);
-        $familles = array_slice($familles, 0, 5);
-        
-        $sous_familles = array_filter($sous_familles);
-        $sous_familles = array_slice($sous_familles, 0, 5);
-        
-        $sous_sous_familles = array_filter($sous_sous_familles);
-        $sous_sous_familles = array_slice($sous_sous_familles, 0, 5);
         
         // Pagination sur les produits filtrés
         $total_products = count($filtered_products);
@@ -441,6 +516,41 @@ if (!function_exists('doc_download_display')) {
                 .famille { border-left: 4px solid #0066cc; }
                 .sous-famille { border-left: 4px solid #28a745; }
                 .sous-sous-famille { border-left: 4px solid #ffc107; }
+                .category { border-left: 4px solid #e31206; }
+                .brand { border-left: 4px solid #6f42c1; }
+                .ref-fabricant { border-left: 4px solid #20c997; }
+                
+                .product-docs {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    margin-bottom: 15px;
+                }
+                
+                .doc-link {
+                    display: inline-block;
+                    padding: 6px 10px;
+                    background: #f8f9fa;
+                    color: #495057;
+                    text-decoration: none;
+                    border-radius: 15px;
+                    font-size: 0.8em;
+                    border: 1px solid #dee2e6;
+                    transition: all 0.2s;
+                }
+                
+                .doc-link:hover {
+                    background: #e9ecef;
+                    color: #495057;
+                    text-decoration: none;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+                
+                .manuel-util { border-left: 3px solid #17a2b8; }
+                .datasheet { border-left: 3px solid #007bff; }
+                .vue-eclatee { border-left: 3px solid #fd7e14; }
+                .manuel-rep { border-left: 3px solid #dc3545; }
                 
                 .download-link {
                     display: inline-block;
@@ -546,6 +656,13 @@ if (!function_exists('doc_download_display')) {
                 <input type="hidden" name="famille" value="<?php echo esc_attr($selected_famille); ?>">
                 <input type="hidden" name="sous_famille" value="<?php echo esc_attr($selected_sous_famille); ?>">
                 <input type="hidden" name="sous_sous_famille" value="<?php echo esc_attr($selected_sous_sous_famille); ?>">
+                <input type="hidden" name="manuel_utilisation" value="<?php echo esc_attr($selected_manuel_utilisation); ?>">
+                <input type="hidden" name="datasheet" value="<?php echo esc_attr($selected_datasheet); ?>">
+                <input type="hidden" name="vue_eclatee" value="<?php echo esc_attr($selected_vue_eclatee); ?>">
+                <input type="hidden" name="manuel_reparation" value="<?php echo esc_attr($selected_manuel_reparation); ?>">
+                <input type="hidden" name="product_category" value="<?php echo esc_attr($selected_category); ?>">
+                <input type="hidden" name="brand" value="<?php echo esc_attr($selected_brand); ?>">
+                <input type="hidden" name="ref_fabricant" value="<?php echo esc_attr($selected_ref_fabricant); ?>">
             </form>
             
             <div class="filters-container">
@@ -578,6 +695,76 @@ if (!function_exists('doc_download_display')) {
                             <option value="">Toutes les sous-sous-familles</option>
                             <?php foreach ($sous_sous_familles as $sous_sous_famille): ?>
                                 <option value="<?php echo esc_attr($sous_sous_famille); ?>" <?php selected($selected_sous_sous_famille, $sous_sous_famille); ?>><?php echo esc_html($sous_sous_famille); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-manuel-utilisation">Manuel d'utilisation</label>
+                        <select id="filter-manuel-utilisation" name="manuel_utilisation" onchange="this.form.submit()">
+                            <option value="">Tous manuels</option>
+                            <?php foreach ($manuel_utilisations as $manuel): ?>
+                                <option value="<?php echo esc_attr($manuel); ?>" <?php selected($selected_manuel_utilisation, $manuel); ?>><?php echo esc_html($manuel); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-datasheet">Datasheet</label>
+                        <select id="filter-datasheet" name="datasheet" onchange="this.form.submit()">
+                            <option value="">Tous datasheets</option>
+                            <?php foreach ($datasheets as $datasheet): ?>
+                                <option value="<?php echo esc_attr($datasheet); ?>" <?php selected($selected_datasheet, $datasheet); ?>><?php echo esc_html($datasheet); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-vue-eclatee">Vue éclatée</label>
+                        <select id="filter-vue-eclatee" name="vue_eclatee" onchange="this.form.submit()">
+                            <option value="">Toutes vues éclatées</option>
+                            <?php foreach ($vue_eclatees as $vue_eclatee): ?>
+                                <option value="<?php echo esc_attr($vue_eclatee); ?>" <?php selected($selected_vue_eclatee, $vue_eclatee); ?>><?php echo esc_html($vue_eclatee); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-manuel-reparation">Manuel de réparation</label>
+                        <select id="filter-manuel-reparation" name="manuel_reparation" onchange="this.form.submit()">
+                            <option value="">Tous manuels réparation</option>
+                            <?php foreach ($manuel_reparations as $manuel_rep): ?>
+                                <option value="<?php echo esc_attr($manuel_rep); ?>" <?php selected($selected_manuel_reparation, $manuel_rep); ?>><?php echo esc_html($manuel_rep); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-category">Catégorie WordPress</label>
+                        <select id="filter-category" name="product_category" onchange="this.form.submit()">
+                            <option value="">Toutes catégories</option>
+                            <?php foreach ($product_categories as $category): ?>
+                                <option value="<?php echo esc_attr($category); ?>" <?php selected($selected_category, $category); ?>><?php echo esc_html($category); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-brand">Brand</label>
+                        <select id="filter-brand" name="brand" onchange="this.form.submit()">
+                            <option value="">Toutes marques</option>
+                            <?php foreach ($brands as $brand): ?>
+                                <option value="<?php echo esc_attr($brand); ?>" <?php selected($selected_brand, $brand); ?>><?php echo esc_html($brand); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-ref-fabricant">Référence fabricant</label>
+                        <select id="filter-ref-fabricant" name="ref_fabricant" onchange="this.form.submit()">
+                            <option value="">Toutes références</option>
+                            <?php foreach ($references_fabricant as $ref_fab): ?>
+                                <option value="<?php echo esc_attr($ref_fab); ?>" <?php selected($selected_ref_fabricant, $ref_fab); ?>><?php echo esc_html($ref_fab); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -628,6 +815,39 @@ if (!function_exists('doc_download_display')) {
                                 <?php endif; ?>
                                 <?php if (!empty($product['sous_sous_famille'])): ?>
                                     <span class="category-tag sous-sous-famille"><?php echo esc_html($product['sous_sous_famille']); ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($product['product_category'])): ?>
+                                    <span class="category-tag category"><?php echo esc_html($product['product_category']); ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($product['brand'])): ?>
+                                    <span class="category-tag brand"><?php echo esc_html($product['brand']); ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($product['reference_fabricant'])): ?>
+                                    <span class="category-tag ref-fabricant"><?php echo esc_html($product['reference_fabricant']); ?></span>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <!-- Nouvelles documentations disponibles -->
+                            <div class="product-docs" style="margin-bottom: 15px;">
+                                <?php if (!empty($product['manuel_utilisation'])): ?>
+                                    <a href="<?php echo esc_url($product['manuel_utilisation']); ?>" class="doc-link manuel-util" target="_blank" title="Manuel d'utilisation">
+                                        📖 Manuel
+                                    </a>
+                                <?php endif; ?>
+                                <?php if (!empty($product['datasheet'])): ?>
+                                    <a href="<?php echo esc_url($product['datasheet']); ?>" class="doc-link datasheet" target="_blank" title="Datasheet">
+                                        📊 Datasheet
+                                    </a>
+                                <?php endif; ?>
+                                <?php if (!empty($product['vue_eclatee'])): ?>
+                                    <a href="<?php echo esc_url($product['vue_eclatee']); ?>" class="doc-link vue-eclatee" target="_blank" title="Vue éclatée">
+                                        🔧 Vue éclatée
+                                    </a>
+                                <?php endif; ?>
+                                <?php if (!empty($product['manuel_reparation'])): ?>
+                                    <a href="<?php echo esc_url($product['manuel_reparation']); ?>" class="doc-link manuel-rep" target="_blank" title="Manuel de réparation">
+                                        🔨 Réparation
+                                    </a>
                                 <?php endif; ?>
                             </div>
                             
