@@ -243,7 +243,7 @@ if (!function_exists('doc_download_display')) {
                 .search-input {
                     width: 100%;
                     padding: 1rem 1rem 1rem 2.5rem;
-                    border: 1px solid #d1d5db;
+                    border: 1px solid #6b7280;
                     border-radius: 0.5rem;
                     background-color: #f9fafb;
                     font-size: 0.875rem;
@@ -252,7 +252,7 @@ if (!function_exists('doc_download_display')) {
                 
                 .search-input:focus {
                     outline: none;
-                    border: 2px solid #93c5fd;
+                    border: 2px solid #0066cc;
                 }
                 
                 .search-button {
@@ -266,7 +266,7 @@ if (!function_exists('doc_download_display')) {
                     border: none;
                     border-radius: 0.5rem;
                     font-size: 0.875rem;
-                    font-weight: 500;
+                    font-weight: bold;
                     cursor: pointer;
                     transition: all 0.2s;
                 }
@@ -275,12 +275,17 @@ if (!function_exists('doc_download_display')) {
                     background-color: #0052a3;
                 }
                 
+                .search-button:focus {
+                    outline: none;
+                    box-shadow: 0 0 0 4px #93c5fd;
+                }
+                
                 .filters-container {
-                    background: #f8f9fa;
+                    background: #f3f4f6;
                     padding: 20px;
                     border-radius: 8px;
                     margin-bottom: 30px;
-                    border: 1px solid #e9ecef;
+                    border: 1px solid #6b7280;
                 }
                 
                 .filters-row {
@@ -305,7 +310,7 @@ if (!function_exists('doc_download_display')) {
                 .filter-group select {
                     width: 100%;
                     padding: 10px;
-                    border: 2px solid #ddd;
+                    border: 1px solid #6b7280;
                     border-radius: 5px;
                     font-size: 14px;
                     background: white;
@@ -340,7 +345,7 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .btn-reset {
-                    background: #e31206;
+                    background: #000000;
                     color: white;
                     border: none;
                     padding: 10px 20px;
@@ -350,8 +355,9 @@ if (!function_exists('doc_download_display')) {
                     transition: background 0.3s;
                 }
                 
-                .btn-reset:hover {
-                    background: #b60f05;
+                .btn-reset:focus {
+                    outline: none;
+                    box-shadow: 0 0 0 4px #6b7280;
                 }
                 
                 .results-container {
@@ -359,9 +365,10 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .results-header {
-                    background: #e9ecef;
+                    background: #e5e7eb;
                     padding: 15px;
                     border-radius: 5px 5px 0 0;
+                    border: 1px solid #6b7280;
                     border-bottom: 2px solid #0066cc;
                     display: flex;
                     justify-content: space-between;
@@ -388,7 +395,7 @@ if (!function_exists('doc_download_display')) {
                 
                 .product-card {
                     background: white;
-                    border: 1px solid #e9ecef;
+                    border: 1px solid #6b7280;
                     border-radius: 8px;
                     padding: 20px;
                     transition: box-shadow 0.3s, transform 0.2s;
@@ -453,10 +460,7 @@ if (!function_exists('doc_download_display')) {
                     text-decoration: none;
                 }
                 
-                .download-link:before {
-                    content: "📄 ";
-                    margin-right: 5px;
-                }
+
                 
                 .pagination-container {
                     text-align: center;
@@ -530,7 +534,12 @@ if (!function_exists('doc_download_display')) {
                         </svg>
                     </div>
                     <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" class="search-input" placeholder="Rechercher un produit..." />
-                    <button type="submit" class="search-button">Rechercher</button>
+                    <button type="submit" class="search-button">
+                        <svg style="margin-right:0.4em;vertical-align:middle;" width="16" height="16" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                        Rechercher
+                    </button>
                 </div>
                 
                 <!-- Champs cachés pour maintenir les filtres -->
@@ -625,6 +634,7 @@ if (!function_exists('doc_download_display')) {
                             <a href="<?php echo esc_url($product['documentation_url']); ?>" 
                                class="download-link" 
                                target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download-icon lucide-download" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                 Télécharger la documentation
                             </a>
                         </div>
