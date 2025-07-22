@@ -22,6 +22,9 @@ if (!function_exists('doc_download_display')) {
         $selected_datasheet = isset($_GET['datasheet']) ? sanitize_text_field($_GET['datasheet']) : '';
         $selected_manuel_reparation = isset($_GET['manuel_reparation']) ? sanitize_text_field($_GET['manuel_reparation']) : '';
         
+        // Référence fabriquant
+        $selected_reference_fabriquant = isset($_GET['reference_fabriquant']) ? sanitize_text_field($_GET['reference_fabriquant']) : '';
+        
         // Paramètres de pagination
         $page = isset($_GET['doc_page']) ? max(1, intval($_GET['doc_page'])) : 1;
         $per_page = 12; // Limiter à 12 produits par page
@@ -114,6 +117,7 @@ if (!function_exists('doc_download_display')) {
                     $manuel_utilisation = '';
                     $datasheet = '';
                     $manuel_reparation = '';
+                    $reference_fabriquant = '';
                     
                     // Récupération avec vérification d'existence des taxonomies
                     if (taxonomy_exists('pa_vue-eclatee')) {
@@ -144,6 +148,13 @@ if (!function_exists('doc_download_display')) {
                         }
                     }
                     
+                    if (taxonomy_exists('pa_reference-fabriquant')) {
+                        $terms = get_the_terms($product_id, 'pa_reference-fabriquant');
+                        if ($terms && !is_wp_error($terms)) {
+                            $reference_fabriquant = $terms[0]->name;
+                        }
+                    }
+                    
                     $products_with_docs[] = array(
                         'id' => $product_id,
                         'name' => $row['name'],
@@ -155,6 +166,7 @@ if (!function_exists('doc_download_display')) {
                         'manuel_utilisation' => $manuel_utilisation,
                         'datasheet' => $datasheet,
                         'manuel_reparation' => $manuel_reparation,
+                        'reference_fabriquant' => $reference_fabriquant,
                         'permalink' => get_permalink($product_id)
                     );
                 }
@@ -223,6 +235,12 @@ if (!function_exists('doc_download_display')) {
                 return $product['manuel_reparation'] === $selected_manuel_reparation;
             });
         }
+        
+        if (!empty($selected_reference_fabriquant)) {
+            $filtered_products = array_filter($filtered_products, function($product) use ($selected_reference_fabriquant) {
+                return $product['reference_fabriquant'] === $selected_reference_fabriquant;
+            });
+        }
 
         // Récupérer les valeurs uniques pour les filtres (limiter à 5 par catégorie)
         $familles = array_unique(array_column($products_with_docs, 'famille'));
@@ -234,6 +252,15 @@ if (!function_exists('doc_download_display')) {
         $manuels_utilisation = array_unique(array_column($products_with_docs, 'manuel_utilisation'));
         $datasheets = array_unique(array_column($products_with_docs, 'datasheet'));
         $manuels_reparation = array_unique(array_column($products_with_docs, 'manuel_reparation'));
+        
+        // Références fabriquant (beaucoup de valeurs - gestion spéciale)
+        $references_fabriquant = array_column($products_with_docs, 'reference_fabriquant');
+        $references_fabriquant = array_filter($references_fabriquant); // Enlever les valeurs vides
+        
+        // Compter les occurrences et garder seulement les 10 plus courantes
+        $references_count = array_count_values($references_fabriquant);
+        arsort($references_count); // Trier par nombre d'occurrences décroissant
+        $references_fabriquant = array_slice(array_keys($references_count), 0, 10);
 
         // Nettoyer les valeurs vides et limiter à 5 éléments
         $familles = array_filter($familles);
@@ -530,6 +557,7 @@ if (!function_exists('doc_download_display')) {
                 .famille { border-left: 4px solid #0066cc; }
                 .sous-famille { border-left: 4px solid #28a745; }
                 .sous-sous-famille { border-left: 4px solid #ffc107; }
+                .reference-fabriquant { border-left: 4px solid #6f42c1; background-color: #f8f9fc; }
                 
                 .download-links {
                     margin-top: 15px;
@@ -694,6 +722,7 @@ if (!function_exists('doc_download_display')) {
                 <input type="hidden" name="manuel_utilisation" value="<?php echo esc_attr($selected_manuel_utilisation); ?>">
                 <input type="hidden" name="datasheet" value="<?php echo esc_attr($selected_datasheet); ?>">
                 <input type="hidden" name="manuel_reparation" value="<?php echo esc_attr($selected_manuel_reparation); ?>">
+                <input type="hidden" name="reference_fabriquant" value="<?php echo esc_attr($selected_reference_fabriquant); ?>">
             </form>
             
             <div class="filters-container">
@@ -770,6 +799,16 @@ if (!function_exists('doc_download_display')) {
                         </select>
                     </div>
                     
+                    <div class="filter-group">
+                        <label for="filter-reference-fabriquant">Référence fabriquant (top 10)</label>
+                        <select id="filter-reference-fabriquant" name="reference_fabriquant" onchange="this.form.submit()">
+                            <option value="">Toutes les références</option>
+                            <?php foreach ($references_fabriquant as $reference): ?>
+                                <option value="<?php echo esc_attr($reference); ?>" <?php selected($selected_reference_fabriquant, $reference); ?>><?php echo esc_html($reference); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
                     <div class="filter-actions">
                         <a href="?" class="btn-reset">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw" style="vertical-align: middle; margin-right: 5px;">
@@ -816,6 +855,9 @@ if (!function_exists('doc_download_display')) {
                                 <?php endif; ?>
                                 <?php if (!empty($product['sous_sous_famille'])): ?>
                                     <span class="category-tag sous-sous-famille"><?php echo esc_html($product['sous_sous_famille']); ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($product['reference_fabriquant'])): ?>
+                                    <span class="category-tag reference-fabriquant"><?php echo esc_html($product['reference_fabriquant']); ?></span>
                                 <?php endif; ?>
                             </div>
                             
