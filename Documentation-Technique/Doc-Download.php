@@ -349,7 +349,7 @@ if (!function_exists('doc_download_display')) {
                     font-family: Arial, sans-serif;
                     max-width: 1200px;
                     margin: 0 auto;
-                    padding: 30px 20px;
+                    padding: 30px 0px;
                 }
                 
                 .doc-header {
@@ -638,19 +638,19 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .manuel-link {
-                    background: #28a745;
+                    background: #15803d;
                 }
                 .manuel-link:hover {
-                    background: #218838;
+                    background: #166534;
                 }
                 
                 .datasheet-link {
                     background: #ffc107;
-                    color: #212529;
+                    color: #333;
                 }
                 .datasheet-link:hover {
                     background: #e0a800;
-                    color: #212529;
+                    color: #333;
                 }
                 
                 .repair-link {
@@ -662,13 +662,10 @@ if (!function_exists('doc_download_display')) {
                 
                 /* Style pour les boutons désactivés */
                 .download-link.disabled {
-                    opacity: 0.6;
                     cursor: default;
                     pointer-events: none;
                     position: relative;
                 }
-                
-
                 
                 .pagination-container {
                     text-align: center;
@@ -732,6 +729,24 @@ if (!function_exists('doc_download_display')) {
                     .results-header {
                         flex-direction: column;
                         gap: 10px;
+                    }
+                    
+                    .pagination-container {
+                        padding: 0 10px;
+                    }
+                    
+                    .pagination-button {
+                        margin: 5px;
+                        padding: 8px 16px;
+                        font-size: 0.9em;
+                    }
+                    
+                    .pagination-button:first-child {
+                        padding-left: 10px;
+                    }
+                    
+                    .pagination-button:last-child {
+                        padding-right: 10px;
                     }
                 }
             </style>
