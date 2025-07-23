@@ -33,7 +33,7 @@ if (!function_exists('doc_download_display')) {
         
         // Paramètres de pagination
         $page = isset($_GET['doc_page']) ? max(1, intval($_GET['doc_page'])) : 1;
-        $per_page = 12; // Limiter à 12 produits par page
+        $per_page = 2; // Limiter à 12 produits par page
         
         // SOLUTION CORRIGÉE : Récupération via taxonomies WooCommerce
         function get_products_with_documentation_optimized() {
@@ -672,18 +672,12 @@ if (!function_exists('doc_download_display')) {
                     background: #c10e04;
                 }
                 
-                /* Style pour les boutons désactivés (valeurs non-URL) */
+                /* Style pour les boutons désactivés */
                 .download-link.disabled {
                     opacity: 0.6;
                     cursor: default;
                     pointer-events: none;
                     position: relative;
-                }
-                
-                .download-link.disabled::after {
-                    content: " (non-URL)";
-                    font-size: 0.7em;
-                    opacity: 0.8;
                 }
                 
 
@@ -924,22 +918,22 @@ if (!function_exists('doc_download_display')) {
                             
                             <div class="product-categories">
                                 <?php if (!empty($product['famille'])): ?>
-                                    <span class="category-tag famille"><?php echo esc_html($product['famille']); ?></span>
+                                    <span class="category-tag famille">Famille : <?php echo esc_html($product['famille']); ?></span>
                                 <?php endif; ?>
                                 <?php if (!empty($product['sous_famille'])): ?>
-                                    <span class="category-tag sous-famille"><?php echo esc_html($product['sous_famille']); ?></span>
+                                    <span class="category-tag sous-famille">Sous-famille : <?php echo esc_html($product['sous_famille']); ?></span>
                                 <?php endif; ?>
                                 <?php if (!empty($product['sous_sous_famille'])): ?>
-                                    <span class="category-tag sous-sous-famille"><?php echo esc_html($product['sous_sous_famille']); ?></span>
+                                    <span class="category-tag sous-sous-famille">Sous-sous-famille : <?php echo esc_html($product['sous_sous_famille']); ?></span>
                                 <?php endif; ?>
                                 <?php if (!empty($product['reference_fabriquant'])): ?>
-                                    <span class="category-tag reference-fabriquant"><?php echo esc_html($product['reference_fabriquant']); ?></span>
+                                    <span class="category-tag reference-fabriquant">Réf : <?php echo esc_html($product['reference_fabriquant']); ?></span>
                                 <?php endif; ?>
                                 <?php if (!empty($product['categorie_wp'])): ?>
-                                    <span class="category-tag categorie-wp"><?php echo esc_html($product['categorie_wp']); ?></span>
+                                    <span class="category-tag categorie-wp">Catégorie : <?php echo esc_html($product['categorie_wp']); ?></span>
                                 <?php endif; ?>
                                 <?php if (!empty($product['brand'])): ?>
-                                    <span class="category-tag brand"><?php echo esc_html($product['brand']); ?></span>
+                                    <span class="category-tag brand">Marque : <?php echo esc_html($product['brand']); ?></span>
                                 <?php endif; ?>
                             </div>
                             
@@ -955,12 +949,12 @@ if (!function_exists('doc_download_display')) {
                                 <a href="<?php echo esc_url($product['vue_eclatee']); ?>" 
                                    class="download-link vue-eclatee-link" 
                                    target="_blank" title="Vue éclatée">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Vue éclatée
                                 </a>
                                 <?php elseif (!empty($product['vue_eclatee'])): ?>
                                 <span class="download-link vue-eclatee-link disabled" title="Vue éclatée disponible: <?php echo esc_attr($product['vue_eclatee']); ?>">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Vue éclatée
                                 </span>
                                 <?php endif; ?>
@@ -969,12 +963,12 @@ if (!function_exists('doc_download_display')) {
                                 <a href="<?php echo esc_url($product['manuel_utilisation']); ?>" 
                                    class="download-link manuel-link" 
                                    target="_blank" title="Manuel d'utilisation">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Manuel utilisation
                                 </a>
                                 <?php elseif (!empty($product['manuel_utilisation'])): ?>
                                 <span class="download-link manuel-link disabled" title="Manuel d'utilisation disponible: <?php echo esc_attr($product['manuel_utilisation']); ?>">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Manuel utilisation
                                 </span>
                                 <?php endif; ?>
@@ -983,12 +977,12 @@ if (!function_exists('doc_download_display')) {
                                 <a href="<?php echo esc_url($product['datasheet']); ?>" 
                                    class="download-link datasheet-link" 
                                    target="_blank" title="Datasheet">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Datasheet
                                 </a>
                                 <?php elseif (!empty($product['datasheet'])): ?>
                                 <span class="download-link datasheet-link disabled" title="Datasheet disponible: <?php echo esc_attr($product['datasheet']); ?>">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Datasheet
                                 </span>
                                 <?php endif; ?>
@@ -997,12 +991,12 @@ if (!function_exists('doc_download_display')) {
                                 <a href="<?php echo esc_url($product['manuel_reparation']); ?>" 
                                    class="download-link repair-link" 
                                    target="_blank" title="Manuel de réparation">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Manuel réparation
                                 </a>
                                 <?php elseif (!empty($product['manuel_reparation'])): ?>
                                 <span class="download-link repair-link disabled" title="Manuel de réparation disponible: <?php echo esc_attr($product['manuel_reparation']); ?>">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Manuel réparation
                                 </span>
                                 <?php endif; ?>
