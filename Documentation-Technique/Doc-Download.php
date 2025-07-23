@@ -105,11 +105,6 @@ if (!function_exists('doc_download_display')) {
             
             $results = $wpdb->get_results($sql, ARRAY_A);
             
-            // Debug simple
-            echo '<div style="background: lightgreen; padding: 10px; margin: 10px; border: 2px solid green;">';
-            echo '<h3>📋 Produits avec documentation trouvés : ' . count($results) . '</h3>';
-            echo '</div>';
-            
             // Formater les résultats avec récupération des nouveaux attributs
             $products_with_docs = array();
             foreach ($results as $row) {
@@ -202,9 +197,6 @@ if (!function_exists('doc_download_display')) {
 
         // Récupérer TOUS les produits avec documentation (optimisé)
         $products_with_docs = get_products_with_documentation_optimized();
-
-        // Debug simplifié
-        echo '<script>console.log("Debug: Produits avec docs (OPTIMISÉ):", ' . count($products_with_docs) . ');</script>';
 
         // Appliquer les filtres de recherche et famille
         $filtered_products = $products_with_docs;
@@ -350,14 +342,6 @@ if (!function_exists('doc_download_display')) {
         $start_index = ($page - 1) * $per_page;
         $current_page_products = array_slice($filtered_products, $start_index, $per_page);
         
-        // Debug simplifié
-        ?>
-        <script>
-            console.log("Debug: Produits avec docs:", <?php echo $total_products; ?>);
-            console.log("Debug: Page actuelle:", <?php echo $page; ?>);
-            console.log("Debug: Produits affichés:", <?php echo count($current_page_products); ?>);
-        </script>
-        <?php
         ?>
         <div class="documentation-center">
             <style>
@@ -365,7 +349,7 @@ if (!function_exists('doc_download_display')) {
                     font-family: Arial, sans-serif;
                     max-width: 1200px;
                     margin: 0 auto;
-                    padding: 20px;
+                    padding: 30px 20px;
                 }
                 
                 .doc-header {
@@ -378,7 +362,7 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .doc-header h1 {
-                    margin: 0 0 10px 0;
+                    margin: 0 0 2px 0;
                     font-size: 2.5em;
                     font-weight: bold;
                     color: white;
@@ -554,7 +538,7 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .pagination-info {
-                    color: #6c757d;
+                    color: #333;
                     font-size: 0.9em;
                 }
                 
@@ -704,6 +688,14 @@ if (!function_exists('doc_download_display')) {
                     transition: background 0.3s;
                 }
                 
+                .pagination-button:first-child {
+                    padding-left: 12px;
+                }
+                
+                .pagination-button:last-child {
+                    padding-right: 12px;
+                }
+                
                 .pagination-button:hover {
                     background: #0052a3;
                     color: white;
@@ -712,7 +704,7 @@ if (!function_exists('doc_download_display')) {
                 
                 .pagination-button.disabled {
                     background: #ccc;
-                    color: #666;
+                    color: #333;
                     cursor: not-allowed;
                     pointer-events: none;
                 }
@@ -1021,9 +1013,15 @@ if (!function_exists('doc_download_display')) {
                         <?php 
                         $current_params['doc_page'] = $page - 1; 
                         ?>
-                        <a href="?<?php echo http_build_query($current_params); ?>" class="pagination-button">‹ Précédent</a>
+                        <a href="?<?php echo http_build_query($current_params); ?>" class="pagination-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left" style="vertical-align: middle;"><path d="m15 18-6-6 6-6"/></svg>
+                            Précédent
+                        </a>
                     <?php else: ?>
-                        <span class="pagination-button disabled">‹ Précédent</span>
+                        <span class="pagination-button disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left" style="vertical-align: middle;"><path d="m15 18-6-6 6-6"/></svg>
+                            Précédent
+                        </span>
                     <?php endif; ?>
                     
                     <span class="pagination-button disabled">Page <?php echo $page; ?> / <?php echo $total_pages; ?></span>
@@ -1032,9 +1030,15 @@ if (!function_exists('doc_download_display')) {
                         <?php 
                         $current_params['doc_page'] = $page + 1; 
                         ?>
-                        <a href="?<?php echo http_build_query($current_params); ?>" class="pagination-button">Suivant ›</a>
+                        <a href="?<?php echo http_build_query($current_params); ?>" class="pagination-button">
+                            Suivant
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right" style="vertical-align: middle;"><path d="m9 18 6-6-6-6"/></svg>
+                        </a>
                     <?php else: ?>
-                        <span class="pagination-button disabled">Suivant ›</span>
+                        <span class="pagination-button disabled">
+                            Suivant
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right" style="vertical-align: middle;"><path d="m9 18 6-6-6-6"/></svg>
+                        </span>
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
