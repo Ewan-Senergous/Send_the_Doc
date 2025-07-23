@@ -436,6 +436,57 @@ if (!function_exists('doc_download_display')) {
                     box-shadow: 0 0 0 4px #93c5fd;
                 }
                 
+                .select-with-search {
+                    position: relative;
+                }
+                
+                .select-search-input {
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #6b7280;
+                    border-radius: 5px;
+                    font-size: 13px;
+                    background: white;
+                }
+                
+                .select-search-input:focus {
+                    border-color: #0066cc;
+                    outline: none;
+                    border: 2px solid #0066cc !important;
+                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
+                }
+                
+                .select-dropdown {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    border: 1px solid #6b7280;
+                    border-top: none;
+                    border-radius: 0 0 5px 5px;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                    display: none;
+                }
+                
+                .select-option {
+                    padding: 10px;
+                    cursor: pointer;
+                    border-bottom: 1px solid #e5e7eb;
+                    transition: background-color 0.2s;
+                }
+                
+                .select-option:hover,
+                .select-option.selected {
+                    background-color: #f3f4f6;
+                }
+                
+                .select-option:last-child {
+                    border-bottom: none;
+                }
+                
                 .filters-container {
                     background: #f3f4f6;
                     padding: 20px;
@@ -870,12 +921,21 @@ if (!function_exists('doc_download_display')) {
                     
                     <div class="filter-group">
                         <label for="filter-categorie-wp">Catégorie produit :</label>
-                        <select id="filter-categorie-wp" name="categorie_wp" onchange="this.form.submit()">
-                            <option value="">Toutes les catégories</option>
-                            <?php foreach ($categories_wp as $categorie): ?>
-                                <option value="<?php echo esc_attr($categorie); ?>" <?php selected($selected_categorie_wp, $categorie); ?>><?php echo esc_html($categorie); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <input type="text" 
+                                   id="filter-categorie-wp" 
+                                   class="select-search-input" 
+                                   placeholder="Rechercher une catégorie..." 
+                                   value="<?php echo esc_attr($selected_categorie_wp); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="categorie_wp" id="categorie_wp_hidden" value="<?php echo esc_attr($selected_categorie_wp); ?>" />
+                            <div id="category-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les catégories</div>
+                                <?php foreach ($categories_wp as $categorie): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($categorie); ?>"><?php echo esc_html($categorie); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
@@ -1064,6 +1124,131 @@ if (!function_exists('doc_download_display')) {
                 </div>
                 <?php endif; ?>
             </div>
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const categoryInput = document.getElementById('filter-categorie-wp');
+                const categoryHidden = document.getElementById('categorie_wp_hidden');
+                const dropdown = document.getElementById('category-dropdown');
+                const form = categoryInput.closest('form');
+                
+                let selectedIndex = -1;
+                let isOpen = false;
+                
+                // Fonction pour filtrer les options
+                function filterOptions() {
+                    const value = categoryInput.value.toLowerCase().trim();
+                    const options = dropdown.querySelectorAll('.select-option');
+                    let visibleCount = 0;
+                    
+                    options.forEach((option, index) => {
+                        const text = option.textContent.toLowerCase();
+                        if (text.includes(value) || option.dataset.value === '') {
+                            option.style.display = 'block';
+                            visibleCount++;
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    });
+                    
+                    return visibleCount > 0;
+                }
+                
+                // Fonction pour ouvrir/fermer le dropdown
+                function toggleDropdown(show) {
+                    isOpen = show;
+                    dropdown.style.display = show ? 'block' : 'none';
+                    selectedIndex = -1;
+                    
+                    if (show) {
+                        filterOptions();
+                    }
+                }
+                
+                // Fonction pour mettre à jour la sélection visuelle
+                function updateSelection() {
+                    const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
+                    
+                    visibleOptions.forEach((option, index) => {
+                        if (index === selectedIndex) {
+                            option.classList.add('selected');
+                        } else {
+                            option.classList.remove('selected');
+                        }
+                    });
+                }
+                
+                // Fonction pour sélectionner une option
+                function selectOption(option) {
+                    const value = option.dataset.value;
+                    const text = value === '' ? '' : option.textContent;
+                    
+                    categoryInput.value = text;
+                    categoryHidden.value = value;
+                    toggleDropdown(false);
+                    
+                    // Soumettre le formulaire automatiquement
+                    form.submit();
+                }
+                
+                // Events
+                categoryInput.addEventListener('focus', function() {
+                    toggleDropdown(true);
+                });
+                
+                categoryInput.addEventListener('input', function() {
+                    toggleDropdown(true);
+                    selectedIndex = -1;
+                });
+                
+                categoryInput.addEventListener('keydown', function(e) {
+                    if (!isOpen) return;
+                    
+                    const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        selectedIndex = Math.min(selectedIndex + 1, visibleOptions.length - 1);
+                        updateSelection();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        selectedIndex = Math.max(selectedIndex - 1, -1);
+                        updateSelection();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
+                            selectOption(visibleOptions[selectedIndex]);
+                        }
+                    } else if (e.key === 'Escape') {
+                        toggleDropdown(false);
+                        categoryInput.blur();
+                    }
+                });
+                
+                // Clic sur les options
+                dropdown.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('select-option')) {
+                        selectOption(e.target);
+                    }
+                });
+                
+                // Fermer le dropdown en cliquant ailleurs
+                document.addEventListener('click', function(e) {
+                    if (!categoryInput.contains(e.target) && !dropdown.contains(e.target)) {
+                        toggleDropdown(false);
+                    }
+                });
+                
+                // Empêcher la fermeture lors du blur si on clique dans le dropdown
+                categoryInput.addEventListener('blur', function(e) {
+                    setTimeout(() => {
+                        if (!dropdown.contains(document.activeElement)) {
+                            toggleDropdown(false);
+                        }
+                    }, 150);
+                });
+            });
+            </script>
         </div>
         <?php
         
