@@ -415,12 +415,16 @@ if (!function_exists('doc_download_display')) {
                     border-radius: 0.5rem;
                     background-color: #f3f4f6;
                     font-size: 0.875rem;
-                    color: #1f2937;
+                    color: #000000 !important;
                 }
                 
                 .search-input:focus {
                     outline: none;
                     border: 2px solid #0066cc;
+                }
+                
+                .search-input::placeholder {
+                    color: #333 !important;
                 }
                 
                 .search-button {
