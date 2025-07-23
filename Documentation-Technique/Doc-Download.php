@@ -158,11 +158,15 @@ if (!function_exists('doc_download_display')) {
                         }
                     }
                     
-                    // Catégorie WordPress (WooCommerce)
+                    // Catégorie WordPress (WooCommerce) - TOUTES les catégories
                     $terms = get_the_terms($product_id, 'product_cat');
+                    $categories_wp_array = [];
                     if ($terms && !is_wp_error($terms)) {
-                        $categorie_wp = $terms[0]->name;
+                        foreach ($terms as $term) {
+                            $categories_wp_array[] = $term->name;
+                        }
                     }
+                    $categorie_wp = $categories_wp_array;
                     
                     // Marque (Brand) - Taxonomie pwb-brand
                     $terms = get_the_terms($product_id, 'pwb-brand');
@@ -258,7 +262,7 @@ if (!function_exists('doc_download_display')) {
         
         if (!empty($selected_categorie_wp)) {
             $filtered_products = array_filter($filtered_products, function($product) use ($selected_categorie_wp) {
-                return $product['categorie_wp'] === $selected_categorie_wp;
+                return is_array($product['categorie_wp']) && in_array($selected_categorie_wp, $product['categorie_wp']);
             });
         }
         
@@ -279,63 +283,59 @@ if (!function_exists('doc_download_display')) {
         $datasheets = array_unique(array_column($products_with_docs, 'datasheet'));
         $manuels_reparation = array_unique(array_column($products_with_docs, 'manuel_reparation'));
         
-        // Références fabriquant (beaucoup de valeurs - gestion spéciale)
+        // Références fabriquant - TOUTES les valeurs disponibles
         $references_fabriquant = array_column($products_with_docs, 'reference_fabriquant');
         $references_fabriquant = array_filter($references_fabriquant); // Enlever les valeurs vides
+        $references_fabriquant = array_unique($references_fabriquant);
+        sort($references_fabriquant); // Tri alphabétique
         
-        // Compter les occurrences et garder seulement les 10 plus courantes
-        $references_count = array_count_values($references_fabriquant);
-        arsort($references_count); // Trier par nombre d'occurrences décroissant
-        $references_fabriquant = array_slice(array_keys($references_count), 0, 10);
+        // Catégories WordPress - TOUTES les valeurs disponibles
+        $all_categories = [];
+        foreach ($products_with_docs as $product) {
+            if (is_array($product['categorie_wp'])) {
+                $all_categories = array_merge($all_categories, $product['categorie_wp']);
+            }
+        }
+        $all_categories = array_filter($all_categories); // Enlever les valeurs vides
+        $categories_wp = array_unique($all_categories);
+        sort($categories_wp); // Tri alphabétique
         
-        // Catégories WordPress (beaucoup de valeurs - gestion spéciale)
-        $categories_wp = array_column($products_with_docs, 'categorie_wp');
-        $categories_wp = array_filter($categories_wp); // Enlever les valeurs vides
-        
-        // Compter les occurrences et garder seulement les 10 plus courantes
-        $categories_count = array_count_values($categories_wp);
-        arsort($categories_count); // Trier par nombre d'occurrences décroissant
-        $categories_wp = array_slice(array_keys($categories_count), 0, 10);
-        
-        // Marques (47 valeurs - gestion spéciale)
+        // Marques - TOUTES les valeurs disponibles
         $brands = array_column($products_with_docs, 'brand');
         $brands = array_filter($brands); // Enlever les valeurs vides
-        
-        // Compter les occurrences et garder seulement les 10 plus courantes
-        $brands_count = array_count_values($brands);
-        arsort($brands_count); // Trier par nombre d'occurrences décroissant
-        $brands = array_slice(array_keys($brands_count), 0, 10);
+        $brands = array_unique($brands);
+        sort($brands); // Tri alphabétique
 
-        // Nettoyer les valeurs vides et limiter à 5 éléments
+        // Nettoyer les valeurs vides - TOUTES les valeurs disponibles
         $familles = array_filter($familles);
-        $familles = array_slice($familles, 0, 5);
+        sort($familles); // Tri alphabétique
         
         $sous_familles = array_filter($sous_familles);
-        $sous_familles = array_slice($sous_familles, 0, 5);
+        sort($sous_familles); // Tri alphabétique
         
         $sous_sous_familles = array_filter($sous_sous_familles);
-        $sous_sous_familles = array_slice($sous_sous_familles, 0, 5);
+        sort($sous_sous_familles); // Tri alphabétique
         
-        // Nettoyer et limiter les nouveaux attributs (garder toutes les valeurs non vides pour les filtres)
+        // Nettoyer les nouveaux attributs - TOUTES les valeurs disponibles
         $vues_eclatees = array_filter($vues_eclatees, function($value) {
             return !empty($value);
         });
-        $vues_eclatees = array_slice($vues_eclatees, 0, 5);
+        sort($vues_eclatees); // Tri alphabétique
         
         $manuels_utilisation = array_filter($manuels_utilisation, function($value) {
             return !empty($value);
         });
-        $manuels_utilisation = array_slice($manuels_utilisation, 0, 5);
+        sort($manuels_utilisation); // Tri alphabétique
         
         $datasheets = array_filter($datasheets, function($value) {
             return !empty($value);
         });
-        $datasheets = array_slice($datasheets, 0, 5);
+        sort($datasheets); // Tri alphabétique
         
         $manuels_reparation = array_filter($manuels_reparation, function($value) {
             return !empty($value);
         });
-        $manuels_reparation = array_slice($manuels_reparation, 0, 5);
+        sort($manuels_reparation); // Tri alphabétique
         
         // Pagination sur les produits filtrés
         $total_products = count($filtered_products);
@@ -468,7 +468,7 @@ if (!function_exists('doc_download_display')) {
                     padding: 10px;
                     border: 1px solid #6b7280;
                     border-radius: 5px;
-                    font-size: 14px;
+                    font-size: 13px;
                     background: white;
                 }
                 
@@ -597,9 +597,9 @@ if (!function_exists('doc_download_display')) {
                 .famille { border-left: 4px solid #0066cc; }
                 .sous-famille { border-left: 4px solid #28a745; }
                 .sous-sous-famille { border-left: 4px solid #ffc107; }
-                .reference-fabriquant { border-left: 4px solid #6f42c1; background-color: #f8f9fc; }
-                .categorie-wp { border-left: 4px solid #e31206; background-color: #fef2f2; }
-                .brand { border-left: 4px solid #17a2b8; background-color: #e6f7ff; }
+                .reference-fabriquant { border-left: 4px solid #6f42c1; }
+                .categorie-wp { border-left: 4px solid #e31206; }
+                .brand { border-left: 4px solid #17a2b8; }
                 
                 .download-links {
                     margin-top: 15px;
@@ -789,7 +789,7 @@ if (!function_exists('doc_download_display')) {
                     <input type="hidden" name="search" value="<?php echo esc_attr($search_query); ?>">
                     
                     <div class="filter-group">
-                        <label for="filter-famille">Famille (max 5)</label>
+                        <label for="filter-famille">Famille :</label>
                         <select id="filter-famille" name="famille" onchange="this.form.submit()">
                             <option value="">Toutes les familles</option>
                             <?php foreach ($familles as $famille): ?>
@@ -799,7 +799,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-sous-famille">Sous-famille (max 5)</label>
+                        <label for="filter-sous-famille">Sous-famille :</label>
                         <select id="filter-sous-famille" name="sous_famille" onchange="this.form.submit()">
                             <option value="">Toutes les sous-familles</option>
                             <?php foreach ($sous_familles as $sous_famille): ?>
@@ -809,7 +809,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-sous-sous-famille">Sous-sous-famille (max 5)</label>
+                        <label for="filter-sous-sous-famille">Sous-sous-famille :</label>
                         <select id="filter-sous-sous-famille" name="sous_sous_famille" onchange="this.form.submit()">
                             <option value="">Toutes les sous-sous-familles</option>
                             <?php foreach ($sous_sous_familles as $sous_sous_famille): ?>
@@ -819,7 +819,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-vue-eclatee">Vue éclatée (max 5)</label>
+                        <label for="filter-vue-eclatee">Vue éclatée :</label>
                         <select id="filter-vue-eclatee" name="vue_eclatee" onchange="this.form.submit()">
                             <option value="">Toutes les vues éclatées</option>
                             <?php foreach ($vues_eclatees as $vue): ?>
@@ -829,7 +829,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-manuel-utilisation">Manuel d'utilisation (max 5)</label>
+                        <label for="filter-manuel-utilisation">Manuel d'utilisation :</label>
                         <select id="filter-manuel-utilisation" name="manuel_utilisation" onchange="this.form.submit()">
                             <option value="">Tous les manuels d'utilisation</option>
                             <?php foreach ($manuels_utilisation as $manuel): ?>
@@ -839,7 +839,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-datasheet">Datasheet (max 5)</label>
+                        <label for="filter-datasheet">Datasheet :</label>
                         <select id="filter-datasheet" name="datasheet" onchange="this.form.submit()">
                             <option value="">Toutes les datasheets</option>
                             <?php foreach ($datasheets as $datasheet): ?>
@@ -849,7 +849,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-manuel-reparation">Manuel de réparation (max 5)</label>
+                        <label for="filter-manuel-reparation">Manuel de réparation :</label>
                         <select id="filter-manuel-reparation" name="manuel_reparation" onchange="this.form.submit()">
                             <option value="">Tous les manuels de réparation</option>
                             <?php foreach ($manuels_reparation as $manuel): ?>
@@ -859,7 +859,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-reference-fabriquant">Référence fabriquant (top 10)</label>
+                        <label for="filter-reference-fabriquant">Référence fabriquant :</label>
                         <select id="filter-reference-fabriquant" name="reference_fabriquant" onchange="this.form.submit()">
                             <option value="">Toutes les références</option>
                             <?php foreach ($references_fabriquant as $reference): ?>
@@ -869,7 +869,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-categorie-wp">Catégorie produit (top 10)</label>
+                        <label for="filter-categorie-wp">Catégorie produit :</label>
                         <select id="filter-categorie-wp" name="categorie_wp" onchange="this.form.submit()">
                             <option value="">Toutes les catégories</option>
                             <?php foreach ($categories_wp as $categorie): ?>
@@ -879,7 +879,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-brand">Marque (top 10)</label>
+                        <label for="filter-brand">Marque :</label>
                         <select id="filter-brand" name="brand" onchange="this.form.submit()">
                             <option value="">Toutes les marques</option>
                             <?php foreach ($brands as $brand): ?>
@@ -938,8 +938,10 @@ if (!function_exists('doc_download_display')) {
                                 <?php if (!empty($product['reference_fabriquant'])): ?>
                                     <span class="category-tag reference-fabriquant">Réf : <?php echo esc_html($product['reference_fabriquant']); ?></span>
                                 <?php endif; ?>
-                                <?php if (!empty($product['categorie_wp'])): ?>
-                                    <span class="category-tag categorie-wp">Catégorie : <?php echo esc_html($product['categorie_wp']); ?></span>
+                                <?php if (!empty($product['categorie_wp']) && is_array($product['categorie_wp'])): ?>
+                                    <?php foreach ($product['categorie_wp'] as $categorie): ?>
+                                        <span class="category-tag categorie-wp">Catégorie : <?php echo esc_html($categorie); ?></span>
+                                    <?php endforeach; ?>
                                 <?php endif; ?>
                                 <?php if (!empty($product['brand'])): ?>
                                     <span class="category-tag brand">Marque : <?php echo esc_html($product['brand']); ?></span>
