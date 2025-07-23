@@ -631,10 +631,10 @@ if (!function_exists('doc_download_display')) {
                 
                 /* Couleurs spécifiques pour chaque type de document */
                 .vue-eclatee-link {
-                    background: #6f42c1;
+                    background: #7e22ce;
                 }
                 .vue-eclatee-link:hover {
-                    background: #5a32a3;
+                    background: #6b21a8;
                 }
                 
                 .manuel-link {
@@ -645,12 +645,10 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .datasheet-link {
-                    background: #ffc107;
-                    color: #333;
+                    background: #111827;
                 }
                 .datasheet-link:hover {
-                    background: #e0a800;
-                    color: #333;
+                    background: #030712;
                 }
                 
                 .repair-link {
@@ -984,20 +982,6 @@ if (!function_exists('doc_download_display')) {
                                 </span>
                                 <?php endif; ?>
                                 
-                                <?php if (!empty($product['datasheet']) && filter_var($product['datasheet'], FILTER_VALIDATE_URL)): ?>
-                                <a href="<?php echo esc_url($product['datasheet']); ?>" 
-                                   class="download-link datasheet-link" 
-                                   target="_blank" title="Datasheet">
-                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                    Datasheet
-                                </a>
-                                <?php elseif (!empty($product['datasheet'])): ?>
-                                <span class="download-link datasheet-link disabled" title="Datasheet disponible: <?php echo esc_attr($product['datasheet']); ?>">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                    Datasheet
-                                </span>
-                                <?php endif; ?>
-                                
                                 <?php if (!empty($product['manuel_reparation']) && filter_var($product['manuel_reparation'], FILTER_VALIDATE_URL)): ?>
                                 <a href="<?php echo esc_url($product['manuel_reparation']); ?>" 
                                    class="download-link repair-link" 
@@ -1009,6 +993,20 @@ if (!function_exists('doc_download_display')) {
                                 <span class="download-link repair-link disabled" title="Manuel de réparation disponible: <?php echo esc_attr($product['manuel_reparation']); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                     Manuel réparation
+                                </span>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($product['datasheet']) && filter_var($product['datasheet'], FILTER_VALIDATE_URL)): ?>
+                                <a href="<?php echo esc_url($product['datasheet']); ?>" 
+                                   class="download-link datasheet-link" 
+                                   target="_blank" title="Datasheet">
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                                    Datasheet
+                                </a>
+                                <?php elseif (!empty($product['datasheet'])): ?>
+                                <span class="download-link datasheet-link disabled" title="Datasheet disponible: <?php echo esc_attr($product['datasheet']); ?>">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                                    Datasheet
                                 </span>
                                 <?php endif; ?>
                             </div>
