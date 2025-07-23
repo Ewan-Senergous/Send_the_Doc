@@ -529,7 +529,7 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .results-container {
-                    margin-top: 20px;
+                    margin-top: 30px;
                 }
                 
                 .results-header {
@@ -558,7 +558,7 @@ if (!function_exists('doc_download_display')) {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
                     gap: 20px;
-                    margin-top: 20px;
+                    margin-top: 30px;
                 }
                 
                 .product-card {
@@ -601,7 +601,7 @@ if (!function_exists('doc_download_display')) {
                     color: #495057;
                     padding: 4px 8px;
                     border-radius: 12px;
-                    margin: 2px;
+                    margin: 4px 2px;
                     font-size: 0.85em;
                     border: 1px solid #e9ecef;
                 }
@@ -685,7 +685,7 @@ if (!function_exists('doc_download_display')) {
                 .pagination-container {
                     text-align: center;
                     margin-top: 30px;
-                    padding: 20px 0;
+                    padding: 0;
                 }
                 
                 .pagination-button {
