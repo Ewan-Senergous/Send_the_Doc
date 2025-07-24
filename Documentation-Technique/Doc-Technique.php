@@ -181,21 +181,21 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
             echo '</a>';
         }
         
-        // Datasheet
-        if (!empty($datasheet) && filter_var($datasheet, FILTER_VALIDATE_URL)) {
-            $has_documentation = true;
-            echo '<a href="' . esc_url($datasheet) . '" target="_blank" class="download-link datasheet-link">';
-            echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
-            echo 'Datasheet';
-            echo '</a>';
-        }
-        
         // Manuel de réparation
         if (!empty($manuel_reparation) && filter_var($manuel_reparation, FILTER_VALIDATE_URL)) {
             $has_documentation = true;
             echo '<a href="' . esc_url($manuel_reparation) . '" target="_blank" class="download-link repair-link">';
             echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
             echo 'Manuel de réparation';
+            echo '</a>';
+        }
+        
+        // Datasheet
+        if (!empty($datasheet) && filter_var($datasheet, FILTER_VALIDATE_URL)) {
+            $has_documentation = true;
+            echo '<a href="' . esc_url($datasheet) . '" target="_blank" class="download-link datasheet-link">';
+            echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
+            echo 'Datasheet';
             echo '</a>';
         }
         

@@ -1186,6 +1186,30 @@ if (!function_exists('doc_download_display')) {
                     <input type="hidden" name="search" value="<?php echo esc_attr($search_query); ?>">
                     
                     <div class="filter-group">
+                        <label for="filter-brand">Marque :</label>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-brand" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les marques" 
+                                   value="<?php echo esc_attr($selected_brand); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="brand" id="brand_hidden" value="<?php echo esc_attr($selected_brand); ?>" />
+                            <div id="brand-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les marques</div>
+                                <?php foreach ($brands as $brand): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($brand); ?>"><?php echo esc_html($brand); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
                         <label for="filter-famille">Famille :</label>
                         <div class="select-with-search">
                             <div class="search-icon">
@@ -1401,30 +1425,6 @@ if (!function_exists('doc_download_display')) {
                         </div>
                     </div>
                     
-                    <div class="filter-group">
-                        <label for="filter-brand">Marque :</label>
-                        <div class="select-with-search">
-                            <div class="search-icon">
-                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                </svg>
-                            </div>
-                            <input type="text" 
-                                   id="filter-brand" 
-                                   class="select-search-input" 
-                                   placeholder="Toutes les marques" 
-                                   value="<?php echo esc_attr($selected_brand); ?>"
-                                   autocomplete="off" />
-                            <input type="hidden" name="brand" id="brand_hidden" value="<?php echo esc_attr($selected_brand); ?>" />
-                            <div id="brand-dropdown" class="select-dropdown">
-                                <div class="select-option" data-value="">Toutes les marques</div>
-                                <?php foreach ($brands as $brand): ?>
-                                    <div class="select-option" data-value="<?php echo esc_attr($brand); ?>"><?php echo esc_html($brand); ?></div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="filter-actions">
                         <a href="?" class="btn-reset">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw" style="vertical-align: middle; margin-right: 5px;">
@@ -1463,6 +1463,11 @@ if (!function_exists('doc_download_display')) {
                             </div>
                             
                             <div class="product-categories">
+                                <?php if (!empty($product['brand']) && is_array($product['brand'])): ?>
+                                    <?php foreach ($product['brand'] as $brand): ?>
+                                        <span class="category-tag brand">Marque : <?php echo esc_html($brand); ?></span>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                                 <?php if (!empty($product['famille']) && is_array($product['famille'])): ?>
                                     <?php foreach ($product['famille'] as $famille): ?>
                                         <span class="category-tag famille">Famille : <?php echo esc_html($famille); ?></span>
@@ -1486,11 +1491,6 @@ if (!function_exists('doc_download_display')) {
                                 <?php if (!empty($product['categorie_wp']) && is_array($product['categorie_wp'])): ?>
                                     <?php foreach ($product['categorie_wp'] as $categorie): ?>
                                         <span class="category-tag categorie-wp">Catégorie : <?php echo esc_html($categorie); ?></span>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                                <?php if (!empty($product['brand']) && is_array($product['brand'])): ?>
-                                    <?php foreach ($product['brand'] as $brand): ?>
-                                        <span class="category-tag brand">Marque : <?php echo esc_html($brand); ?></span>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
@@ -1611,6 +1611,7 @@ if (!function_exists('doc_download_display')) {
                 // Configuration des champs avec recherche
                 const searchFields = [
                     { inputId: 'main-search', hiddenId: null, dropdownId: 'main-search-dropdown', isMainSearch: true },
+                    { inputId: 'filter-brand', hiddenId: 'brand_hidden', dropdownId: 'brand-dropdown' },
                     { inputId: 'filter-famille', hiddenId: 'famille_hidden', dropdownId: 'famille-dropdown' },
                     { inputId: 'filter-sous-famille', hiddenId: 'sous_famille_hidden', dropdownId: 'sous-famille-dropdown' },
                     { inputId: 'filter-sous-sous-famille', hiddenId: 'sous_sous_famille_hidden', dropdownId: 'sous-sous-famille-dropdown' },
@@ -1619,8 +1620,7 @@ if (!function_exists('doc_download_display')) {
                     { inputId: 'filter-datasheet', hiddenId: 'datasheet_hidden', dropdownId: 'datasheet-dropdown' },
                     { inputId: 'filter-manuel-reparation', hiddenId: 'manuel_reparation_hidden', dropdownId: 'manuel-reparation-dropdown' },
                     { inputId: 'filter-reference-fabriquant', hiddenId: 'reference_fabriquant_hidden', dropdownId: 'reference-fabriquant-dropdown' },
-                    { inputId: 'filter-categorie-wp', hiddenId: 'categorie_wp_hidden', dropdownId: 'category-dropdown' },
-                    { inputId: 'filter-brand', hiddenId: 'brand_hidden', dropdownId: 'brand-dropdown' }
+                    { inputId: 'filter-categorie-wp', hiddenId: 'categorie_wp_hidden', dropdownId: 'category-dropdown' }
                 ];
                 
                 // Fonction pour vérifier et appliquer les styles aux filtres actifs
