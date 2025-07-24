@@ -671,6 +671,17 @@ if (!function_exists('doc_download_display')) {
                     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
                 }
                 
+                /* Filtre actif */
+                .filter-active {
+                    border: 3px solid #16a34a !important; 
+                    background: #f0fdf4 !important; 
+                }
+                
+                .filter-active:focus {
+                    border: 3px solid #16a34a !important; 
+                    background: #f0fdf4 !important;
+                }
+                
                 .select-dropdown {
                     position: absolute;
                     top: 100%;
@@ -1528,6 +1539,63 @@ if (!function_exists('doc_download_display')) {
                     { inputId: 'filter-brand', hiddenId: 'brand_hidden', dropdownId: 'brand-dropdown' }
                 ];
                 
+                // Fonction pour vérifier et appliquer les styles aux filtres actifs
+                function updateActiveFilters() {
+                    let activeCount = 0;
+                    
+                    searchFields.forEach(config => {
+                        const input = document.getElementById(config.inputId);
+                        const hidden = config.hiddenId ? document.getElementById(config.hiddenId) : null;
+                        
+                        if (input) {
+                            // Vérifier si le filtre est actif
+                            const hasValue = config.isMainSearch ? 
+                                (input.value.trim() !== '') : 
+                                (hidden && hidden.value.trim() !== '');
+                            
+                            // Appliquer ou retirer la classe active
+                            if (hasValue) {
+                                input.classList.add('filter-active');
+                                if (!config.isMainSearch) { // Ne pas compter la recherche principale
+                                    activeCount++;
+                                }
+                            } else {
+                                input.classList.remove('filter-active');
+                            }
+                        }
+                    });
+                    
+                    // Mettre à jour le bouton Réinitialiser avec le compteur
+                    const resetButton = document.querySelector('.btn-reset');
+                    if (resetButton) {
+                        const originalText = 'Réinitialiser';
+                        if (activeCount > 0) {
+                            resetButton.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw" style="vertical-align: middle; margin-right: 5px;">
+                                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                                    <path d="M16 16h5v5"/>
+                                </svg>
+                                ${originalText} (${activeCount})
+                            `;
+                        } else {
+                            resetButton.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw" style="vertical-align: middle; margin-right: 5px;">
+                                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                                    <path d="M16 16h5v5"/>
+                                </svg>
+                                ${originalText}
+                            `;
+                        }
+                    }
+                }
+                
+                // Appliquer les styles au chargement de la page
+                updateActiveFilters();
+                
                 // Fonction pour initialiser un champ de recherche
                 function initSearchField(config) {
                     const input = document.getElementById(config.inputId);
@@ -1597,6 +1665,9 @@ if (!function_exists('doc_download_display')) {
                         }
                         toggleDropdown(false);
                         
+                        // Mettre à jour les styles des filtres actifs
+                        updateActiveFilters();
+                        
                         // Soumettre le formulaire automatiquement sauf pour la recherche principale
                         if (!config.isMainSearch) {
                             form.submit();
@@ -1616,6 +1687,9 @@ if (!function_exists('doc_download_display')) {
                         if (this.value.trim() === '' && hidden) {
                             hidden.value = '';
                         }
+                        
+                        // Mettre à jour les styles des filtres actifs en temps réel
+                        updateActiveFilters();
                     });
                     
                     input.addEventListener('keydown', function(e) {
