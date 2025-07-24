@@ -760,6 +760,8 @@ if (!function_exists('doc_download_display')) {
                     display: flex;
                     gap: 10px;
                     align-items: end;
+                    width: 100%;
+                    justify-content: center;
                 }
                 
                 .btn-filter {
