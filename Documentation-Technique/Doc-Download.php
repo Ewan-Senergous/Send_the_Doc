@@ -10,6 +10,64 @@ if (!function_exists('doc_download_display')) {
             return ob_get_clean();
         }
         
+        // NOUVELLE FONCTION : Extraire un nom friendly à partir d'une URL
+        function extract_friendly_name_from_url($url) {
+            if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+                return '';
+            }
+            
+            // Extraire le nom de fichier de l'URL
+            $filename = basename(parse_url($url, PHP_URL_PATH));
+            
+            // Retirer l'extension
+            $name = pathinfo($filename, PATHINFO_FILENAME);
+            
+            // Détecter le type de document
+            $type = '';
+            if (stripos($name, 'vue-eclatee') !== false || stripos($name, 'exploded') !== false) {
+                $type = 'Vue éclatée';
+            } elseif (stripos($name, 'datasheet') !== false) {
+                $type = 'Datasheet';
+            } elseif (stripos($name, 'manuel-utilisation') !== false || stripos($name, 'manual') !== false || stripos($name, 'user-guide') !== false) {
+                $type = 'Manuel utilisation';
+            } elseif (stripos($name, 'manuel-reparation') !== false || stripos($name, 'repair') !== false || stripos($name, 'maintenance') !== false) {
+                $type = 'Manuel réparation';
+            } else {
+                $type = 'Documentation';
+            }
+            
+            // Extraire la référence/modèle (généralement au début du nom)
+            $reference = '';
+            
+            // Patterns pour extraire la référence
+            if (preg_match('/^([A-Z0-9\-_]+)[\-_]/', $name, $matches)) {
+                $reference = $matches[1];
+                // Nettoyer la référence
+                $reference = str_replace(['_', '-'], [' ', '-'], $reference);
+                // Supprimer les doublons de tirets
+                $reference = preg_replace('/-+/', '-', $reference);
+                // Nettoyer les espaces
+                $reference = trim($reference, '- ');
+            }
+            
+            // Si on a trouvé une référence, créer le label complet
+            if (!empty($reference)) {
+                return $reference . ' - ' . $type;
+            }
+            
+            // Sinon, essayer d'extraire des infos plus génériques
+            $parts = explode('-', $name);
+            if (count($parts) >= 2) {
+                $first_parts = array_slice($parts, 0, 2);
+                $reference = implode(' ', $first_parts);
+                $reference = strtoupper($reference);
+                return $reference . ' - ' . $type;
+            }
+            
+            // En dernier recours, retourner juste le type
+            return $type;
+        }
+        
         // Récupération des paramètres de recherche et pagination
         $search_query = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
         $selected_famille = isset($_GET['famille']) ? sanitize_text_field($_GET['famille']) : '';
@@ -132,7 +190,13 @@ if (!function_exists('doc_download_display')) {
                         $terms = get_the_terms($product_id, 'pa_vue-eclatee');
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
-                                $vue_eclatee[] = $term->name;
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $vue_eclatee[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
                             }
                         }
                     }
@@ -141,7 +205,13 @@ if (!function_exists('doc_download_display')) {
                         $terms = get_the_terms($product_id, 'pa_manuel-dutilisation');
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
-                                $manuel_utilisation[] = $term->name;
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $manuel_utilisation[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
                             }
                         }
                     }
@@ -150,7 +220,13 @@ if (!function_exists('doc_download_display')) {
                         $terms = get_the_terms($product_id, 'pa_datasheet');
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
-                                $datasheet[] = $term->name;
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $datasheet[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
                             }
                         }
                     }
@@ -159,7 +235,13 @@ if (!function_exists('doc_download_display')) {
                         $terms = get_the_terms($product_id, 'pa_manuel-de-reparation');
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
-                                $manuel_reparation[] = $term->name;
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $manuel_reparation[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
                             }
                         }
                     }
@@ -283,34 +365,34 @@ if (!function_exists('doc_download_display')) {
                     }
                 }
                 
-                // Recherche dans les types de documentation (array)
+                // Recherche dans les types de documentation (friendly_names)
                 if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])) {
-                    foreach ($product['vue_eclatee'] as $vue) {
-                        if (stripos($vue, $search_query) !== false) {
+                    foreach ($product['vue_eclatee'] as $doc) {
+                        if (isset($doc['friendly_name']) && stripos($doc['friendly_name'], $search_query) !== false) {
                             return true;
                         }
                     }
                 }
                 
                 if (!empty($product['manuel_utilisation']) && is_array($product['manuel_utilisation'])) {
-                    foreach ($product['manuel_utilisation'] as $manuel) {
-                        if (stripos($manuel, $search_query) !== false) {
+                    foreach ($product['manuel_utilisation'] as $doc) {
+                        if (isset($doc['friendly_name']) && stripos($doc['friendly_name'], $search_query) !== false) {
                             return true;
                         }
                     }
                 }
                 
                 if (!empty($product['datasheet']) && is_array($product['datasheet'])) {
-                    foreach ($product['datasheet'] as $datasheet) {
-                        if (stripos($datasheet, $search_query) !== false) {
+                    foreach ($product['datasheet'] as $doc) {
+                        if (isset($doc['friendly_name']) && stripos($doc['friendly_name'], $search_query) !== false) {
                             return true;
                         }
                     }
                 }
                 
                 if (!empty($product['manuel_reparation']) && is_array($product['manuel_reparation'])) {
-                    foreach ($product['manuel_reparation'] as $manuel) {
-                        if (stripos($manuel, $search_query) !== false) {
+                    foreach ($product['manuel_reparation'] as $doc) {
+                        if (isset($doc['friendly_name']) && stripos($doc['friendly_name'], $search_query) !== false) {
                             return true;
                         }
                     }
@@ -341,25 +423,49 @@ if (!function_exists('doc_download_display')) {
         // Filtres pour les nouveaux types de documentation (arrays)
         if (!empty($selected_vue_eclatee)) {
             $filtered_products = array_filter($filtered_products, function($product) use ($selected_vue_eclatee) {
-                return is_array($product['vue_eclatee']) && in_array($selected_vue_eclatee, $product['vue_eclatee']);
+                if (!is_array($product['vue_eclatee'])) return false;
+                foreach ($product['vue_eclatee'] as $doc) {
+                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_vue_eclatee) {
+                        return true;
+                    }
+                }
+                return false;
             });
         }
         
         if (!empty($selected_manuel_utilisation)) {
             $filtered_products = array_filter($filtered_products, function($product) use ($selected_manuel_utilisation) {
-                return is_array($product['manuel_utilisation']) && in_array($selected_manuel_utilisation, $product['manuel_utilisation']);
+                if (!is_array($product['manuel_utilisation'])) return false;
+                foreach ($product['manuel_utilisation'] as $doc) {
+                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_manuel_utilisation) {
+                        return true;
+                    }
+                }
+                return false;
             });
         }
         
         if (!empty($selected_datasheet)) {
             $filtered_products = array_filter($filtered_products, function($product) use ($selected_datasheet) {
-                return is_array($product['datasheet']) && in_array($selected_datasheet, $product['datasheet']);
+                if (!is_array($product['datasheet'])) return false;
+                foreach ($product['datasheet'] as $doc) {
+                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_datasheet) {
+                        return true;
+                    }
+                }
+                return false;
             });
         }
         
         if (!empty($selected_manuel_reparation)) {
             $filtered_products = array_filter($filtered_products, function($product) use ($selected_manuel_reparation) {
-                return is_array($product['manuel_reparation']) && in_array($selected_manuel_reparation, $product['manuel_reparation']);
+                if (!is_array($product['manuel_reparation'])) return false;
+                foreach ($product['manuel_reparation'] as $doc) {
+                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_manuel_reparation) {
+                        return true;
+                    }
+                }
+                return false;
             });
         }
         
@@ -410,19 +516,35 @@ if (!function_exists('doc_download_display')) {
             
             // Types de documentation
             if (is_array($product['vue_eclatee'])) {
-                $vues_eclatees = array_merge($vues_eclatees, $product['vue_eclatee']);
+                foreach ($product['vue_eclatee'] as $doc) {
+                    if (isset($doc['friendly_name'])) {
+                        $vues_eclatees[] = $doc['friendly_name'];
+                    }
+                }
             }
             
             if (is_array($product['manuel_utilisation'])) {
-                $manuels_utilisation = array_merge($manuels_utilisation, $product['manuel_utilisation']);
+                foreach ($product['manuel_utilisation'] as $doc) {
+                    if (isset($doc['friendly_name'])) {
+                        $manuels_utilisation[] = $doc['friendly_name'];
+                    }
+                }
             }
             
             if (is_array($product['datasheet'])) {
-                $datasheets = array_merge($datasheets, $product['datasheet']);
+                foreach ($product['datasheet'] as $doc) {
+                    if (isset($doc['friendly_name'])) {
+                        $datasheets[] = $doc['friendly_name'];
+                    }
+                }
             }
             
             if (is_array($product['manuel_reparation'])) {
-                $manuels_reparation = array_merge($manuels_reparation, $product['manuel_reparation']);
+                foreach ($product['manuel_reparation'] as $doc) {
+                    if (isset($doc['friendly_name'])) {
+                        $manuels_reparation[] = $doc['friendly_name'];
+                    }
+                }
             }
             
             // Références fabriquant
@@ -1401,17 +1523,17 @@ if (!function_exists('doc_download_display')) {
                                 
                                 <?php if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])): ?>
                                     <?php foreach ($product['vue_eclatee'] as $vue): ?>
-                                        <?php if (filter_var($vue, FILTER_VALIDATE_URL)): ?>
-                                        <a href="<?php echo esc_url($vue); ?>" 
+                                        <?php if (filter_var($vue['url'], FILTER_VALIDATE_URL)): ?>
+                                        <a href="<?php echo esc_url($vue['url']); ?>" 
                                            class="download-link vue-eclatee-link" 
                                            target="_blank" title="Vue éclatée">
                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Vue éclatée
+                                            <?php echo esc_html($vue['friendly_name']); ?>
                                         </a>
                                         <?php else: ?>
-                                        <span class="download-link vue-eclatee-link disabled" title="Vue éclatée disponible: <?php echo esc_attr($vue); ?>">
+                                        <span class="download-link vue-eclatee-link disabled" title="Vue éclatée disponible: <?php echo esc_attr($vue['url']); ?>">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Vue éclatée
+                                            <?php echo esc_html($vue['friendly_name']); ?>
                                         </span>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
@@ -1419,35 +1541,17 @@ if (!function_exists('doc_download_display')) {
                                 
                                 <?php if (!empty($product['manuel_utilisation']) && is_array($product['manuel_utilisation'])): ?>
                                     <?php foreach ($product['manuel_utilisation'] as $manuel): ?>
-                                        <?php if (filter_var($manuel, FILTER_VALIDATE_URL)): ?>
-                                        <a href="<?php echo esc_url($manuel); ?>" 
+                                        <?php if (filter_var($manuel['url'], FILTER_VALIDATE_URL)): ?>
+                                        <a href="<?php echo esc_url($manuel['url']); ?>" 
                                            class="download-link manuel-link" 
                                            target="_blank" title="Manuel d'utilisation">
                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Manuel utilisation
+                                            <?php echo esc_html($manuel['friendly_name']); ?>
                                         </a>
                                         <?php else: ?>
-                                        <span class="download-link manuel-link disabled" title="Manuel d'utilisation disponible: <?php echo esc_attr($manuel); ?>">
+                                        <span class="download-link manuel-link disabled" title="Manuel d'utilisation disponible: <?php echo esc_attr($manuel['url']); ?>">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Manuel utilisation
-                                        </span>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                                
-                                <?php if (!empty($product['manuel_reparation']) && is_array($product['manuel_reparation'])): ?>
-                                    <?php foreach ($product['manuel_reparation'] as $manuel): ?>
-                                        <?php if (filter_var($manuel, FILTER_VALIDATE_URL)): ?>
-                                        <a href="<?php echo esc_url($manuel); ?>" 
-                                           class="download-link repair-link" 
-                                           target="_blank" title="Manuel de réparation">
-                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Manuel réparation
-                                        </a>
-                                        <?php else: ?>
-                                        <span class="download-link repair-link disabled" title="Manuel de réparation disponible: <?php echo esc_attr($manuel); ?>">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Manuel réparation
+                                            <?php echo esc_html($manuel['friendly_name']); ?>
                                         </span>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
@@ -1455,17 +1559,35 @@ if (!function_exists('doc_download_display')) {
                                 
                                 <?php if (!empty($product['datasheet']) && is_array($product['datasheet'])): ?>
                                     <?php foreach ($product['datasheet'] as $datasheet): ?>
-                                        <?php if (filter_var($datasheet, FILTER_VALIDATE_URL)): ?>
-                                        <a href="<?php echo esc_url($datasheet); ?>" 
+                                        <?php if (filter_var($datasheet['url'], FILTER_VALIDATE_URL)): ?>
+                                        <a href="<?php echo esc_url($datasheet['url']); ?>" 
                                            class="download-link datasheet-link" 
                                            target="_blank" title="Datasheet">
                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Datasheet
+                                            <?php echo esc_html($datasheet['friendly_name']); ?>
                                         </a>
                                         <?php else: ?>
-                                        <span class="download-link datasheet-link disabled" title="Datasheet disponible: <?php echo esc_attr($datasheet); ?>">
+                                        <span class="download-link datasheet-link disabled" title="Datasheet disponible: <?php echo esc_attr($datasheet['url']); ?>">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            Datasheet
+                                            <?php echo esc_html($datasheet['friendly_name']); ?>
+                                        </span>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($product['manuel_reparation']) && is_array($product['manuel_reparation'])): ?>
+                                    <?php foreach ($product['manuel_reparation'] as $manuel): ?>
+                                        <?php if (filter_var($manuel['url'], FILTER_VALIDATE_URL)): ?>
+                                        <a href="<?php echo esc_url($manuel['url']); ?>" 
+                                           class="download-link repair-link" 
+                                           target="_blank" title="Manuel de réparation">
+                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                                            <?php echo esc_html($manuel['friendly_name']); ?>
+                                        </a>
+                                        <?php else: ?>
+                                        <span class="download-link repair-link disabled" title="Manuel de réparation disponible: <?php echo esc_attr($manuel['url']); ?>">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                                            <?php echo esc_html($manuel['friendly_name']); ?>
                                         </span>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
@@ -1558,9 +1680,7 @@ if (!function_exists('doc_download_display')) {
                             // Appliquer ou retirer la classe active
                             if (hasValue) {
                                 input.classList.add('filter-active');
-                                if (!config.isMainSearch) { // Ne pas compter la recherche principale
-                                    activeCount++;
-                                }
+                                activeCount++; // Compter TOUS les filtres actifs, y compris la recherche principale
                             } else {
                                 input.classList.remove('filter-active');
                             }
