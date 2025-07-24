@@ -682,7 +682,7 @@ if (!function_exists('doc_download_display')) {
                     position: absolute;
                     top: 100%;
                     left: 0;
-                    right: 60px; /* Laisser de la place pour le bouton */
+                    right: 0;
                     background: white;
                     border: 1px solid #6b7280;
                     border-top: none;
@@ -1627,20 +1627,29 @@ if (!function_exists('doc_download_display')) {
                 function updateActiveFilters() {
                     let activeCount = 0;
                     
+                    // Récupérer les paramètres de l'URL pour vérifier les filtres réellement actifs
+                    const urlParams = new URLSearchParams(window.location.search);
+                    
                     searchFields.forEach(config => {
                         const input = document.getElementById(config.inputId);
                         const hidden = config.hiddenId ? document.getElementById(config.hiddenId) : null;
                         
                         if (input) {
-                            // Vérifier si le filtre est actif
-                            const hasValue = config.isMainSearch ? 
-                                (input.value.trim() !== '') : 
-                                (hidden && hidden.value.trim() !== '');
+                            // Vérifier si le filtre est actif selon l'URL (valeur soumise)
+                            let hasValue = false;
+                            
+                            if (config.isMainSearch) {
+                                // Pour la recherche principale, vérifier le paramètre 'search' dans l'URL
+                                hasValue = urlParams.get('search') && urlParams.get('search').trim() !== '';
+                            } else {
+                                // Pour les autres filtres, vérifier le champ hidden
+                                hasValue = hidden && hidden.value.trim() !== '';
+                            }
                             
                             // Appliquer ou retirer la classe active
                             if (hasValue) {
                                 input.classList.add('filter-active');
-                                activeCount++; // Compter TOUS les filtres actifs, y compris la recherche principale
+                                activeCount++;
                             } else {
                                 input.classList.remove('filter-active');
                             }
@@ -1747,11 +1756,9 @@ if (!function_exists('doc_download_display')) {
                         }
                         toggleDropdown(false);
                         
-                        // Mettre à jour les styles des filtres actifs
-                        updateActiveFilters();
-                        
-                        // Soumettre le formulaire automatiquement sauf pour la recherche principale
+                        // Mettre à jour les styles des filtres actifs seulement pour les filtres (pas la recherche principale)
                         if (!config.isMainSearch) {
+                            updateActiveFilters();
                             form.submit();
                         }
                     }
@@ -1770,8 +1777,10 @@ if (!function_exists('doc_download_display')) {
                             hidden.value = '';
                         }
                         
-                        // Mettre à jour les styles des filtres actifs en temps réel
-                        updateActiveFilters();
+                        // Mettre à jour les styles des filtres actifs en temps réel seulement pour les filtres (pas la recherche principale)
+                        if (!config.isMainSearch) {
+                            updateActiveFilters();
+                        }
                     });
                     
                     input.addEventListener('keydown', function(e) {
