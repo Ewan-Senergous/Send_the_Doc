@@ -4,7 +4,7 @@ if (!function_exists('ajouter_onglet_documentation_technique')) {
         global $product;
         
         // Vérifier si le produit a au moins un type de documentation
-        $documentation_url = $product->get_attribute('documentation-technique');
+        $documentation_url = $product->get_attribute('catalogue');
         $vue_eclatee = $product->get_attribute('vue-eclatee');
         $manuel_utilisation = $product->get_attribute('manuel-dutilisation');
         $datasheet = $product->get_attribute('datasheet');
@@ -29,7 +29,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
     function contenu_onglet_documentation_technique() {
         global $product;
         
-        $documentation_url = $product->get_attribute('documentation-technique');
+        $documentation_url = $product->get_attribute('catalogue');
         $vue_eclatee = $product->get_attribute('vue-eclatee');
         $manuel_utilisation = $product->get_attribute('manuel-dutilisation');
         $datasheet = $product->get_attribute('datasheet');
@@ -154,12 +154,12 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
         
         echo '<div class="download-links">';
         
-        // Documentation technique principale
+        // Catalogue principal
         if (!empty($documentation_url) && filter_var($documentation_url, FILTER_VALIDATE_URL)) {
             $has_documentation = true;
             echo '<a href="' . esc_url($documentation_url) . '" target="_blank" class="download-link">';
             echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
-            echo 'Documentation technique';
+            echo 'Catalogue';
             echo '</a>';
         }
         
@@ -204,7 +204,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
         // Si aucune documentation n'est disponible
         if (!$has_documentation) {
             echo '<div class="no-documentation">';
-            echo '<p>Aucune documentation technique disponible pour ce produit.</p>';
+            echo '<p>Aucune documentation disponible pour ce produit.</p>';
             echo '</div>';
         }
         

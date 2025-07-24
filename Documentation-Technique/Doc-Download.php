@@ -113,15 +113,15 @@ if (!function_exists('doc_download_display')) {
                     p.post_title as name,
                     p.post_name as slug,
                     
-                    -- Documentation depuis taxonomie pa_documentation-technique
+                    -- Documentation depuis taxonomie pa_catalogue
                     t_doc.name as documentation_url
                     
                 FROM {$wpdb->posts} p
                 
-                -- Documentation technique (OBLIGATOIRE)
+                -- Catalogue (OBLIGATOIRE)
                 INNER JOIN {$wpdb->term_relationships} tr_doc ON p.ID = tr_doc.object_id
                 INNER JOIN {$wpdb->term_taxonomy} tt_doc ON tr_doc.term_taxonomy_id = tt_doc.term_taxonomy_id 
-                    AND tt_doc.taxonomy = 'pa_documentation-technique'
+                    AND tt_doc.taxonomy = 'pa_catalogue'
                 INNER JOIN {$wpdb->terms} t_doc ON tt_doc.term_id = t_doc.term_id
                 
                 WHERE p.post_type = 'product' 
@@ -1500,7 +1500,7 @@ if (!function_exists('doc_download_display')) {
                                    class="download-link" 
                                    target="_blank">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                    Documentation
+                                    Catalogue
                                 </a>
                                 
                                 <?php if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])): ?>
@@ -1539,24 +1539,6 @@ if (!function_exists('doc_download_display')) {
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                                 
-                                <?php if (!empty($product['datasheet']) && is_array($product['datasheet'])): ?>
-                                    <?php foreach ($product['datasheet'] as $datasheet): ?>
-                                        <?php if (filter_var($datasheet['url'], FILTER_VALIDATE_URL)): ?>
-                                        <a href="<?php echo esc_url($datasheet['url']); ?>" 
-                                           class="download-link datasheet-link" 
-                                           target="_blank" title="Datasheet">
-                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            <?php echo esc_html($datasheet['friendly_name']); ?>
-                                        </a>
-                                        <?php else: ?>
-                                        <span class="download-link datasheet-link disabled" title="Datasheet disponible: <?php echo esc_attr($datasheet['url']); ?>">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                            <?php echo esc_html($datasheet['friendly_name']); ?>
-                                        </span>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                                
                                 <?php if (!empty($product['manuel_reparation']) && is_array($product['manuel_reparation'])): ?>
                                     <?php foreach ($product['manuel_reparation'] as $manuel): ?>
                                         <?php if (filter_var($manuel['url'], FILTER_VALIDATE_URL)): ?>
@@ -1570,6 +1552,24 @@ if (!function_exists('doc_download_display')) {
                                         <span class="download-link repair-link disabled" title="Manuel de réparation disponible: <?php echo esc_attr($manuel['url']); ?>">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
                                             <?php echo esc_html($manuel['friendly_name']); ?>
+                                        </span>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($product['datasheet']) && is_array($product['datasheet'])): ?>
+                                    <?php foreach ($product['datasheet'] as $datasheet): ?>
+                                        <?php if (filter_var($datasheet['url'], FILTER_VALIDATE_URL)): ?>
+                                        <a href="<?php echo esc_url($datasheet['url']); ?>" 
+                                           class="download-link datasheet-link" 
+                                           target="_blank" title="Datasheet">
+                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                                            <?php echo esc_html($datasheet['friendly_name']); ?>
+                                        </a>
+                                        <?php else: ?>
+                                        <span class="download-link datasheet-link disabled" title="Datasheet disponible: <?php echo esc_attr($datasheet['url']); ?>">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                                            <?php echo esc_html($datasheet['friendly_name']); ?>
                                         </span>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
