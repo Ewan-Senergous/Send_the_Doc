@@ -89,9 +89,10 @@ if (!function_exists('doc_download_display')) {
         // Marque (brand)
         $selected_brand = isset($_GET['brand']) ? sanitize_text_field($_GET['brand']) : '';
         
-        // Paramètres de pagination
-        $page = isset($_GET['doc_page']) ? max(1, intval($_GET['doc_page'])) : 1;
-        $per_page = 2; // Limiter à 12 produits par page
+        // Paramètres de pagination - NOUVEAU SYSTÈME VOIR PLUS
+        $initial_display = 2; // Afficher 2 produits au début
+        $load_more_count = 12; // Charger 12 produits supplémentaires à chaque clic
+        $visible_count = isset($_GET['visible']) ? max($initial_display, intval($_GET['visible'])) : $initial_display;
         
         // SOLUTION CORRIGÉE : Récupération via taxonomies WooCommerce
         function get_products_with_documentation_optimized() {
@@ -631,10 +632,10 @@ if (!function_exists('doc_download_display')) {
         natcasesort($all_search_values);
         $all_search_values = array_values($all_search_values);
         
-        // Pagination sur les produits filtrés
+        // Pagination sur les produits filtrés - NOUVEAU SYSTÈME VOIR PLUS
         $total_products = count($filtered_products);
-        $start_index = ($page - 1) * $per_page;
-        $current_page_products = array_slice($filtered_products, $start_index, $per_page);
+        $current_page_products = array_slice($filtered_products, 0, $visible_count);
+        $has_more_products = $total_products > $visible_count;
         
         ?>
         <div class="documentation-center">
@@ -1072,38 +1073,7 @@ if (!function_exists('doc_download_display')) {
                     padding: 0;
                 }
                 
-                .pagination-button {
-                    display: inline-block;
-                    padding: 10px 20px;
-                    margin: 0 5px;
-                    background: #0066cc;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                    font-weight: bold;
-                    transition: background 0.3s;
-                }
-                
-                .pagination-button:first-child {
-                    padding-left: 12px;
-                }
-                
-                .pagination-button:last-child {
-                    padding-right: 12px;
-                }
-                
-                .pagination-button:hover {
-                    background: #0052a3;
-                    color: white;
-                    text-decoration: none;
-                }
-                
-                .pagination-button.disabled {
-                    background: #ccc;
-                    color: #333;
-                    cursor: not-allowed;
-                    pointer-events: none;
-                }
+
                 
                 .no-results {
                     text-align: center;
@@ -1133,23 +1103,35 @@ if (!function_exists('doc_download_display')) {
                     .pagination-container {
                         padding: 0 10px;
                     }
-                    
-                    .pagination-button {
-                        margin: 5px;
-                        padding: 8px 16px;
-                        font-size: 0.9em;
-                    }
-                    
-                    .pagination-button:first-child {
-                        padding-left: 10px;
-                    }
-                    
-                    .pagination-button:last-child {
-                        padding-right: 10px;
-                    }
                     .select-with-search .search-icon {
                         top: 57%;
                     }
+                }
+                
+                .load-more-button {
+                    background-color: #0066cc;
+                    color: white;
+                    padding: 12px 24px;
+                    border: none;
+                    border-radius: 0.5rem;
+                    font-size: 0.875rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .load-more-button:hover {
+                    background-color: #0052a3;
+                    color: white;
+                    text-decoration: none;
+                }
+                
+                .load-more-button:focus {
+                    outline: none;
+                    box-shadow: 0 0 0 4px #93c5fd;
                 }
             </style>
             
@@ -1462,12 +1444,12 @@ if (!function_exists('doc_download_display')) {
                     <div class="results-count">
                         <?php echo $total_products; ?> documentation(s) trouvée(s)
                     </div>
-                    <?php if ($total_products > $per_page): ?>
                     <div class="pagination-info">
-                        Page <?php echo $page; ?> sur <?php echo ceil($total_products / $per_page); ?> 
-                        (<?php echo count($current_page_products); ?> affichés)
+                        <?php echo count($current_page_products); ?> affichés
+                        <?php if ($has_more_products): ?>
+                            sur <?php echo $total_products; ?>
+                        <?php endif; ?>
                     </div>
-                    <?php endif; ?>
                 </div>
                 
                 <?php if (!empty($current_page_products)): ?>
@@ -1597,45 +1579,23 @@ if (!function_exists('doc_download_display')) {
                     <?php endforeach; ?>
                 </div>
                 
-                <!-- Pagination -->
-                <?php if ($total_products > $per_page): ?>
+
+                
+                <!-- Bouton Voir Plus -->
+                <?php if ($has_more_products): ?>
                 <div class="pagination-container">
                     <?php 
-                    $total_pages = ceil($total_products / $per_page);
                     $current_params = $_GET;
+                    $current_params['visible'] = $visible_count + $load_more_count;
                     ?>
-                    
-                    <?php if ($page > 1): ?>
-                        <?php 
-                        $current_params['doc_page'] = $page - 1; 
-                        ?>
-                        <a href="?<?php echo http_build_query($current_params); ?>" class="pagination-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left" style="vertical-align: middle;"><path d="m15 18-6-6 6-6"/></svg>
-                            Précédent
-                        </a>
-                    <?php else: ?>
-                        <span class="pagination-button disabled">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left" style="vertical-align: middle;"><path d="m15 18-6-6 6-6"/></svg>
-                            Précédent
-                        </span>
-                    <?php endif; ?>
-                    
-                    <span class="pagination-button disabled">Page <?php echo $page; ?> / <?php echo $total_pages; ?></span>
-                    
-                    <?php if ($page < $total_pages): ?>
-                        <?php 
-                        $current_params['doc_page'] = $page + 1; 
-                        ?>
-                        <a href="?<?php echo http_build_query($current_params); ?>" class="pagination-button">
-                            Suivant
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right" style="vertical-align: middle;"><path d="m9 18 6-6-6-6"/></svg>
-                        </a>
-                    <?php else: ?>
-                        <span class="pagination-button disabled">
-                            Suivant
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right" style="vertical-align: middle;"><path d="m9 18 6-6-6-6"/></svg>
-                        </span>
-                    <?php endif; ?>
+                    <a href="?<?php echo http_build_query($current_params); ?>" class="load-more-button">
+                        Voir plus
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus-icon lucide-circle-plus">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 12h8"/>
+                            <path d="M12 8v8"/>
+                        </svg>
+                    </a>
                 </div>
                 <?php endif; ?>
                 
