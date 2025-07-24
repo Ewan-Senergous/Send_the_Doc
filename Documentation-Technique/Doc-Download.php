@@ -860,8 +860,6 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .filter-group label {
-                    display: block;
-                    margin-bottom: 5px;
                     font-weight: bold;
                     color: #333;
                 }
@@ -1230,7 +1228,7 @@ if (!function_exists('doc_download_display')) {
                 <input type="hidden" name="sous_sous_famille" value="<?php echo esc_attr($selected_sous_sous_famille); ?>">
                 <?php foreach ($selected_doc_types as $doc_type): ?>
                 <input type="hidden" name="doc_types[]" value="<?php echo esc_attr($doc_type); ?>">
-                <?php endforeach; ?>>
+                <?php endforeach; ?>
                 <input type="hidden" name="reference_fabriquant" value="<?php echo esc_attr($selected_reference_fabriquant); ?>">
                 <input type="hidden" name="categorie_wp" value="<?php echo esc_attr($selected_categorie_wp); ?>">
                 <input type="hidden" name="brand" value="<?php echo esc_attr($selected_brand); ?>">
@@ -1916,14 +1914,29 @@ if (!function_exists('doc_download_display')) {
                 
                 // Ouvrir/fermer le dropdown
                 if (docTypesInput && docTypesDropdown) {
-                    docTypesInput.addEventListener('click', function() {
-                        docDropdownOpen = !docDropdownOpen;
+                    docTypesInput.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Vérifier l'état actuel du dropdown
+                        const isCurrentlyOpen = docTypesDropdown.style.display === 'block';
+                        docDropdownOpen = !isCurrentlyOpen;
                         docTypesDropdown.style.display = docDropdownOpen ? 'block' : 'none';
                     });
                     
-                    docTypesInput.addEventListener('focus', function() {
-                        docDropdownOpen = true;
-                        docTypesDropdown.style.display = 'block';
+                    // Gestion du clavier pour l'accessibilité
+                    docTypesInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const isCurrentlyOpen = docTypesDropdown.style.display === 'block';
+                            docDropdownOpen = !isCurrentlyOpen;
+                            docTypesDropdown.style.display = docDropdownOpen ? 'block' : 'none';
+                        } else if (e.key === 'Escape') {
+                            docDropdownOpen = false;
+                            docTypesDropdown.style.display = 'none';
+                        }
                     });
                 }
                 
@@ -1981,6 +1994,12 @@ if (!function_exists('doc_download_display')) {
                 
                 // Initialiser le texte au chargement
                 updateDocTypesInputText();
+                
+                // S'assurer que le dropdown est fermé par défaut
+                if (docTypesDropdown) {
+                    docTypesDropdown.style.display = 'none';
+                    docDropdownOpen = false;
+                }
             });
             </script>
         </div>
