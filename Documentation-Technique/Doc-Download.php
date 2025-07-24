@@ -343,7 +343,8 @@ if (!function_exists('doc_download_display')) {
         $references_fabriquant = array_column($products_with_docs, 'reference_fabriquant');
         $references_fabriquant = array_filter($references_fabriquant); // Enlever les valeurs vides
         $references_fabriquant = array_unique($references_fabriquant);
-        sort($references_fabriquant); // Tri alphabétique
+        natcasesort($references_fabriquant); // Tri alphabétique insensible à la casse
+        $references_fabriquant = array_values($references_fabriquant); // Réindexer
         
         // Catégories WordPress - TOUTES les valeurs disponibles
         $all_categories = [];
@@ -354,44 +355,53 @@ if (!function_exists('doc_download_display')) {
         }
         $all_categories = array_filter($all_categories); // Enlever les valeurs vides
         $categories_wp = array_unique($all_categories);
-        sort($categories_wp); // Tri alphabétique
+        natcasesort($categories_wp); // Tri alphabétique insensible à la casse
+        $categories_wp = array_values($categories_wp); // Réindexer
         
         // Marques - TOUTES les valeurs disponibles
         $brands = array_column($products_with_docs, 'brand');
         $brands = array_filter($brands); // Enlever les valeurs vides
         $brands = array_unique($brands);
-        sort($brands); // Tri alphabétique
+        natcasesort($brands); // Tri alphabétique insensible à la casse
+        $brands = array_values($brands); // Réindexer
 
         // Nettoyer les valeurs vides - TOUTES les valeurs disponibles
         $familles = array_filter($familles);
-        sort($familles); // Tri alphabétique
+        natcasesort($familles); // Tri alphabétique insensible à la casse
+        $familles = array_values($familles); // Réindexer
         
         $sous_familles = array_filter($sous_familles);
-        sort($sous_familles); // Tri alphabétique
+        natcasesort($sous_familles); // Tri alphabétique insensible à la casse
+        $sous_familles = array_values($sous_familles); // Réindexer
         
         $sous_sous_familles = array_filter($sous_sous_familles);
-        sort($sous_sous_familles); // Tri alphabétique
+        natcasesort($sous_sous_familles); // Tri alphabétique insensible à la casse
+        $sous_sous_familles = array_values($sous_sous_familles); // Réindexer
         
         // Nettoyer les nouveaux attributs - TOUTES les valeurs disponibles
         $vues_eclatees = array_filter($vues_eclatees, function($value) {
             return !empty($value);
         });
-        sort($vues_eclatees); // Tri alphabétique
+        natcasesort($vues_eclatees); // Tri alphabétique insensible à la casse
+        $vues_eclatees = array_values($vues_eclatees); // Réindexer
         
         $manuels_utilisation = array_filter($manuels_utilisation, function($value) {
             return !empty($value);
         });
-        sort($manuels_utilisation); // Tri alphabétique
+        natcasesort($manuels_utilisation); // Tri alphabétique insensible à la casse
+        $manuels_utilisation = array_values($manuels_utilisation); // Réindexer
         
         $datasheets = array_filter($datasheets, function($value) {
             return !empty($value);
         });
-        sort($datasheets); // Tri alphabétique
+        natcasesort($datasheets); // Tri alphabétique insensible à la casse
+        $datasheets = array_values($datasheets); // Réindexer
         
         $manuels_reparation = array_filter($manuels_reparation, function($value) {
             return !empty($value);
         });
-        sort($manuels_reparation); // Tri alphabétique
+        natcasesort($manuels_reparation); // Tri alphabétique insensible à la casse
+        $manuels_reparation = array_values($manuels_reparation); // Réindexer
         
         // Créer une liste combinée pour l'auto-complétion du champ de recherche principal
         $all_search_values = [];
@@ -420,7 +430,8 @@ if (!function_exists('doc_download_display')) {
             return !empty($value) && trim($value) !== '';
         });
         $all_search_values = array_unique($all_search_values);
-        sort($all_search_values); // Tri alphabétique
+        natcasesort($all_search_values); // Tri alphabétique insensible à la casse
+        $all_search_values = array_values($all_search_values); // Réindexer
         
         // Pagination sur les produits filtrés
         $total_products = count($filtered_products);
