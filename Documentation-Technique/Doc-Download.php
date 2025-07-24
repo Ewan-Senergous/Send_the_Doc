@@ -854,82 +854,194 @@ if (!function_exists('doc_download_display')) {
                     
                     <div class="filter-group">
                         <label for="filter-famille">Famille :</label>
-                        <select id="filter-famille" name="famille" onchange="this.form.submit()">
-                            <option value="">Toutes les familles</option>
-                            <?php foreach ($familles as $famille): ?>
-                                <option value="<?php echo esc_attr($famille); ?>" <?php selected($selected_famille, $famille); ?>><?php echo esc_html($famille); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-famille" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les familles" 
+                                   value="<?php echo esc_attr($selected_famille); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="famille" id="famille_hidden" value="<?php echo esc_attr($selected_famille); ?>" />
+                            <div id="famille-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les familles</div>
+                                <?php foreach ($familles as $famille): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($famille); ?>"><?php echo esc_html($famille); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
                         <label for="filter-sous-famille">Sous-famille :</label>
-                        <select id="filter-sous-famille" name="sous_famille" onchange="this.form.submit()">
-                            <option value="">Toutes les sous-familles</option>
-                            <?php foreach ($sous_familles as $sous_famille): ?>
-                                <option value="<?php echo esc_attr($sous_famille); ?>" <?php selected($selected_sous_famille, $sous_famille); ?>><?php echo esc_html($sous_famille); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-sous-famille" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les sous-familles" 
+                                   value="<?php echo esc_attr($selected_sous_famille); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="sous_famille" id="sous_famille_hidden" value="<?php echo esc_attr($selected_sous_famille); ?>" />
+                            <div id="sous-famille-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les sous-familles</div>
+                                <?php foreach ($sous_familles as $sous_famille): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($sous_famille); ?>"><?php echo esc_html($sous_famille); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
                         <label for="filter-sous-sous-famille">Sous-sous-famille :</label>
-                        <select id="filter-sous-sous-famille" name="sous_sous_famille" onchange="this.form.submit()">
-                            <option value="">Toutes les sous-sous-familles</option>
-                            <?php foreach ($sous_sous_familles as $sous_sous_famille): ?>
-                                <option value="<?php echo esc_attr($sous_sous_famille); ?>" <?php selected($selected_sous_sous_famille, $sous_sous_famille); ?>><?php echo esc_html($sous_sous_famille); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-sous-sous-famille" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les sous-sous-familles" 
+                                   value="<?php echo esc_attr($selected_sous_sous_famille); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="sous_sous_famille" id="sous_sous_famille_hidden" value="<?php echo esc_attr($selected_sous_sous_famille); ?>" />
+                            <div id="sous-sous-famille-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les sous-sous-familles</div>
+                                <?php foreach ($sous_sous_familles as $sous_sous_famille): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($sous_sous_famille); ?>"><?php echo esc_html($sous_sous_famille); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
                         <label for="filter-vue-eclatee">Vue éclatée :</label>
-                        <select id="filter-vue-eclatee" name="vue_eclatee" onchange="this.form.submit()">
-                            <option value="">Toutes les vues éclatées</option>
-                            <?php foreach ($vues_eclatees as $vue): ?>
-                                <option value="<?php echo esc_attr($vue); ?>" <?php selected($selected_vue_eclatee, $vue); ?>><?php echo esc_html($vue); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-vue-eclatee" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les vues éclatées" 
+                                   value="<?php echo esc_attr($selected_vue_eclatee); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="vue_eclatee" id="vue_eclatee_hidden" value="<?php echo esc_attr($selected_vue_eclatee); ?>" />
+                            <div id="vue-eclatee-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les vues éclatées</div>
+                                <?php foreach ($vues_eclatees as $vue): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($vue); ?>"><?php echo esc_html($vue); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
                         <label for="filter-manuel-utilisation">Manuel d'utilisation :</label>
-                        <select id="filter-manuel-utilisation" name="manuel_utilisation" onchange="this.form.submit()">
-                            <option value="">Tous les manuels d'utilisation</option>
-                            <?php foreach ($manuels_utilisation as $manuel): ?>
-                                <option value="<?php echo esc_attr($manuel); ?>" <?php selected($selected_manuel_utilisation, $manuel); ?>><?php echo esc_html($manuel); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-manuel-utilisation" 
+                                   class="select-search-input" 
+                                   placeholder="Tous les manuels d'utilisation" 
+                                   value="<?php echo esc_attr($selected_manuel_utilisation); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="manuel_utilisation" id="manuel_utilisation_hidden" value="<?php echo esc_attr($selected_manuel_utilisation); ?>" />
+                            <div id="manuel-utilisation-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Tous les manuels d'utilisation</div>
+                                <?php foreach ($manuels_utilisation as $manuel): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($manuel); ?>"><?php echo esc_html($manuel); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
                         <label for="filter-datasheet">Datasheet :</label>
-                        <select id="filter-datasheet" name="datasheet" onchange="this.form.submit()">
-                            <option value="">Toutes les datasheets</option>
-                            <?php foreach ($datasheets as $datasheet): ?>
-                                <option value="<?php echo esc_attr($datasheet); ?>" <?php selected($selected_datasheet, $datasheet); ?>><?php echo esc_html($datasheet); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-datasheet" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les datasheets" 
+                                   value="<?php echo esc_attr($selected_datasheet); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="datasheet" id="datasheet_hidden" value="<?php echo esc_attr($selected_datasheet); ?>" />
+                            <div id="datasheet-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les datasheets</div>
+                                <?php foreach ($datasheets as $datasheet): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($datasheet); ?>"><?php echo esc_html($datasheet); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
                         <label for="filter-manuel-reparation">Manuel de réparation :</label>
-                        <select id="filter-manuel-reparation" name="manuel_reparation" onchange="this.form.submit()">
-                            <option value="">Tous les manuels de réparation</option>
-                            <?php foreach ($manuels_reparation as $manuel): ?>
-                                <option value="<?php echo esc_attr($manuel); ?>" <?php selected($selected_manuel_reparation, $manuel); ?>><?php echo esc_html($manuel); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-manuel-reparation" 
+                                   class="select-search-input" 
+                                   placeholder="Tous les manuels de réparation" 
+                                   value="<?php echo esc_attr($selected_manuel_reparation); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="manuel_reparation" id="manuel_reparation_hidden" value="<?php echo esc_attr($selected_manuel_reparation); ?>" />
+                            <div id="manuel-reparation-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Tous les manuels de réparation</div>
+                                <?php foreach ($manuels_reparation as $manuel): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($manuel); ?>"><?php echo esc_html($manuel); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
                         <label for="filter-reference-fabriquant">Référence fabriquant :</label>
-                        <select id="filter-reference-fabriquant" name="reference_fabriquant" onchange="this.form.submit()">
-                            <option value="">Toutes les références</option>
-                            <?php foreach ($references_fabriquant as $reference): ?>
-                                <option value="<?php echo esc_attr($reference); ?>" <?php selected($selected_reference_fabriquant, $reference); ?>><?php echo esc_html($reference); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-reference-fabriquant" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les références" 
+                                   value="<?php echo esc_attr($selected_reference_fabriquant); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="reference_fabriquant" id="reference_fabriquant_hidden" value="<?php echo esc_attr($selected_reference_fabriquant); ?>" />
+                            <div id="reference-fabriquant-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les références</div>
+                                <?php foreach ($references_fabriquant as $reference): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($reference); ?>"><?php echo esc_html($reference); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-group">
@@ -943,7 +1055,7 @@ if (!function_exists('doc_download_display')) {
                             <input type="text" 
                                    id="filter-categorie-wp" 
                                    class="select-search-input" 
-                                   placeholder="Rechercher une catégorie..." 
+                                   placeholder="Toutes les catégories" 
                                    value="<?php echo esc_attr($selected_categorie_wp); ?>"
                                    autocomplete="off" />
                             <input type="hidden" name="categorie_wp" id="categorie_wp_hidden" value="<?php echo esc_attr($selected_categorie_wp); ?>" />
@@ -958,12 +1070,26 @@ if (!function_exists('doc_download_display')) {
                     
                     <div class="filter-group">
                         <label for="filter-brand">Marque :</label>
-                        <select id="filter-brand" name="brand" onchange="this.form.submit()">
-                            <option value="">Toutes les marques</option>
-                            <?php foreach ($brands as $brand): ?>
-                                <option value="<?php echo esc_attr($brand); ?>" <?php selected($selected_brand, $brand); ?>><?php echo esc_html($brand); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="filter-brand" 
+                                   class="select-search-input" 
+                                   placeholder="Toutes les marques" 
+                                   value="<?php echo esc_attr($selected_brand); ?>"
+                                   autocomplete="off" />
+                            <input type="hidden" name="brand" id="brand_hidden" value="<?php echo esc_attr($selected_brand); ?>" />
+                            <div id="brand-dropdown" class="select-dropdown">
+                                <div class="select-option" data-value="">Toutes les marques</div>
+                                <?php foreach ($brands as $brand): ?>
+                                    <div class="select-option" data-value="<?php echo esc_attr($brand); ?>"><?php echo esc_html($brand); ?></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-actions">
@@ -1145,126 +1271,153 @@ if (!function_exists('doc_download_display')) {
             
             <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const categoryInput = document.getElementById('filter-categorie-wp');
-                const categoryHidden = document.getElementById('categorie_wp_hidden');
-                const dropdown = document.getElementById('category-dropdown');
-                const form = categoryInput.closest('form');
+                // Configuration des champs avec recherche
+                const searchFields = [
+                    { inputId: 'filter-famille', hiddenId: 'famille_hidden', dropdownId: 'famille-dropdown' },
+                    { inputId: 'filter-sous-famille', hiddenId: 'sous_famille_hidden', dropdownId: 'sous-famille-dropdown' },
+                    { inputId: 'filter-sous-sous-famille', hiddenId: 'sous_sous_famille_hidden', dropdownId: 'sous-sous-famille-dropdown' },
+                    { inputId: 'filter-vue-eclatee', hiddenId: 'vue_eclatee_hidden', dropdownId: 'vue-eclatee-dropdown' },
+                    { inputId: 'filter-manuel-utilisation', hiddenId: 'manuel_utilisation_hidden', dropdownId: 'manuel-utilisation-dropdown' },
+                    { inputId: 'filter-datasheet', hiddenId: 'datasheet_hidden', dropdownId: 'datasheet-dropdown' },
+                    { inputId: 'filter-manuel-reparation', hiddenId: 'manuel_reparation_hidden', dropdownId: 'manuel-reparation-dropdown' },
+                    { inputId: 'filter-reference-fabriquant', hiddenId: 'reference_fabriquant_hidden', dropdownId: 'reference-fabriquant-dropdown' },
+                    { inputId: 'filter-categorie-wp', hiddenId: 'categorie_wp_hidden', dropdownId: 'category-dropdown' },
+                    { inputId: 'filter-brand', hiddenId: 'brand_hidden', dropdownId: 'brand-dropdown' }
+                ];
                 
-                let selectedIndex = -1;
-                let isOpen = false;
-                
-                // Fonction pour filtrer les options
-                function filterOptions() {
-                    const value = categoryInput.value.toLowerCase().trim();
-                    const options = dropdown.querySelectorAll('.select-option');
-                    let visibleCount = 0;
+                // Fonction pour initialiser un champ de recherche
+                function initSearchField(config) {
+                    const input = document.getElementById(config.inputId);
+                    const hidden = document.getElementById(config.hiddenId);
+                    const dropdown = document.getElementById(config.dropdownId);
                     
-                    options.forEach((option, index) => {
-                        const text = option.textContent.toLowerCase();
-                        if (text.includes(value) || option.dataset.value === '') {
-                            option.style.display = 'block';
-                            visibleCount++;
-                        } else {
-                            option.style.display = 'none';
+                    if (!input || !hidden || !dropdown) return;
+                    
+                    const form = input.closest('form');
+                    let selectedIndex = -1;
+                    let isOpen = false;
+                    
+                    // Fonction pour filtrer les options
+                    function filterOptions() {
+                        const value = input.value.toLowerCase().trim();
+                        const options = dropdown.querySelectorAll('.select-option');
+                        let visibleCount = 0;
+                        
+                        options.forEach((option, index) => {
+                            const text = option.textContent.toLowerCase();
+                            if (text.includes(value) || option.dataset.value === '') {
+                                option.style.display = 'block';
+                                visibleCount++;
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        });
+                        
+                        return visibleCount > 0;
+                    }
+                    
+                    // Fonction pour ouvrir/fermer le dropdown
+                    function toggleDropdown(show) {
+                        isOpen = show;
+                        dropdown.style.display = show ? 'block' : 'none';
+                        selectedIndex = -1;
+                        
+                        if (show) {
+                            filterOptions();
+                        }
+                    }
+                    
+                    // Fonction pour mettre à jour la sélection visuelle
+                    function updateSelection() {
+                        const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
+                        
+                        visibleOptions.forEach((option, index) => {
+                            if (index === selectedIndex) {
+                                option.classList.add('selected');
+                            } else {
+                                option.classList.remove('selected');
+                            }
+                        });
+                    }
+                    
+                    // Fonction pour sélectionner une option
+                    function selectOption(option) {
+                        const value = option.dataset.value;
+                        const text = value === '' ? '' : option.textContent;
+                        
+                        input.value = text;
+                        hidden.value = value;
+                        toggleDropdown(false);
+                        
+                        // Soumettre le formulaire automatiquement
+                        form.submit();
+                    }
+                    
+                    // Events
+                    input.addEventListener('focus', function() {
+                        toggleDropdown(true);
+                    });
+                    
+                    input.addEventListener('input', function() {
+                        toggleDropdown(true);
+                        selectedIndex = -1;
+                        
+                        // Si le champ est vide, vider aussi le champ hidden
+                        if (this.value.trim() === '') {
+                            hidden.value = '';
                         }
                     });
                     
-                    return visibleCount > 0;
-                }
-                
-                // Fonction pour ouvrir/fermer le dropdown
-                function toggleDropdown(show) {
-                    isOpen = show;
-                    dropdown.style.display = show ? 'block' : 'none';
-                    selectedIndex = -1;
-                    
-                    if (show) {
-                        filterOptions();
-                    }
-                }
-                
-                // Fonction pour mettre à jour la sélection visuelle
-                function updateSelection() {
-                    const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
-                    
-                    visibleOptions.forEach((option, index) => {
-                        if (index === selectedIndex) {
-                            option.classList.add('selected');
-                        } else {
-                            option.classList.remove('selected');
+                    input.addEventListener('keydown', function(e) {
+                        if (!isOpen) return;
+                        
+                        const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
+                        
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            selectedIndex = Math.min(selectedIndex + 1, visibleOptions.length - 1);
+                            updateSelection();
+                        } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            selectedIndex = Math.max(selectedIndex - 1, -1);
+                            updateSelection();
+                        } else if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
+                                selectOption(visibleOptions[selectedIndex]);
+                            }
+                        } else if (e.key === 'Escape') {
+                            toggleDropdown(false);
+                            input.blur();
                         }
                     });
-                }
-                
-                // Fonction pour sélectionner une option
-                function selectOption(option) {
-                    const value = option.dataset.value;
-                    const text = value === '' ? '' : option.textContent;
                     
-                    categoryInput.value = text;
-                    categoryHidden.value = value;
-                    toggleDropdown(false);
-                    
-                    // Soumettre le formulaire automatiquement
-                    form.submit();
-                }
-                
-                // Events
-                categoryInput.addEventListener('focus', function() {
-                    toggleDropdown(true);
-                });
-                
-                categoryInput.addEventListener('input', function() {
-                    toggleDropdown(true);
-                    selectedIndex = -1;
-                });
-                
-                categoryInput.addEventListener('keydown', function(e) {
-                    if (!isOpen) return;
-                    
-                    const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
-                    
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        selectedIndex = Math.min(selectedIndex + 1, visibleOptions.length - 1);
-                        updateSelection();
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        selectedIndex = Math.max(selectedIndex - 1, -1);
-                        updateSelection();
-                    } else if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
-                            selectOption(visibleOptions[selectedIndex]);
+                    // Clic sur les options
+                    dropdown.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('select-option')) {
+                            selectOption(e.target);
                         }
-                    } else if (e.key === 'Escape') {
-                        toggleDropdown(false);
-                        categoryInput.blur();
-                    }
-                });
-                
-                // Clic sur les options
-                dropdown.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('select-option')) {
-                        selectOption(e.target);
-                    }
-                });
-                
-                // Fermer le dropdown en cliquant ailleurs
-                document.addEventListener('click', function(e) {
-                    if (!categoryInput.contains(e.target) && !dropdown.contains(e.target)) {
-                        toggleDropdown(false);
-                    }
-                });
-                
-                // Empêcher la fermeture lors du blur si on clique dans le dropdown
-                categoryInput.addEventListener('blur', function(e) {
-                    setTimeout(() => {
-                        if (!dropdown.contains(document.activeElement)) {
+                    });
+                    
+                    // Fermer le dropdown en cliquant ailleurs
+                    document.addEventListener('click', function(e) {
+                        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
                             toggleDropdown(false);
                         }
-                    }, 150);
-                });
+                    });
+                    
+                    // Empêcher la fermeture lors du blur si on clique dans le dropdown
+                    input.addEventListener('blur', function(e) {
+                        setTimeout(() => {
+                            if (!dropdown.contains(document.activeElement)) {
+                                toggleDropdown(false);
+                            }
+                        }, 150);
+                    });
+                }
+                
+                // Initialiser tous les champs de recherche
+                searchFields.forEach(initSearchField);
             });
             </script>
         </div>
