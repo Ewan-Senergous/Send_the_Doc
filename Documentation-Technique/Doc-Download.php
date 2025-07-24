@@ -207,7 +207,63 @@ if (!function_exists('doc_download_display')) {
         
         if (!empty($search_query)) {
             $filtered_products = array_filter($filtered_products, function($product) use ($search_query) {
-                return stripos($product['name'], $search_query) !== false;
+                // Recherche dans le nom du produit
+                if (stripos($product['name'], $search_query) !== false) {
+                    return true;
+                }
+                
+                // Recherche dans la famille
+                if (!empty($product['famille']) && stripos($product['famille'], $search_query) !== false) {
+                    return true;
+                }
+                
+                // Recherche dans la sous-famille
+                if (!empty($product['sous_famille']) && stripos($product['sous_famille'], $search_query) !== false) {
+                    return true;
+                }
+                
+                // Recherche dans la sous-sous-famille
+                if (!empty($product['sous_sous_famille']) && stripos($product['sous_sous_famille'], $search_query) !== false) {
+                    return true;
+                }
+                
+                // Recherche dans la référence fabriquant
+                if (!empty($product['reference_fabriquant']) && stripos($product['reference_fabriquant'], $search_query) !== false) {
+                    return true;
+                }
+                
+                // Recherche dans les catégories WordPress
+                if (!empty($product['categorie_wp']) && is_array($product['categorie_wp'])) {
+                    foreach ($product['categorie_wp'] as $categorie) {
+                        if (stripos($categorie, $search_query) !== false) {
+                            return true;
+                        }
+                    }
+                }
+                
+                // Recherche dans la marque
+                if (!empty($product['brand']) && stripos($product['brand'], $search_query) !== false) {
+                    return true;
+                }
+                
+                // Recherche dans les types de documentation (optionnel)
+                if (!empty($product['vue_eclatee']) && stripos($product['vue_eclatee'], $search_query) !== false) {
+                    return true;
+                }
+                
+                if (!empty($product['manuel_utilisation']) && stripos($product['manuel_utilisation'], $search_query) !== false) {
+                    return true;
+                }
+                
+                if (!empty($product['datasheet']) && stripos($product['datasheet'], $search_query) !== false) {
+                    return true;
+                }
+                
+                if (!empty($product['manuel_reparation']) && stripos($product['manuel_reparation'], $search_query) !== false) {
+                    return true;
+                }
+                
+                return false;
             });
         }
         
@@ -337,6 +393,35 @@ if (!function_exists('doc_download_display')) {
         });
         sort($manuels_reparation); // Tri alphabétique
         
+        // Créer une liste combinée pour l'auto-complétion du champ de recherche principal
+        $all_search_values = [];
+        
+        // Ajouter tous les noms de produits
+        foreach ($products_with_docs as $product) {
+            if (!empty($product['name'])) {
+                $all_search_values[] = $product['name'];
+            }
+        }
+        
+        // Ajouter toutes les valeurs des autres champs
+        $all_search_values = array_merge($all_search_values, $familles);
+        $all_search_values = array_merge($all_search_values, $sous_familles);
+        $all_search_values = array_merge($all_search_values, $sous_sous_familles);
+        $all_search_values = array_merge($all_search_values, $vues_eclatees);
+        $all_search_values = array_merge($all_search_values, $manuels_utilisation);
+        $all_search_values = array_merge($all_search_values, $datasheets);
+        $all_search_values = array_merge($all_search_values, $manuels_reparation);
+        $all_search_values = array_merge($all_search_values, $references_fabriquant);
+        $all_search_values = array_merge($all_search_values, $categories_wp);
+        $all_search_values = array_merge($all_search_values, $brands);
+        
+        // Nettoyer, dédupliquer et trier
+        $all_search_values = array_filter($all_search_values, function($value) {
+            return !empty($value) && trim($value) !== '';
+        });
+        $all_search_values = array_unique($all_search_values);
+        sort($all_search_values); // Tri alphabétique
+        
         // Pagination sur les produits filtrés
         $total_products = count($filtered_products);
         $start_index = ($page - 1) * $per_page;
@@ -381,6 +466,39 @@ if (!function_exists('doc_download_display')) {
                 
                 .search-container {
                     position: relative;
+                }
+                
+                .search-container .search-dropdown {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 60px; /* Laisser de la place pour le bouton */
+                    background: white;
+                    border: 1px solid #6b7280;
+                    border-top: none;
+                    border-radius: 0 0 0.5rem 0.5rem;
+                    max-height: 300px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                    display: none;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                }
+                
+                .search-dropdown .search-option {
+                    padding: 10px 15px;
+                    cursor: pointer;
+                    border-bottom: 1px solid #e5e7eb;
+                    transition: background-color 0.2s;
+                    font-size: 0.875rem;
+                }
+                
+                .search-dropdown .search-option:hover,
+                .search-dropdown .search-option.selected {
+                    background-color: #f3f4f6;
+                }
+                
+                .search-dropdown .search-option:last-child {
+                    border-bottom: none;
                 }
                 
                 .search-icon {
@@ -826,7 +944,18 @@ if (!function_exists('doc_download_display')) {
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                         </svg>
                     </div>
-                    <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" class="search-input" placeholder="Rechercher un produit..." />
+                    <input type="search" 
+                           id="main-search" 
+                           name="search" 
+                           value="<?php echo esc_attr($search_query); ?>" 
+                           class="search-input" 
+                           placeholder="Rechercher un produit..." 
+                           autocomplete="off" />
+                    <div id="main-search-dropdown" class="search-dropdown">
+                        <?php foreach ($all_search_values as $value): ?>
+                            <div class="search-option" data-value="<?php echo esc_attr($value); ?>"><?php echo esc_html($value); ?></div>
+                        <?php endforeach; ?>
+                    </div>
                     <button type="submit" class="search-button">
                         <svg style="margin-right:0.4em;vertical-align:middle;" width="16" height="16" fill="none" viewBox="0 0 20 20">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
@@ -1273,6 +1402,7 @@ if (!function_exists('doc_download_display')) {
             document.addEventListener('DOMContentLoaded', function() {
                 // Configuration des champs avec recherche
                 const searchFields = [
+                    { inputId: 'main-search', hiddenId: null, dropdownId: 'main-search-dropdown', isMainSearch: true },
                     { inputId: 'filter-famille', hiddenId: 'famille_hidden', dropdownId: 'famille-dropdown' },
                     { inputId: 'filter-sous-famille', hiddenId: 'sous_famille_hidden', dropdownId: 'sous-famille-dropdown' },
                     { inputId: 'filter-sous-sous-famille', hiddenId: 'sous_sous_famille_hidden', dropdownId: 'sous-sous-famille-dropdown' },
@@ -1288,19 +1418,22 @@ if (!function_exists('doc_download_display')) {
                 // Fonction pour initialiser un champ de recherche
                 function initSearchField(config) {
                     const input = document.getElementById(config.inputId);
-                    const hidden = document.getElementById(config.hiddenId);
+                    const hidden = config.hiddenId ? document.getElementById(config.hiddenId) : null;
                     const dropdown = document.getElementById(config.dropdownId);
                     
-                    if (!input || !hidden || !dropdown) return;
+                    if (!input || !dropdown) return;
                     
                     const form = input.closest('form');
                     let selectedIndex = -1;
                     let isOpen = false;
                     
+                    // Classe d'option selon le type de champ
+                    const optionClass = config.isMainSearch ? '.search-option' : '.select-option';
+                    
                     // Fonction pour filtrer les options
                     function filterOptions() {
                         const value = input.value.toLowerCase().trim();
-                        const options = dropdown.querySelectorAll('.select-option');
+                        const options = dropdown.querySelectorAll(optionClass);
                         let visibleCount = 0;
                         
                         options.forEach((option, index) => {
@@ -1329,7 +1462,7 @@ if (!function_exists('doc_download_display')) {
                     
                     // Fonction pour mettre à jour la sélection visuelle
                     function updateSelection() {
-                        const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
+                        const visibleOptions = Array.from(dropdown.querySelectorAll(optionClass)).filter(opt => opt.style.display !== 'none');
                         
                         visibleOptions.forEach((option, index) => {
                             if (index === selectedIndex) {
@@ -1346,11 +1479,15 @@ if (!function_exists('doc_download_display')) {
                         const text = value === '' ? '' : option.textContent;
                         
                         input.value = text;
-                        hidden.value = value;
+                        if (hidden) {
+                            hidden.value = value;
+                        }
                         toggleDropdown(false);
                         
-                        // Soumettre le formulaire automatiquement
-                        form.submit();
+                        // Soumettre le formulaire automatiquement sauf pour la recherche principale
+                        if (!config.isMainSearch) {
+                            form.submit();
+                        }
                     }
                     
                     // Events
@@ -1363,7 +1500,7 @@ if (!function_exists('doc_download_display')) {
                         selectedIndex = -1;
                         
                         // Si le champ est vide, vider aussi le champ hidden
-                        if (this.value.trim() === '') {
+                        if (this.value.trim() === '' && hidden) {
                             hidden.value = '';
                         }
                     });
@@ -1371,7 +1508,7 @@ if (!function_exists('doc_download_display')) {
                     input.addEventListener('keydown', function(e) {
                         if (!isOpen) return;
                         
-                        const visibleOptions = Array.from(dropdown.querySelectorAll('.select-option')).filter(opt => opt.style.display !== 'none');
+                        const visibleOptions = Array.from(dropdown.querySelectorAll(optionClass)).filter(opt => opt.style.display !== 'none');
                         
                         if (e.key === 'ArrowDown') {
                             e.preventDefault();
@@ -1394,7 +1531,7 @@ if (!function_exists('doc_download_display')) {
                     
                     // Clic sur les options
                     dropdown.addEventListener('click', function(e) {
-                        if (e.target.classList.contains('select-option')) {
+                        if (e.target.classList.contains(config.isMainSearch ? 'search-option' : 'select-option')) {
                             selectOption(e.target);
                         }
                     });
