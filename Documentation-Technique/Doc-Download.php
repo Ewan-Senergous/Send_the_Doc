@@ -74,11 +74,9 @@ if (!function_exists('doc_download_display')) {
         $selected_sous_famille = isset($_GET['sous_famille']) ? sanitize_text_field($_GET['sous_famille']) : '';
         $selected_sous_sous_famille = isset($_GET['sous_sous_famille']) ? sanitize_text_field($_GET['sous_sous_famille']) : '';
         
-        // Nouveaux attributs de documentation
-        $selected_vue_eclatee = isset($_GET['vue_eclatee']) ? sanitize_text_field($_GET['vue_eclatee']) : '';
-        $selected_manuel_utilisation = isset($_GET['manuel_utilisation']) ? sanitize_text_field($_GET['manuel_utilisation']) : '';
-        $selected_datasheet = isset($_GET['datasheet']) ? sanitize_text_field($_GET['datasheet']) : '';
-        $selected_manuel_reparation = isset($_GET['manuel_reparation']) ? sanitize_text_field($_GET['manuel_reparation']) : '';
+        // NOUVEAU : Types de documents multi-sélection
+        $selected_doc_types = isset($_GET['doc_types']) && is_array($_GET['doc_types']) ? 
+            array_map('sanitize_text_field', $_GET['doc_types']) : [];
         
         // Référence fabriquant
         $selected_reference_fabriquant = isset($_GET['reference_fabriquant']) ? sanitize_text_field($_GET['reference_fabriquant']) : '';
@@ -421,49 +419,31 @@ if (!function_exists('doc_download_display')) {
             });
         }
         
-        // Filtres pour les nouveaux types de documentation (arrays)
-        if (!empty($selected_vue_eclatee)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_vue_eclatee) {
-                if (!is_array($product['vue_eclatee'])) return false;
-                foreach ($product['vue_eclatee'] as $doc) {
-                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_vue_eclatee) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-        }
-        
-        if (!empty($selected_manuel_utilisation)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_manuel_utilisation) {
-                if (!is_array($product['manuel_utilisation'])) return false;
-                foreach ($product['manuel_utilisation'] as $doc) {
-                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_manuel_utilisation) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-        }
-        
-        if (!empty($selected_datasheet)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_datasheet) {
-                if (!is_array($product['datasheet'])) return false;
-                foreach ($product['datasheet'] as $doc) {
-                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_datasheet) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-        }
-        
-        if (!empty($selected_manuel_reparation)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_manuel_reparation) {
-                if (!is_array($product['manuel_reparation'])) return false;
-                foreach ($product['manuel_reparation'] as $doc) {
-                    if (isset($doc['friendly_name']) && $doc['friendly_name'] === $selected_manuel_reparation) {
-                        return true;
+        // NOUVEAU : Filtre pour les types de documents multi-sélection
+        if (!empty($selected_doc_types)) {
+            $filtered_products = array_filter($filtered_products, function($product) use ($selected_doc_types) {
+                foreach ($selected_doc_types as $doc_type) {
+                    switch ($doc_type) {
+                        case 'vue_eclatee':
+                            if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])) {
+                                return true;
+                            }
+                            break;
+                        case 'manuel_utilisation':
+                            if (!empty($product['manuel_utilisation']) && is_array($product['manuel_utilisation'])) {
+                                return true;
+                            }
+                            break;
+                        case 'datasheet':
+                            if (!empty($product['datasheet']) && is_array($product['datasheet'])) {
+                                return true;
+                            }
+                            break;
+                        case 'manuel_reparation':
+                            if (!empty($product['manuel_reparation']) && is_array($product['manuel_reparation'])) {
+                                return true;
+                            }
+                            break;
                     }
                 }
                 return false;
@@ -602,6 +582,29 @@ if (!function_exists('doc_download_display')) {
         $categories_wp = array_filter(array_unique($categories_wp));
         natcasesort($categories_wp);
         $categories_wp = array_values($categories_wp);
+        
+        // Calculer les compteurs pour chaque type de document
+        $doc_type_counts = [
+            'vue_eclatee' => 0,
+            'manuel_utilisation' => 0,
+            'datasheet' => 0,
+            'manuel_reparation' => 0
+        ];
+        
+        foreach ($products_with_docs as $product) {
+            if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])) {
+                $doc_type_counts['vue_eclatee']++;
+            }
+            if (!empty($product['manuel_utilisation']) && is_array($product['manuel_utilisation'])) {
+                $doc_type_counts['manuel_utilisation']++;
+            }
+            if (!empty($product['datasheet']) && is_array($product['datasheet'])) {
+                $doc_type_counts['datasheet']++;
+            }
+            if (!empty($product['manuel_reparation']) && is_array($product['manuel_reparation'])) {
+                $doc_type_counts['manuel_reparation']++;
+            }
+        }
         
         // Créer une liste combinée pour l'auto-complétion du champ de recherche principal
         $all_search_values = [];
@@ -918,6 +921,59 @@ if (!function_exists('doc_download_display')) {
                     box-shadow: 0 0 0 4px #6b7280;
                 }
                 
+                /* Styles pour les options de types de documents */
+                .doc-type-option {
+                    padding: 10px;
+                    cursor: pointer;
+                    border-bottom: 1px solid #e5e7eb;
+                    transition: background-color 0.2s;
+                }
+                
+                .doc-type-option:hover {
+                    background-color: #f3f4f6;
+                }
+                
+                .doc-type-option:last-child {
+                    border-bottom: none;
+                }
+                
+                .doc-checkbox-label {
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    font-size: 13px;
+                    margin: 0;
+                    width: 100%;
+                }
+                
+                .doc-checkbox-label input[type="checkbox"] {
+                    width: 16px;
+                    height: 16px;
+                    accent-color: #0066cc;
+                    cursor: pointer;
+                }
+                
+                .doc-count {
+                    color: #6b7280;
+                    font-size: 0.85em;
+                    font-weight: normal;
+                    margin-left: auto;
+                }
+                
+                .doc-checkbox-label input[type="checkbox"]:checked ~ .doc-count {
+                    color: #0066cc;
+                    font-weight: bold;
+                }
+                
+                /* Style pour l'input readonly */
+                #filter-doc-types[readonly] {
+                    cursor: pointer;
+                }
+                
+                #filter-doc-types[readonly]:focus {
+                    cursor: pointer;
+                }
+                
                 .results-container {
                     margin-top: 30px;
                 }
@@ -1172,10 +1228,9 @@ if (!function_exists('doc_download_display')) {
                 <input type="hidden" name="famille" value="<?php echo esc_attr($selected_famille); ?>">
                 <input type="hidden" name="sous_famille" value="<?php echo esc_attr($selected_sous_famille); ?>">
                 <input type="hidden" name="sous_sous_famille" value="<?php echo esc_attr($selected_sous_sous_famille); ?>">
-                <input type="hidden" name="vue_eclatee" value="<?php echo esc_attr($selected_vue_eclatee); ?>">
-                <input type="hidden" name="manuel_utilisation" value="<?php echo esc_attr($selected_manuel_utilisation); ?>">
-                <input type="hidden" name="datasheet" value="<?php echo esc_attr($selected_datasheet); ?>">
-                <input type="hidden" name="manuel_reparation" value="<?php echo esc_attr($selected_manuel_reparation); ?>">
+                <?php foreach ($selected_doc_types as $doc_type): ?>
+                <input type="hidden" name="doc_types[]" value="<?php echo esc_attr($doc_type); ?>">
+                <?php endforeach; ?>>
                 <input type="hidden" name="reference_fabriquant" value="<?php echo esc_attr($selected_reference_fabriquant); ?>">
                 <input type="hidden" name="categorie_wp" value="<?php echo esc_attr($selected_categorie_wp); ?>">
                 <input type="hidden" name="brand" value="<?php echo esc_attr($selected_brand); ?>">
@@ -1282,7 +1337,7 @@ if (!function_exists('doc_download_display')) {
                     </div>
                     
                     <div class="filter-group">
-                        <label for="filter-vue-eclatee">Vue éclatée :</label>
+                        <label for="filter-doc-types">Types de documentation :</label>
                         <div class="select-with-search">
                             <div class="search-icon">
                                 <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
@@ -1290,89 +1345,68 @@ if (!function_exists('doc_download_display')) {
                                 </svg>
                             </div>
                             <input type="text" 
-                                   id="filter-vue-eclatee" 
+                                   id="filter-doc-types" 
                                    class="select-search-input" 
-                                   placeholder="Toutes les vues éclatées" 
-                                   value="<?php echo esc_attr($selected_vue_eclatee); ?>"
+                                   placeholder="<?php 
+                                   if (empty($selected_doc_types)) {
+                                       echo 'Tous les types de documents';
+                                   } else {
+                                       $doc_labels = [
+                                           'vue_eclatee' => 'Vue éclatée',
+                                           'manuel_utilisation' => 'Manuel utilisation', 
+                                           'datasheet' => 'Datasheet',
+                                           'manuel_reparation' => 'Manuel réparation'
+                                       ];
+                                       $selected_labels = [];
+                                       foreach ($selected_doc_types as $type) {
+                                           if (isset($doc_labels[$type])) {
+                                               $selected_labels[] = $doc_labels[$type];
+                                           }
+                                       }
+                                       echo count($selected_labels) . ' type' . (count($selected_labels) > 1 ? 's' : '') . ' sélectionné' . (count($selected_labels) > 1 ? 's' : '');
+                                   }
+                                   ?>"
+                                   readonly
                                    autocomplete="off" />
-                            <input type="hidden" name="vue_eclatee" id="vue_eclatee_hidden" value="<?php echo esc_attr($selected_vue_eclatee); ?>" />
-                            <div id="vue-eclatee-dropdown" class="select-dropdown">
-                                <div class="select-option" data-value="">Toutes les vues éclatées</div>
-                                <?php foreach ($vues_eclatees as $vue): ?>
-                                    <div class="select-option" data-value="<?php echo esc_attr($vue); ?>"><?php echo esc_html($vue); ?></div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label for="filter-manuel-utilisation">Manuel d'utilisation :</label>
-                        <div class="select-with-search">
-                            <div class="search-icon">
-                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                </svg>
-                            </div>
-                            <input type="text" 
-                                   id="filter-manuel-utilisation" 
-                                   class="select-search-input" 
-                                   placeholder="Tous les manuels d'utilisation" 
-                                   value="<?php echo esc_attr($selected_manuel_utilisation); ?>"
-                                   autocomplete="off" />
-                            <input type="hidden" name="manuel_utilisation" id="manuel_utilisation_hidden" value="<?php echo esc_attr($selected_manuel_utilisation); ?>" />
-                            <div id="manuel-utilisation-dropdown" class="select-dropdown">
-                                <div class="select-option" data-value="">Tous les manuels d'utilisation</div>
-                                <?php foreach ($manuels_utilisation as $manuel): ?>
-                                    <div class="select-option" data-value="<?php echo esc_attr($manuel); ?>"><?php echo esc_html($manuel); ?></div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label for="filter-datasheet">Datasheet :</label>
-                        <div class="select-with-search">
-                            <div class="search-icon">
-                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                </svg>
-                            </div>
-                            <input type="text" 
-                                   id="filter-datasheet" 
-                                   class="select-search-input" 
-                                   placeholder="Toutes les datasheets" 
-                                   value="<?php echo esc_attr($selected_datasheet); ?>"
-                                   autocomplete="off" />
-                            <input type="hidden" name="datasheet" id="datasheet_hidden" value="<?php echo esc_attr($selected_datasheet); ?>" />
-                            <div id="datasheet-dropdown" class="select-dropdown">
-                                <div class="select-option" data-value="">Toutes les datasheets</div>
-                                <?php foreach ($datasheets as $datasheet): ?>
-                                    <div class="select-option" data-value="<?php echo esc_attr($datasheet); ?>"><?php echo esc_html($datasheet); ?></div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label for="filter-manuel-reparation">Manuel de réparation :</label>
-                        <div class="select-with-search">
-                            <div class="search-icon">
-                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                </svg>
-                            </div>
-                            <input type="text" 
-                                   id="filter-manuel-reparation" 
-                                   class="select-search-input" 
-                                   placeholder="Tous les manuels de réparation" 
-                                   value="<?php echo esc_attr($selected_manuel_reparation); ?>"
-                                   autocomplete="off" />
-                            <input type="hidden" name="manuel_reparation" id="manuel_reparation_hidden" value="<?php echo esc_attr($selected_manuel_reparation); ?>" />
-                            <div id="manuel-reparation-dropdown" class="select-dropdown">
-                                <div class="select-option" data-value="">Tous les manuels de réparation</div>
-                                <?php foreach ($manuels_reparation as $manuel): ?>
-                                    <div class="select-option" data-value="<?php echo esc_attr($manuel); ?>"><?php echo esc_html($manuel); ?></div>
-                                <?php endforeach; ?>
+                            <div id="doc-types-dropdown" class="select-dropdown">
+                                <div class="doc-type-option" data-value="">
+                                    <label class="doc-checkbox-label">
+                                        <input type="checkbox" class="doc-clear-all" style="margin-right: 8px;">
+                                        <strong>Tout désélectionner</strong>
+                                    </label>
+                                </div>
+                                <div class="doc-type-option" data-value="vue_eclatee">
+                                    <label class="doc-checkbox-label">
+                                        <input type="checkbox" name="doc_types[]" value="vue_eclatee" 
+                                               <?php echo in_array('vue_eclatee', $selected_doc_types) ? 'checked' : ''; ?>
+                                               style="margin-right: 8px;">
+                                        Vue éclatée <span class="doc-count">(<?php echo $doc_type_counts['vue_eclatee']; ?>)</span>
+                                    </label>
+                                </div>
+                                <div class="doc-type-option" data-value="manuel_utilisation">
+                                    <label class="doc-checkbox-label">
+                                        <input type="checkbox" name="doc_types[]" value="manuel_utilisation" 
+                                               <?php echo in_array('manuel_utilisation', $selected_doc_types) ? 'checked' : ''; ?>
+                                               style="margin-right: 8px;">
+                                        Manuel utilisation <span class="doc-count">(<?php echo $doc_type_counts['manuel_utilisation']; ?>)</span>
+                                    </label>
+                                </div>
+                                <div class="doc-type-option" data-value="datasheet">
+                                    <label class="doc-checkbox-label">
+                                        <input type="checkbox" name="doc_types[]" value="datasheet" 
+                                               <?php echo in_array('datasheet', $selected_doc_types) ? 'checked' : ''; ?>
+                                               style="margin-right: 8px;">
+                                        Datasheet <span class="doc-count">(<?php echo $doc_type_counts['datasheet']; ?>)</span>
+                                    </label>
+                                </div>
+                                <div class="doc-type-option" data-value="manuel_reparation">
+                                    <label class="doc-checkbox-label">
+                                        <input type="checkbox" name="doc_types[]" value="manuel_reparation" 
+                                               <?php echo in_array('manuel_reparation', $selected_doc_types) ? 'checked' : ''; ?>
+                                               style="margin-right: 8px;">
+                                        Manuel réparation <span class="doc-count">(<?php echo $doc_type_counts['manuel_reparation']; ?>)</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1615,10 +1649,6 @@ if (!function_exists('doc_download_display')) {
                     { inputId: 'filter-famille', hiddenId: 'famille_hidden', dropdownId: 'famille-dropdown' },
                     { inputId: 'filter-sous-famille', hiddenId: 'sous_famille_hidden', dropdownId: 'sous-famille-dropdown' },
                     { inputId: 'filter-sous-sous-famille', hiddenId: 'sous_sous_famille_hidden', dropdownId: 'sous-sous-famille-dropdown' },
-                    { inputId: 'filter-vue-eclatee', hiddenId: 'vue_eclatee_hidden', dropdownId: 'vue-eclatee-dropdown' },
-                    { inputId: 'filter-manuel-utilisation', hiddenId: 'manuel_utilisation_hidden', dropdownId: 'manuel-utilisation-dropdown' },
-                    { inputId: 'filter-datasheet', hiddenId: 'datasheet_hidden', dropdownId: 'datasheet-dropdown' },
-                    { inputId: 'filter-manuel-reparation', hiddenId: 'manuel_reparation_hidden', dropdownId: 'manuel-reparation-dropdown' },
                     { inputId: 'filter-reference-fabriquant', hiddenId: 'reference_fabriquant_hidden', dropdownId: 'reference-fabriquant-dropdown' },
                     { inputId: 'filter-categorie-wp', hiddenId: 'categorie_wp_hidden', dropdownId: 'category-dropdown' }
                 ];
@@ -1655,6 +1685,24 @@ if (!function_exists('doc_download_display')) {
                             }
                         }
                     });
+                    
+                    // Vérifier les checkboxes de types de documents
+                    const checkedDocTypes = document.querySelectorAll('#doc-types-dropdown input[type="checkbox"]:checked:not(.doc-clear-all)');
+                    if (checkedDocTypes.length > 0) {
+                        activeCount += checkedDocTypes.length;
+                        
+                        // Appliquer le style actif au champ types de documents
+                        const docTypesInput = document.getElementById('filter-doc-types');
+                        if (docTypesInput) {
+                            docTypesInput.classList.add('filter-active');
+                        }
+                    } else {
+                        // Retirer le style actif
+                        const docTypesInput = document.getElementById('filter-doc-types');
+                        if (docTypesInput) {
+                            docTypesInput.classList.remove('filter-active');
+                        }
+                    }
                     
                     // Mettre à jour le bouton Réinitialiser avec le compteur
                     const resetButton = document.querySelector('.btn-reset');
@@ -1833,6 +1881,106 @@ if (!function_exists('doc_download_display')) {
                 
                 // Initialiser tous les champs de recherche
                 searchFields.forEach(initSearchField);
+                
+                // Gestion du filtre de types de documents
+                const docTypesInput = document.getElementById('filter-doc-types');
+                const docTypesDropdown = document.getElementById('doc-types-dropdown');
+                const documentCheckboxes = document.querySelectorAll('#doc-types-dropdown input[type="checkbox"]:not(.doc-clear-all)');
+                const clearAllCheckbox = document.querySelector('.doc-clear-all');
+                const filtersForm = document.querySelector('.filters-row');
+                let docDropdownOpen = false;
+                
+                // Fonction pour mettre à jour le texte de l'input
+                function updateDocTypesInputText() {
+                    const checkedBoxes = document.querySelectorAll('#doc-types-dropdown input[type="checkbox"]:checked:not(.doc-clear-all)');
+                    const docLabels = {
+                        'vue_eclatee': 'Vue éclatée',
+                        'manuel_utilisation': 'Manuel utilisation',
+                        'datasheet': 'Datasheet',
+                        'manuel_reparation': 'Manuel réparation'
+                    };
+                    
+                    if (checkedBoxes.length === 0) {
+                        docTypesInput.placeholder = 'Tous les types de documents';
+                        docTypesInput.value = '';
+                    } else {
+                        const selectedLabels = [];
+                        checkedBoxes.forEach(cb => {
+                            if (docLabels[cb.value]) {
+                                selectedLabels.push(docLabels[cb.value]);
+                            }
+                        });
+                        docTypesInput.value = checkedBoxes.length + ' type' + (checkedBoxes.length > 1 ? 's' : '') + ' sélectionné' + (checkedBoxes.length > 1 ? 's' : '');
+                    }
+                }
+                
+                // Ouvrir/fermer le dropdown
+                if (docTypesInput && docTypesDropdown) {
+                    docTypesInput.addEventListener('click', function() {
+                        docDropdownOpen = !docDropdownOpen;
+                        docTypesDropdown.style.display = docDropdownOpen ? 'block' : 'none';
+                    });
+                    
+                    docTypesInput.addEventListener('focus', function() {
+                        docDropdownOpen = true;
+                        docTypesDropdown.style.display = 'block';
+                    });
+                }
+                
+                // Gestion des checkboxes individuelles
+                documentCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        updateDocTypesInputText();
+                        updateActiveFilters();
+                        
+                        // Soumettre automatiquement le formulaire après un court délai
+                        setTimeout(() => {
+                            if (filtersForm) {
+                                filtersForm.submit();
+                            }
+                        }, 150);
+                    });
+                });
+                
+                // Gestion du "Tout désélectionner"
+                if (clearAllCheckbox) {
+                    clearAllCheckbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            documentCheckboxes.forEach(cb => {
+                                if (cb.checked) {
+                                    cb.checked = false;
+                                }
+                            });
+                            this.checked = false; // Décocher le "tout désélectionner"
+                            updateDocTypesInputText();
+                            updateActiveFilters();
+                            
+                            setTimeout(() => {
+                                if (filtersForm) {
+                                    filtersForm.submit();
+                                }
+                            }, 150);
+                        }
+                    });
+                }
+                
+                // Fermer le dropdown en cliquant ailleurs
+                document.addEventListener('click', function(e) {
+                    if (docTypesInput && docTypesDropdown && !docTypesInput.contains(e.target) && !docTypesDropdown.contains(e.target)) {
+                        docDropdownOpen = false;
+                        docTypesDropdown.style.display = 'none';
+                    }
+                });
+                
+                // Empêcher la fermeture lors du clic dans le dropdown
+                if (docTypesDropdown) {
+                    docTypesDropdown.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
+                
+                // Initialiser le texte au chargement
+                updateDocTypesInputText();
             });
             </script>
         </div>
