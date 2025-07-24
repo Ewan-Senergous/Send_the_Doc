@@ -440,13 +440,23 @@ if (!function_exists('doc_download_display')) {
                     position: relative;
                 }
                 
+                .select-with-search .search-icon {
+                    position: absolute;
+                    left: 0.8rem;
+                    top: 59%;
+                    transform: translateY(-50%);
+                    pointer-events: none;
+                    color: #6b7280;
+                    z-index: 1;
+                }
+                
                 .select-search-input {
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #6b7280;
-                    border-radius: 5px;
-                    font-size: 13px;
-                    background: white;
+                    width: 100% !important;
+                    padding: 10px 10px 10px 2rem !important;
+                    border: 1px solid #6b7280 !important;
+                    border-radius: 5px !important;
+                    font-size: 13px !important;
+                    background: white !important;
                 }
                 
                 .select-search-input:focus {
@@ -797,6 +807,9 @@ if (!function_exists('doc_download_display')) {
                     .pagination-button:last-child {
                         padding-right: 10px;
                     }
+                    .select-with-search .search-icon {
+                        top: 57%;
+                    }
                 }
             </style>
             
@@ -922,6 +935,11 @@ if (!function_exists('doc_download_display')) {
                     <div class="filter-group">
                         <label for="filter-categorie-wp">Catégorie produit :</label>
                         <div class="select-with-search">
+                            <div class="search-icon">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
                             <input type="text" 
                                    id="filter-categorie-wp" 
                                    class="select-search-input" 
