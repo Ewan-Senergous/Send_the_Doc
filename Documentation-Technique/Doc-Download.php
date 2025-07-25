@@ -10,6 +10,9 @@ if (!function_exists('doc_download_display')) {
             return ob_get_clean();
         }
         
+        // FONCTION DESACTIVÉE : Initialisation trop lourde - à faire manuellement si nécessaire
+        // init_popularity_meta_fields();
+        
         // NOUVELLE FONCTION : Extraire un nom friendly à partir d'une URL
         function extract_friendly_name_from_url($url) {
             if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
@@ -93,20 +96,23 @@ if (!function_exists('doc_download_display')) {
         function get_products_with_documentation_optimized() {
             global $wpdb;
             
-            // Cache de 30 minutes
-            $cache_key = 'products_with_docs_taxonomies_v1';
+            // Cache de 2 heures pour réduire la charge
+            $cache_key = 'products_with_docs_optimized_v2';
             $cached_result = wp_cache_get($cache_key);
             
             if (false !== $cached_result) {
                 return $cached_result;
             }
             
-            // Requête SQL simplifiée - récupérer seulement les produits avec documentation
+            // Requête SQL simplifiée pour éviter les problèmes de performance
             $sql = "
                 SELECT DISTINCT 
                     p.ID as id,
                     p.post_title as name,
                     p.post_name as slug,
+                    p.post_date as post_date,
+                    p.menu_order as menu_order,
+                    p.comment_count as comment_count,
                     
                     -- Documentation depuis taxonomie pa_catalogue
                     t_doc.name as documentation_url
@@ -126,12 +132,43 @@ if (!function_exists('doc_download_display')) {
                 AND t_doc.name != 'N/A'
                 AND t_doc.name NOT LIKE '%non%'
                 
-                ORDER BY p.post_title ASC
+                ORDER BY 
+                    p.comment_count DESC,           -- Tri par commentaires (popularité native)
+                    p.menu_order ASC,               -- Puis par ordre manuel admin
+                    p.post_date DESC                -- Enfin par récence
             ";
             
             $results = $wpdb->get_results($sql, ARRAY_A);
             
-            // Formater les résultats avec récupération des nouveaux attributs
+            // Optimisation : traitement par batch et cache des termes
+            $all_product_ids = array_column($results, 'id');
+            
+            // Pré-charger toutes les relations taxonomiques d'un coup
+            $taxonomy_data = [];
+            $taxonomies = ['pa_famille', 'pa_sous-famille', 'pa_sous-sous-famille', 'pa_vue-eclatee', 'pa_manuel-dutilisation', 'pa_datasheet', 'pa_manuel-de-reparation', 'pa_reference-fabriquant', 'pwb-brand'];
+            
+            foreach ($taxonomies as $taxonomy) {
+                if (taxonomy_exists($taxonomy)) {
+                    $taxonomy_data[$taxonomy] = [];
+                    // Requête groupée pour tous les produits
+                    $terms_relationships = $wpdb->get_results($wpdb->prepare("
+                        SELECT tr.object_id, t.name 
+                        FROM {$wpdb->term_relationships} tr
+                        INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+                        INNER JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
+                        WHERE tt.taxonomy = %s AND tr.object_id IN (" . implode(',', array_map('intval', $all_product_ids)) . ")
+                    ", $taxonomy));
+                    
+                    foreach ($terms_relationships as $rel) {
+                        if (!isset($taxonomy_data[$taxonomy][$rel->object_id])) {
+                            $taxonomy_data[$taxonomy][$rel->object_id] = [];
+                        }
+                        $taxonomy_data[$taxonomy][$rel->object_id][] = $rel->name;
+                    }
+                }
+            }
+            
+            // Formater les résultats avec les données pré-chargées
             $products_with_docs = array();
             foreach ($results as $row) {
                 if (!empty($row['documentation_url']) && 
@@ -139,122 +176,62 @@ if (!function_exists('doc_download_display')) {
                     
                     $product_id = $row['id'];
                     
-                    // Récupération de TOUS les attributs avec get_the_terms() - TOUTES les valeurs
-                    $famille = [];
-                    $sous_famille = [];
-                    $sous_sous_famille = [];
+                    // Score de popularité simplifié basé sur WordPress natif
+                    $popularity_score = (
+                        intval($row['comment_count'] ?? 0) * 10 +       // Commentaires = facteur principal
+                        (100 - intval($row['menu_order'] ?? 100)) * 2 + // Ordre manuel = priorité admin
+                        max(0, 30 - ((strtotime('now') - strtotime($row['post_date'])) / (86400 * 30))) // Bonus récence
+                    );
+                    
+                    // Utiliser les données pré-chargées
+                    $famille = $taxonomy_data['pa_famille'][$product_id] ?? [];
+                    $sous_famille = $taxonomy_data['pa_sous-famille'][$product_id] ?? [];
+                    $sous_sous_famille = $taxonomy_data['pa_sous-sous-famille'][$product_id] ?? [];
+                    $reference_fabriquant = $taxonomy_data['pa_reference-fabriquant'][$product_id] ?? [];
+                    $brand = $taxonomy_data['pwb-brand'][$product_id] ?? [];
+                    
+                    // Traitement des documents avec URL validation
                     $vue_eclatee = [];
+                    $vue_urls = $taxonomy_data['pa_vue-eclatee'][$product_id] ?? [];
+                    foreach ($vue_urls as $url) {
+                        if (filter_var($url, FILTER_VALIDATE_URL)) {
+                            $vue_eclatee[] = [
+                                'url' => $url,
+                                'friendly_name' => extract_friendly_name_from_url($url)
+                            ];
+                        }
+                    }
+                    
                     $manuel_utilisation = [];
+                    $manuel_urls = $taxonomy_data['pa_manuel-dutilisation'][$product_id] ?? [];
+                    foreach ($manuel_urls as $url) {
+                        if (filter_var($url, FILTER_VALIDATE_URL)) {
+                            $manuel_utilisation[] = [
+                                'url' => $url,
+                                'friendly_name' => extract_friendly_name_from_url($url)
+                            ];
+                        }
+                    }
+                    
                     $datasheet = [];
+                    $datasheet_urls = $taxonomy_data['pa_datasheet'][$product_id] ?? [];
+                    foreach ($datasheet_urls as $url) {
+                        if (filter_var($url, FILTER_VALIDATE_URL)) {
+                            $datasheet[] = [
+                                'url' => $url,
+                                'friendly_name' => extract_friendly_name_from_url($url)
+                            ];
+                        }
+                    }
+                    
                     $manuel_reparation = [];
-                    $reference_fabriquant = [];
-                    $brand = [];
-                    
-                    // Récupération des familles - TOUTES les valeurs
-                    if (taxonomy_exists('pa_famille')) {
-                        $terms = get_the_terms($product_id, 'pa_famille');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                $famille[] = $term->name;
-                            }
-                        }
-                    }
-                    
-                    // Récupération des sous-familles - TOUTES les valeurs
-                    if (taxonomy_exists('pa_sous-famille')) {
-                        $terms = get_the_terms($product_id, 'pa_sous-famille');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                $sous_famille[] = $term->name;
-                            }
-                        }
-                    }
-                    
-                    // Récupération des sous-sous-familles - TOUTES les valeurs
-                    if (taxonomy_exists('pa_sous-sous-famille')) {
-                        $terms = get_the_terms($product_id, 'pa_sous-sous-famille');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                $sous_sous_famille[] = $term->name;
-                            }
-                        }
-                    }
-                    
-                    // Récupération avec vérification d'existence des taxonomies - TOUTES les valeurs
-                    if (taxonomy_exists('pa_vue-eclatee')) {
-                        $terms = get_the_terms($product_id, 'pa_vue-eclatee');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
-                                    $vue_eclatee[] = array(
-                                        'url' => $term->name,
-                                        'friendly_name' => $friendly_name
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (taxonomy_exists('pa_manuel-dutilisation')) {
-                        $terms = get_the_terms($product_id, 'pa_manuel-dutilisation');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
-                                    $manuel_utilisation[] = array(
-                                        'url' => $term->name,
-                                        'friendly_name' => $friendly_name
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (taxonomy_exists('pa_datasheet')) {
-                        $terms = get_the_terms($product_id, 'pa_datasheet');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
-                                    $datasheet[] = array(
-                                        'url' => $term->name,
-                                        'friendly_name' => $friendly_name
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (taxonomy_exists('pa_manuel-de-reparation')) {
-                        $terms = get_the_terms($product_id, 'pa_manuel-de-reparation');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
-                                    $manuel_reparation[] = array(
-                                        'url' => $term->name,
-                                        'friendly_name' => $friendly_name
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (taxonomy_exists('pa_reference-fabriquant')) {
-                        $terms = get_the_terms($product_id, 'pa_reference-fabriquant');
-                        if ($terms && !is_wp_error($terms)) {
-                            foreach ($terms as $term) {
-                                $reference_fabriquant[] = $term->name;
-                            }
-                        }
-                    }
-                    
-                    // Marque (Brand) - Taxonomie pwb-brand - TOUTES les valeurs
-                    $terms = get_the_terms($product_id, 'pwb-brand');
-                    if ($terms && !is_wp_error($terms)) {
-                        foreach ($terms as $term) {
-                            $brand[] = $term->name;
+                    $reparation_urls = $taxonomy_data['pa_manuel-de-reparation'][$product_id] ?? [];
+                    foreach ($reparation_urls as $url) {
+                        if (filter_var($url, FILTER_VALIDATE_URL)) {
+                            $manuel_reparation[] = [
+                                'url' => $url,
+                                'friendly_name' => extract_friendly_name_from_url($url)
+                            ];
                         }
                     }
                     
@@ -271,13 +248,20 @@ if (!function_exists('doc_download_display')) {
                         'manuel_reparation' => $manuel_reparation,
                         'reference_fabriquant' => $reference_fabriquant,
                         'brand' => $brand,
-                        'permalink' => get_permalink($product_id)
+                        'permalink' => get_permalink($product_id),
+                        'popularity_score' => $popularity_score,
+                        'is_featured' => ($row['comment_count'] >= 3) // Marquer comme featured si 3+ commentaires
                     );
                 }
             }
             
-            // Cache pendant 30 minutes
-            wp_cache_set($cache_key, $products_with_docs, '', 1800);
+            // Tri final par score de popularité (déjà trié par SQL mais on s'assure)
+            usort($products_with_docs, function($a, $b) {
+                return $b['popularity_score'] <=> $a['popularity_score'];
+            });
+            
+            // Cache pendant 2 heures 
+            wp_cache_set($cache_key, $products_with_docs, '', 7200);
             
             return $products_with_docs;
         }
@@ -542,28 +526,72 @@ if (!function_exists('doc_download_display')) {
         $references_fabriquant = array_values($references_fabriquant);
         $brands = array_values($brands);
         
-        // Calculer les compteurs pour chaque type de document
-        $doc_type_counts = [
-            'vue_eclatee' => 0,
-            'manuel_utilisation' => 0,
-            'datasheet' => 0,
-            'manuel_reparation' => 0
-        ];
+
         
-        foreach ($products_with_docs as $product) {
-            if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])) {
-                $doc_type_counts['vue_eclatee']++;
+        // OPTIMISÉ : Groupement simplifié des documents par type
+        function group_documents_by_type_optimized($products) {
+            $grouped = [
+                'vue_eclatee' => [],
+                'datasheet' => [],
+                'manuel_utilisation' => [],
+                'manuel_reparation' => []
+            ];
+            
+            // Limiter le traitement aux 50 premiers produits pour éviter la surcharge
+            $limited_products = array_slice($products, 0, 50);
+            
+            foreach ($limited_products as $product) {
+                $item_data = [
+                    'product' => $product,
+                    'popularity_score' => $product['popularity_score'],
+                    'is_featured' => $product['is_featured']
+                ];
+                
+                // Grouper efficacement en une seule passe
+                if (!empty($product['vue_eclatee'])) {
+                    $grouped['vue_eclatee'][] = array_merge($item_data, ['docs' => $product['vue_eclatee']]);
+                }
+                if (!empty($product['datasheet'])) {
+                    $grouped['datasheet'][] = array_merge($item_data, ['docs' => $product['datasheet']]);
+                }
+                if (!empty($product['manuel_utilisation'])) {
+                    $grouped['manuel_utilisation'][] = array_merge($item_data, ['docs' => $product['manuel_utilisation']]);
+                }
+                if (!empty($product['manuel_reparation'])) {
+                    $grouped['manuel_reparation'][] = array_merge($item_data, ['docs' => $product['manuel_reparation']]);
+                }
             }
-            if (!empty($product['manuel_utilisation']) && is_array($product['manuel_utilisation'])) {
-                $doc_type_counts['manuel_utilisation']++;
+            
+            // Tri simplifié par popularité uniquement
+            foreach ($grouped as &$items) {
+                usort($items, function($a, $b) {
+                    return $b['popularity_score'] <=> $a['popularity_score'];
+                });
             }
-            if (!empty($product['datasheet']) && is_array($product['datasheet'])) {
-                $doc_type_counts['datasheet']++;
-            }
-            if (!empty($product['manuel_reparation']) && is_array($product['manuel_reparation'])) {
-                $doc_type_counts['manuel_reparation']++;
-            }
+            
+            return $grouped;
         }
+        
+        // Grouper les documents par type avec tri par popularité (version optimisée)
+        $documents_by_type = group_documents_by_type_optimized($products_with_docs);
+        
+        // Extraire les 5 plus populaires de chaque type pour l'accordéon
+        $popular_docs_preview = [];
+        foreach ($documents_by_type as $type => $items) {
+            $popular_docs_preview[$type] = [
+                'count' => count($items),
+                'top_5' => array_slice($items, 0, 5),
+                'remaining' => max(0, count($items) - 5)
+            ];
+        }
+        
+        // Calculer les compteurs pour chaque type de document (mis à jour avec les nouveaux groupes)
+        $doc_type_counts = [
+            'vue_eclatee' => $popular_docs_preview['vue_eclatee']['count'],
+            'manuel_utilisation' => $popular_docs_preview['manuel_utilisation']['count'],
+            'datasheet' => $popular_docs_preview['datasheet']['count'],
+            'manuel_reparation' => $popular_docs_preview['manuel_reparation']['count']
+        ];
         
         // Créer une liste combinée pour l'auto-complétion du champ de recherche principal
         $all_search_values = [];
@@ -1145,6 +1173,291 @@ if (!function_exists('doc_download_display')) {
                     outline: none;
                     box-shadow: 0 0 0 4px #93c5fd;
                 }
+                
+                /* NOUVEAU : Styles pour l'accordéon de types de documents */
+                .doc-types-accordion {
+                    flex: 1;
+                    max-width: 600px;
+                    margin: 0 20px;
+                }
+                
+                .doc-types-tabs {
+                    display: flex;
+                    background: white;
+                    border: 2px solid #0066cc;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+                
+                .doc-type-tab {
+                    flex: 1;
+                    padding: 12px 8px;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    border-right: 1px solid #e5e7eb;
+                    background: white;
+                    position: relative;
+                }
+                
+                .doc-type-tab:last-child {
+                    border-right: none;
+                }
+                
+                .doc-type-tab:hover {
+                    background: #f3f4f6;
+                }
+                
+                .doc-type-tab.active {
+                    background: #0066cc;
+                    color: white;
+                }
+                
+                .doc-type-tab.active .doc-type-arrow {
+                    transform: rotate(180deg);
+                }
+                
+                .doc-type-label {
+                    display: block;
+                    font-weight: bold;
+                    font-size: 0.85em;
+                    margin-bottom: 2px;
+                }
+                
+                .doc-type-count {
+                    display: block;
+                    font-size: 0.75em;
+                    opacity: 0.8;
+                }
+                
+                .doc-type-arrow {
+                    position: absolute;
+                    top: 50%;
+                    right: 5px;
+                    transform: translateY(-50%);
+                    font-size: 0.7em;
+                    transition: transform 0.3s ease;
+                }
+                
+                .doc-type-content {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    border: 1px solid #0066cc;
+                    border-top: none;
+                    border-radius: 0 0 8px 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 1000;
+                    max-height: 400px;
+                    overflow-y: auto;
+                }
+                
+                .popular-docs-list {
+                    padding: 15px;
+                }
+                
+                .popular-doc-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 6px;
+                    margin-bottom: 8px;
+                    transition: all 0.2s ease;
+                    background: white;
+                }
+                
+                .popular-doc-item:hover {
+                    background: #f8f9fa;
+                    border-color: #0066cc;
+                    transform: translateX(2px);
+                }
+                
+                .popular-doc-item.featured {
+                    border-left: 4px solid #fbbf24;
+                    background: #fffbeb;
+                }
+                
+                .doc-item-info {
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .doc-item-title {
+                    margin-bottom: 4px;
+                }
+                
+                .doc-item-title a {
+                    color: #0066cc;
+                    text-decoration: none;
+                    font-weight: 500;
+                    font-size: 0.9em;
+                }
+                
+                .doc-item-title a:hover {
+                    text-decoration: underline;
+                }
+                
+                .featured-badge {
+                    display: inline-block;
+                    background: #fbbf24;
+                    color: #92400e;
+                    padding: 2px 6px;
+                    border-radius: 12px;
+                    font-size: 0.7em;
+                    font-weight: bold;
+                    margin-left: 8px;
+                }
+                
+                .doc-item-meta {
+                    font-size: 0.75em;
+                    color: #6b7280;
+                }
+                
+                .doc-brand, .doc-reference {
+                    display: inline-block;
+                    margin-right: 10px;
+                }
+                
+                .doc-brand {
+                    font-weight: 500;
+                    color: #374151;
+                }
+                
+                .doc-item-actions {
+                    display: flex;
+                    gap: 5px;
+                    align-items: center;
+                }
+                
+                .doc-quick-download {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 32px;
+                    height: 32px;
+                    background: #0066cc;
+                    color: white;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    transition: all 0.2s ease;
+                    font-size: 0.8em;
+                }
+                
+                .doc-quick-download:hover {
+                    background: #0052a3;
+                    transform: scale(1.1);
+                    color: white;
+                    text-decoration: none;
+                }
+                
+                .see-more-docs {
+                    text-align: center;
+                    padding: 15px;
+                    border-top: 1px solid #e5e7eb;
+                    background: #f8f9fa;
+                }
+                
+                .see-more-btn {
+                    background: #0066cc;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    font-size: 0.85em;
+                    transition: all 0.2s ease;
+                    display: inline-flex;
+                    align-items: center;
+                }
+                
+                .see-more-btn:hover {
+                    background: #0052a3;
+                    transform: translateY(-1px);
+                }
+                
+                .no-docs-message {
+                    text-align: center;
+                    padding: 20px;
+                    color: #6b7280;
+                    font-style: italic;
+                }
+                
+                /* Assurer que le results-header est en position relative pour le positionnement absolu */
+                .results-header {
+                    position: relative;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                }
+                
+              
+                @media (max-width: 768px) {
+                                        .doc-types-accordion {
+                        margin: 10px 0;
+                        max-width: 100%;
+                    }
+                    
+                    .doc-types-tabs {
+                        flex-wrap: wrap; 
+                    }
+                    
+                    .doc-type-tab {
+                        flex: 0 0 calc(50% - 1px); /* 2 onglets par ligne */
+                        border-right: 1px solid #e5e7eb;
+                        border-bottom: 1px solid #e5e7eb;
+                        padding: 15px 8px; /* Plus de padding vertical pour mobile */
+                    }
+                    
+                    .doc-type-tab:nth-child(2n) {
+                        border-right: none; /* Retirer bordure droite du 2ème et 4ème */
+                    }
+                    
+                    .doc-type-tab:nth-child(3), 
+                    .doc-type-tab:nth-child(4) {
+                        border-bottom: none; /* Retirer bordure bas de la 2ème ligne */
+                    }
+                    
+                    .doc-type-label {
+                        font-size: 0.8em; /* Légèrement plus petit en mobile */
+                    }
+                    
+                    .doc-type-count {
+                        font-size: 0.7em;
+                    }
+                    
+                    .doc-type-arrow {
+                        right: 8px;
+                        font-size: 0.6em;
+                    }
+                    
+                    .popular-doc-item {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 10px;
+                        padding: 12px;
+                    }
+                    
+                    .doc-item-actions {
+                        align-self: stretch;
+                        justify-content: center;
+                    }
+                    
+                    .results-header {
+                        flex-direction: column;
+                        gap: 15px;
+                    }
+                    
+                    .doc-type-content {
+                        /* Assurer que le contenu s'affiche correctement sous les 2 lignes */
+                        top: calc(100% + 1px);
+                    }
+                }
             </style>
             
             <div class="doc-header">
@@ -1409,6 +1722,92 @@ if (!function_exists('doc_download_display')) {
                     <div class="results-count">
                         <?php echo $total_products; ?> documentation(s) trouvée(s)
                     </div>
+                    
+                    <!-- NOUVEAU : Interface Accordéon Centrée -->
+                    <div class="doc-types-accordion">
+                        <div class="doc-types-tabs">
+                            <div class="doc-type-tab" data-type="vue_eclatee">
+                                <span class="doc-type-label">Vue éclatée</span>
+                                <span class="doc-type-count">(<?php echo $popular_docs_preview['vue_eclatee']['count']; ?>)</span>
+                                <span class="doc-type-arrow">▼</span>
+                            </div>
+                            <div class="doc-type-tab" data-type="datasheet">
+                                <span class="doc-type-label">Datasheet</span>
+                                <span class="doc-type-count">(<?php echo $popular_docs_preview['datasheet']['count']; ?>)</span>
+                                <span class="doc-type-arrow">▼</span>
+                            </div>
+                            <div class="doc-type-tab" data-type="manuel_utilisation">
+                                <span class="doc-type-label">Manuel utilisation</span>
+                                <span class="doc-type-count">(<?php echo $popular_docs_preview['manuel_utilisation']['count']; ?>)</span>
+                                <span class="doc-type-arrow">▼</span>
+                            </div>
+                            <div class="doc-type-tab" data-type="manuel_reparation">
+                                <span class="doc-type-label">Manuel réparation</span>
+                                <span class="doc-type-count">(<?php echo $popular_docs_preview['manuel_reparation']['count']; ?>)</span>
+                                <span class="doc-type-arrow">▼</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenus des accordéons -->
+                        <?php foreach ($popular_docs_preview as $type => $data): ?>
+                        <div class="doc-type-content" id="content-<?php echo $type; ?>" style="display: none;">
+                            <?php if ($data['count'] > 0): ?>
+                                <div class="popular-docs-list">
+                                    <?php foreach ($data['top_5'] as $index => $item): ?>
+                                        <div class="popular-doc-item <?php echo $item['is_featured'] ? 'featured' : ''; ?>">
+                                            <div class="doc-item-info">
+                                                <div class="doc-item-title">
+                                                    <a href="<?php echo esc_url($item['product']['permalink']); ?>" target="_blank">
+                                                        <?php echo esc_html($item['product']['name']); ?>
+                                                    </a>
+                                                    <?php if ($item['is_featured']): ?>
+                                                        <span class="featured-badge">★ Populaire</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="doc-item-meta">
+                                                    <?php if (!empty($item['product']['brand'])): ?>
+                                                        <span class="doc-brand"><?php echo esc_html(implode(', ', $item['product']['brand'])); ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($item['product']['reference_fabriquant'])): ?>
+                                                        <span class="doc-reference"><?php echo esc_html(implode(', ', $item['product']['reference_fabriquant'])); ?></span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                            <div class="doc-item-actions">
+                                                <?php foreach ($item['docs'] as $doc): ?>
+                                                    <a href="<?php echo esc_url($doc['url']); ?>" 
+                                                       class="doc-quick-download <?php echo $type; ?>-link" 
+                                                       target="_blank"
+                                                       title="<?php echo esc_attr($doc['friendly_name']); ?>">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>
+                                                        </svg>
+                                                    </a>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                
+                                <?php if ($data['remaining'] > 0): ?>
+                                <div class="see-more-docs">
+                                    <button class="see-more-btn" onclick="filterByDocType('<?php echo $type; ?>')">
+                                        Voir les <?php echo $data['remaining']; ?> autres
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 5px;">
+                                            <path d="M9 18l6-6-6-6"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <div class="no-docs-message">
+                                    Aucun document de ce type trouvé.
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    
                     <div class="pagination-info">
                         <?php echo count($current_page_products); ?> affichés
                         <?php if ($has_more_products): ?>
@@ -1928,7 +2327,84 @@ if (!function_exists('doc_download_display')) {
                     docTypesDropdown.style.display = 'none';
                     docDropdownOpen = false;
                 }
+                
+                // NOUVEAU : Gestion de l'accordéon de types de documents
+                const docTypeTabs = document.querySelectorAll('.doc-type-tab');
+                const docTypeContents = document.querySelectorAll('.doc-type-content');
+                let currentOpenTab = null;
+                
+                docTypeTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const type = this.dataset.type;
+                        const content = document.getElementById('content-' + type);
+                        const arrow = this.querySelector('.doc-type-arrow');
+                        
+                        // Si ce tab est déjà ouvert, le fermer
+                        if (currentOpenTab === this) {
+                            this.classList.remove('active');
+                            content.style.display = 'none';
+                            currentOpenTab = null;
+                            return;
+                        }
+                        
+                        // Fermer tous les autres tabs
+                        docTypeTabs.forEach(otherTab => {
+                            otherTab.classList.remove('active');
+                        });
+                        docTypeContents.forEach(otherContent => {
+                            otherContent.style.display = 'none';
+                        });
+                        
+                        // Ouvrir le tab sélectionné
+                        this.classList.add('active');
+                        content.style.display = 'block';
+                        currentOpenTab = this;
+                    });
+                });
+                
+                // Fermer l'accordéon en cliquant ailleurs
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.doc-types-accordion')) {
+                        docTypeTabs.forEach(tab => {
+                            tab.classList.remove('active');
+                        });
+                        docTypeContents.forEach(content => {
+                            content.style.display = 'none';
+                        });
+                        currentOpenTab = null;
+                    }
+                });
             });
+            
+            // NOUVEAU : Fonction pour filtrer par type de document
+            function filterByDocType(docType) {
+                // Créer les paramètres pour filtrer par type de document
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Conserver les filtres existants
+                const currentParams = {};
+                urlParams.forEach((value, key) => {
+                    if (key !== 'doc_types[]') { // Retirer les anciens types de documents
+                        currentParams[key] = value;
+                    }
+                });
+                
+                // Ajouter le nouveau type de document
+                currentParams['doc_types[]'] = docType;
+                
+                                 // Rediriger vers la nouvelle URL
+                 const newUrl = window.location.pathname + '?' + new URLSearchParams(currentParams).toString();
+                 window.location.href = newUrl;
+             }
+             
+             // TRACKING DÉSACTIVÉ pour éviter les problèmes de performance
+             // Le tracking pourra être réactivé plus tard après optimisation
+             /*
+             function trackDownload(productId, docType) {
+                 // Code de tracking simplifié à implémenter plus tard
+                 console.log('Téléchargement:', productId, docType);
+             }
+             */
             </script>
         </div>
         <?php
