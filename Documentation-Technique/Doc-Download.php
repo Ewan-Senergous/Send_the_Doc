@@ -81,9 +81,6 @@ if (!function_exists('doc_download_display')) {
         // Référence fabriquant
         $selected_reference_fabriquant = isset($_GET['reference_fabriquant']) ? sanitize_text_field($_GET['reference_fabriquant']) : '';
         
-        // Catégorie WordPress
-        $selected_categorie_wp = isset($_GET['categorie_wp']) ? sanitize_text_field($_GET['categorie_wp']) : '';
-        
         // Marque (brand)
         $selected_brand = isset($_GET['brand']) ? sanitize_text_field($_GET['brand']) : '';
         
@@ -151,7 +148,6 @@ if (!function_exists('doc_download_display')) {
                     $datasheet = [];
                     $manuel_reparation = [];
                     $reference_fabriquant = [];
-                    $categorie_wp = [];
                     $brand = [];
                     
                     // Récupération des familles - TOUTES les valeurs
@@ -254,16 +250,6 @@ if (!function_exists('doc_download_display')) {
                         }
                     }
                     
-                    // Catégorie WordPress (WooCommerce) - TOUTES les catégories
-                    $terms = get_the_terms($product_id, 'product_cat');
-                    $categories_wp_array = [];
-                    if ($terms && !is_wp_error($terms)) {
-                        foreach ($terms as $term) {
-                            $categories_wp_array[] = $term->name;
-                        }
-                    }
-                    $categorie_wp = $categories_wp_array;
-                    
                     // Marque (Brand) - Taxonomie pwb-brand - TOUTES les valeurs
                     $terms = get_the_terms($product_id, 'pwb-brand');
                     if ($terms && !is_wp_error($terms)) {
@@ -284,7 +270,6 @@ if (!function_exists('doc_download_display')) {
                         'datasheet' => $datasheet,
                         'manuel_reparation' => $manuel_reparation,
                         'reference_fabriquant' => $reference_fabriquant,
-                        'categorie_wp' => $categorie_wp,
                         'brand' => $brand,
                         'permalink' => get_permalink($product_id)
                     );
@@ -341,15 +326,6 @@ if (!function_exists('doc_download_display')) {
                 if (!empty($product['reference_fabriquant']) && is_array($product['reference_fabriquant'])) {
                     foreach ($product['reference_fabriquant'] as $reference) {
                         if (stripos($reference, $search_query) !== false) {
-                            return true;
-                        }
-                    }
-                }
-                
-                // Recherche dans les catégories WordPress
-                if (!empty($product['categorie_wp']) && is_array($product['categorie_wp'])) {
-                    foreach ($product['categorie_wp'] as $categorie) {
-                        if (stripos($categorie, $search_query) !== false) {
                             return true;
                         }
                     }
@@ -453,12 +429,6 @@ if (!function_exists('doc_download_display')) {
         if (!empty($selected_reference_fabriquant)) {
             $filtered_products = array_filter($filtered_products, function($product) use ($selected_reference_fabriquant) {
                 return is_array($product['reference_fabriquant']) && in_array($selected_reference_fabriquant, $product['reference_fabriquant']);
-            });
-        }
-        
-        if (!empty($selected_categorie_wp)) {
-            $filtered_products = array_filter($filtered_products, function($product) use ($selected_categorie_wp) {
-                return is_array($product['categorie_wp']) && in_array($selected_categorie_wp, $product['categorie_wp']);
             });
         }
         
@@ -572,17 +542,6 @@ if (!function_exists('doc_download_display')) {
         $references_fabriquant = array_values($references_fabriquant);
         $brands = array_values($brands);
         
-        // Catégories WordPress - ajoutées déjà dans la boucle précédente
-        $categories_wp = [];
-        foreach ($products_with_docs as $product) {
-            if (is_array($product['categorie_wp'])) {
-                $categories_wp = array_merge($categories_wp, $product['categorie_wp']);
-            }
-        }
-        $categories_wp = array_filter(array_unique($categories_wp));
-        natcasesort($categories_wp);
-        $categories_wp = array_values($categories_wp);
-        
         // Calculer les compteurs pour chaque type de document
         $doc_type_counts = [
             'vue_eclatee' => 0,
@@ -625,7 +584,6 @@ if (!function_exists('doc_download_display')) {
         $all_search_values = array_merge($all_search_values, $datasheets);
         $all_search_values = array_merge($all_search_values, $manuels_reparation);
         $all_search_values = array_merge($all_search_values, $references_fabriquant);
-        $all_search_values = array_merge($all_search_values, $categories_wp);
         $all_search_values = array_merge($all_search_values, $brands);
         
         // Nettoyer, dédupliquer et trier
@@ -1230,7 +1188,6 @@ if (!function_exists('doc_download_display')) {
                 <input type="hidden" name="doc_types[]" value="<?php echo esc_attr($doc_type); ?>">
                 <?php endforeach; ?>
                 <input type="hidden" name="reference_fabriquant" value="<?php echo esc_attr($selected_reference_fabriquant); ?>">
-                <input type="hidden" name="categorie_wp" value="<?php echo esc_attr($selected_categorie_wp); ?>">
                 <input type="hidden" name="brand" value="<?php echo esc_attr($selected_brand); ?>">
             </form>
             
@@ -1433,30 +1390,6 @@ if (!function_exists('doc_download_display')) {
                         </div>
                     </div>
                     
-                    <div class="filter-group">
-                        <label for="filter-categorie-wp">Catégorie produit :</label>
-                        <div class="select-with-search">
-                            <div class="search-icon">
-                                <svg width="14" height="14" fill="none" viewBox="0 0 20 20">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                </svg>
-                            </div>
-                            <input type="text" 
-                                   id="filter-categorie-wp" 
-                                   class="select-search-input" 
-                                   placeholder="Toutes les catégories" 
-                                   value="<?php echo esc_attr($selected_categorie_wp); ?>"
-                                   autocomplete="off" />
-                            <input type="hidden" name="categorie_wp" id="categorie_wp_hidden" value="<?php echo esc_attr($selected_categorie_wp); ?>" />
-                            <div id="category-dropdown" class="select-dropdown">
-                                <div class="select-option" data-value="">Toutes les catégories</div>
-                                <?php foreach ($categories_wp as $categorie): ?>
-                                    <div class="select-option" data-value="<?php echo esc_attr($categorie); ?>"><?php echo esc_html($categorie); ?></div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="filter-actions">
                         <a href="?" class="btn-reset">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw" style="vertical-align: middle; margin-right: 5px;">
@@ -1520,11 +1453,7 @@ if (!function_exists('doc_download_display')) {
                                         <span class="category-tag reference-fabriquant">Réf : <?php echo esc_html($reference); ?></span>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
-                                <?php if (!empty($product['categorie_wp']) && is_array($product['categorie_wp'])): ?>
-                                    <?php foreach ($product['categorie_wp'] as $categorie): ?>
-                                        <span class="category-tag categorie-wp">Catégorie : <?php echo esc_html($categorie); ?></span>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+
                             </div>
                             
                             <div class="download-links">
@@ -1647,8 +1576,7 @@ if (!function_exists('doc_download_display')) {
                     { inputId: 'filter-famille', hiddenId: 'famille_hidden', dropdownId: 'famille-dropdown' },
                     { inputId: 'filter-sous-famille', hiddenId: 'sous_famille_hidden', dropdownId: 'sous-famille-dropdown' },
                     { inputId: 'filter-sous-sous-famille', hiddenId: 'sous_sous_famille_hidden', dropdownId: 'sous-sous-famille-dropdown' },
-                    { inputId: 'filter-reference-fabriquant', hiddenId: 'reference_fabriquant_hidden', dropdownId: 'reference-fabriquant-dropdown' },
-                    { inputId: 'filter-categorie-wp', hiddenId: 'categorie_wp_hidden', dropdownId: 'category-dropdown' }
+                    { inputId: 'filter-reference-fabriquant', hiddenId: 'reference_fabriquant_hidden', dropdownId: 'reference-fabriquant-dropdown' }
                 ];
                 
                 // Fonction pour vérifier et appliquer les styles aux filtres actifs
