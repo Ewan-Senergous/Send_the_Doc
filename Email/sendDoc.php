@@ -335,13 +335,13 @@ if (!function_exists('cenovContactForm')) {
         $html_content = '
         <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Nouvelle plaque signalétique :</h1>
+                <h1 style="color: #0066cc; margin-bottom: 5px; font-size: 28px;">Nouvelle plaque signalétique :</h1>
                 <p style="margin-top: 0; margin-bottom: 5px;">Demande de : ' . $data['nom'] . '</p>
             </div>
             
             <div style="margin-bottom: 25px;">
                 <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles :</h3>
-                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #0066cc;">
                     <p style="margin: 5px 0;"><strong>Prénom :</strong> ' . $data['prenom'] . '</p>
                     <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $data['nom_famille'] . '</p>
                     <p style="margin: 5px 0;"><strong>Email :</strong> ' . $data['email'] . '</p>
@@ -351,7 +351,7 @@ if (!function_exists('cenovContactForm')) {
             
             <div style="margin-bottom: 25px;">
                 <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations professionnelles :</h3>
-                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #0066cc;">
                     <p style="margin: 5px 0;"><strong>Société :</strong> ' . ($data['societe'] ? $data['societe'] : CENOV_NOT_PROVIDED) . '</p>
                     <p style="margin: 5px 0;"><strong>Adresse :</strong> ' . ($data['adresse'] ? $data['adresse'] : CENOV_NOT_PROVIDED) . '</p>
                     <p style="margin: 5px 0;"><strong>Code postal :</strong> ' . ($data['codepostal'] ? $data['codepostal'] : CENOV_NOT_PROVIDED_M) . '</p>
@@ -365,7 +365,7 @@ if (!function_exists('cenovContactForm')) {
             $html_content .= '
             <div style="margin-bottom: 25px;">
                 <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Message :</h3>
-                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #0066cc;">
                     <p style="margin: 5px 0;">' . nl2br(htmlspecialchars($data['message'])) . '</p>
                 </div>
             </div>';
@@ -651,7 +651,7 @@ $result = cenovContactForm();
     background: #f3f4f6 !important;
     border-radius: 8px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
-    border: 2px solid #2563eb !important;
+    border: 2px solid #0066cc !important;
   }
 
   .cenov-form-container h3 {
@@ -734,7 +734,7 @@ $result = cenovContactForm();
 
   .input-icon-wrapper input:focus,
   .input-icon-wrapper textarea:focus {
-    border: 2px solid #2563eb !important;
+    border: 2px solid #0066cc !important;
     outline: none;
   }
   
@@ -752,7 +752,7 @@ $result = cenovContactForm();
   }
 
   .file-input-container:hover {
-    border-color: #2563eb !important;
+    border-color: #0066cc !important;
     transform: translateY(-2px) !important;
   }
 
@@ -783,7 +783,7 @@ $result = cenovContactForm();
 
   .file-upload-placeholder svg {
     margin-bottom: 12px !important;
-    color: #2563eb !important;
+    color: #0066cc !important;
     width: 28px !important;
     height: 28px !important;
   }
@@ -1000,7 +1000,7 @@ $result = cenovContactForm();
     align-items: center !important;
     justify-content: center !important;
     color: white !important;
-    background-color: #2563eb !important;
+    background-color: #0066cc !important;
     border: none !important;
     font-weight: 600 !important;
     border-radius: 6px !important;
@@ -1016,7 +1016,7 @@ $result = cenovContactForm();
   }
 
   .form-submit button:hover {
-    background-color: #1e40af !important;
+    background-color: #2563eb !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3) !important;
   }
@@ -1273,7 +1273,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         function highlight() {
-            fileInputContainer.style.borderColor = "#2563eb";
+            fileInputContainer.style.borderColor = "#0066cc";
             fileInputContainer.style.backgroundColor = "#eff6ff";
         }
 

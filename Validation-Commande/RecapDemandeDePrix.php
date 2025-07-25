@@ -303,7 +303,7 @@ if ($commande_number != 'N/A' && isset($_SESSION['commande_data'])) {
     border-radius: 10px !important;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1) !important;
     padding: 30px !important;
-    border: 2px solid #2563eb !important;
+    border: 2px solid #0066cc !important;
 }
 
 .recap-header {
@@ -323,7 +323,7 @@ if ($commande_number != 'N/A' && isset($_SESSION['commande_data'])) {
 }
 
 .recap-header h2 {
-    color: #2563eb !important;
+    color: #0066cc !important;
     font-size: 26px !important;
     margin: 0 0 10px !important;
 }
@@ -548,13 +548,13 @@ if ($commande_number != 'N/A' && isset($_SESSION['commande_data'])) {
 }
 
 .btn-primary {
-    background-color: #2563eb !important;
+    background-color: #0066cc !important;
     color: white !important;
     box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2) !important;
 }
 
 .btn-primary:hover {
-    background-color: #1d4ed8 !important;
+    background-color: #2563eb !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2) !important;
 }

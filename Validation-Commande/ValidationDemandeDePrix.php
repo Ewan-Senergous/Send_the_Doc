@@ -412,9 +412,9 @@ if (!function_exists('cenovContactForm')) {
         return '
         <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="color: #2563eb; margin-bottom: 5px; font-size: 28px;">Demande de prix :</h1>
+                <h1 style="color: #0066cc; margin-bottom: 5px; font-size: 28px;">Demande de prix :</h1>
                 <p style="margin-top: 0; margin-bottom: 5px;">Référence : ' . $emailData['commande_number'] . ' - ' . $emailData['date_commande'] . '</p>
-                <p style="margin: 0;"><a href="' . esc_url($emailData['recap_url']) . '" style="color: #2563eb; text-decoration: underline;">[Commande n°' . $emailData['commande_number'] . ']</a></p>
+                <p style="margin: 0;"><a href="' . esc_url($emailData['recap_url']) . '" style="color: #0066cc; text-decoration: underline;">[Demande de prix n°' . $emailData['commande_number'] . ']</a></p>
                 <p style="margin: 5px 0; font-size: 12px; color: #6b7280;">Ce lien est valable pendant 30 jours.</p>
             </div>';
     }
@@ -426,7 +426,7 @@ if (!function_exists('cenovContactForm')) {
         $html = '
             <div style="margin-bottom: 25px;">
                 <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations personnelles :</h3>
-                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                                    <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #0066cc;">
                     <p style="margin: 5px 0;"><strong>Nom :</strong> ' . $emailData['client_name'] . '</p>
                     <p style="margin: 5px 0;"><strong>Email :</strong> ' . $emailData['client_email'] . '</p>
                     <p style="margin: 5px 0;"><strong>Téléphone :</strong> ' . (isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : CENOV_NOT_PROVIDED) . '</p>
@@ -457,8 +457,8 @@ if (!function_exists('cenovContactForm')) {
     function generateOrderDetailsSection() {
         $html = '
             <div style="margin-bottom: 25px;">
-                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Détail de la commande :</h3>
-                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb;">';
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Détail de la demande de prix :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #0066cc;">';
         
         if (class_exists('WC_Cart') && function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
             $html .= generateProductList();
@@ -852,7 +852,7 @@ $result = cenovContactForm();
                 </div>
             </div>
 
-            <!-- Récapitulatif de la commande -->
+            <!-- Récapitulatif de la demande de prix -->
             <div class="form-row full-width order-summary">
                 <?php
                 $cart_count = 0;
@@ -1063,7 +1063,7 @@ $result = cenovContactForm();
         background: #f3f4f6 !important;
         border-radius: 8px !important;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
-        border: 2px solid #2563eb !important;
+        border: 2px solid #0066cc !important;
     }
 
     .cenov-form-container h3 {
@@ -1150,7 +1150,7 @@ $result = cenovContactForm();
     .input-icon-wrapper input:focus,
     .input-icon-wrapper select:focus,
     .input-icon-wrapper textarea:focus {
-        border: 2px solid #2563eb !important;
+        border: 2px solid #0066cc !important;
         outline: none !important;
     }
     
@@ -1188,7 +1188,7 @@ $result = cenovContactForm();
     }
 
     .file-input-container:hover {
-        border-color: #2563eb !important;
+        border-color: #0066cc !important;
         transform: translateY(-2px) !important;
     }
 
@@ -1219,7 +1219,7 @@ $result = cenovContactForm();
 
     .file-upload-placeholder svg {
         margin-bottom: 12px !important;
-        color: #2563eb !important;
+        color: #0066cc !important;
         width: 28px !important;
         height: 28px !important;
     }
@@ -1434,7 +1434,7 @@ $result = cenovContactForm();
         align-items: center !important;
         justify-content: center !important;
         color: white !important;
-        background-color: #2563eb !important;
+        background-color: #0066cc !important;
         border: none !important;
         font-weight: 600 !important;
         border-radius: 6px !important;
@@ -1450,7 +1450,7 @@ $result = cenovContactForm();
     }
 
     .form-submit button:hover {
-        background-color: #1e40af !important;
+        background-color: #2563eb !important;
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3) !important;
     }
@@ -1811,7 +1811,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         function highlight() {
-            fileInputContainer.style.borderColor = "#2563eb";
+            fileInputContainer.style.borderColor = "#0066cc";
             fileInputContainer.style.backgroundColor = "#eff6ff";
         }
 
