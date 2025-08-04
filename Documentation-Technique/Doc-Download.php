@@ -1323,6 +1323,20 @@ if (!function_exists('doc_download_display')) {
                     color: #94a3b8;
                 }
                 
+                .summary-card.active {
+                    border-color: #0066cc;
+                    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+                    transform: translateY(-2px);
+                }
+                
+                .summary-card.active::before {
+                    width: 6px;
+                }
+                
+                .summary-card.active .summary-count {
+                    color: #0066cc;
+                }
+                
                 @media (max-width: 768px) {
                     .summary-grid {
                         grid-template-columns: repeat(2, 1fr);
@@ -1342,13 +1356,14 @@ if (!function_exists('doc_download_display')) {
                     }
                 }
                 
-                /* Styles pour la liste de documents inline */
-                .documents-container {
-                    background: #f3f4f6;
-                    border: 1px solid #6b7280;
-                    border-radius: 12px;
-                    margin: 20px 0;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                /* Styles pour la grille de documents intégrée */
+                .documents-grid {
+                    margin-top: 20px;
+                    padding-top: 20px;
+                    border-top: 1px solid #e2e8f0;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                    gap: 15px;
                     animation: slideDown 0.3s ease-out;
                 }
                 
@@ -1357,20 +1372,23 @@ if (!function_exists('doc_download_display')) {
                     to { opacity: 1; transform: translateY(0); }
                 }
                 
-                
-                
-                .documents-grid {
-                    padding: 20px;
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                    gap: 15px;
-                }
-                
                 .document-card {
                     background: white;
-                    border: 1px solid #6b7280;
+                    border: 1px solid #e2e8f0;
                     border-radius: 8px;
                     transition: all 0.2s ease;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .document-card::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 4px;
+                    background: var(--doc-color, #0066cc);
                 }
                 
                 .document-card:hover {
@@ -1398,19 +1416,30 @@ if (!function_exists('doc_download_display')) {
                     flex-shrink: 0;
                 }
                 
+                .document-info {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                }
+                
                 .document-name {
                     font-weight: 500;
                     font-size: 0.95em;
                     line-height: 1.4;
                 }
                 
+                .document-type {
+                    font-size: 0.8em;
+                    color: #64748b;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+                
                 @media (max-width: 768px) {
                     .documents-grid {
                         grid-template-columns: 1fr;
-                        padding: 15px;
                         gap: 10px;
                     }
-                    
                     
                     .document-link {
                         padding: 12px;
@@ -1419,6 +1448,14 @@ if (!function_exists('doc_download_display')) {
                     .document-icon {
                         font-size: 20px;
                         margin-right: 10px;
+                    }
+                    
+                    .document-name {
+                        font-size: 0.85em;
+                    }
+                    
+                    .document-type {
+                        font-size: 0.75em;
                     }
                     
                     .document-name {
@@ -1790,11 +1827,9 @@ if (!function_exists('doc_download_display')) {
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Liste des documents qui s'affiche sous les cartes -->
-            <div id="documentsContainer" class="documents-container" style="display: none;">
-                <div class="documents-grid" id="documentsGrid"></div>
+                
+                <!-- Liste des documents intégrée dans le summary -->
+                <div id="documentsGrid" class="documents-grid" style="display: none;"></div>
             </div>
             
             <script>
@@ -1807,10 +1842,41 @@ if (!function_exists('doc_download_display')) {
                     manuel_reparation: <?php echo json_encode($unique_documents['manuel_reparation']); ?>
                 };
                 
+                // Fonction pour détecter le type de fichier
+                function getFileType(url) {
+                    const extension = url.split('.').pop().toLowerCase();
+                    const fileTypes = {
+                        'pdf': 'PDF',
+                        'doc': 'DOC',
+                        'docx': 'DOCX',
+                        'xls': 'XLS',
+                        'xlsx': 'XLSX',
+                        'ppt': 'PPT',
+                        'pptx': 'PPTX',
+                        'jpg': 'JPG',
+                        'jpeg': 'JPEG',
+                        'png': 'PNG',
+                        'gif': 'GIF',
+                        'zip': 'ZIP',
+                        'rar': 'RAR',
+                        'txt': 'TXT',
+                        'rtf': 'RTF'
+                    };
+                    return fileTypes[extension] || extension.toUpperCase();
+                }
+                
                 // Fonction pour afficher la liste des documents
                 function showDocumentsList(docType) {
-                    const container = document.getElementById('documentsContainer');
                     const grid = document.getElementById('documentsGrid');
+                    
+                    // Définir les couleurs selon le type de document
+                    const colors = {
+                        'catalogue': '#0066cc',
+                        'vue_eclatee': '#7e22ce', 
+                        'manuel_utilisation': '#15803d',
+                        'datasheet': '#111827',
+                        'manuel_reparation': '#e31206'
+                    };
                     
                     // Vider la grille
                     grid.innerHTML = '';
@@ -1820,6 +1886,7 @@ if (!function_exists('doc_download_display')) {
                     Object.entries(docs).forEach(([url, name]) => {
                         const docCard = document.createElement('div');
                         docCard.className = 'document-card';
+                        docCard.style.setProperty('--doc-color', colors[docType] || '#0066cc');
                         
                         const docLink = document.createElement('a');
                         docLink.href = url;
@@ -1831,29 +1898,40 @@ if (!function_exists('doc_download_display')) {
                         docIcon.className = 'document-icon';
                         docIcon.innerHTML = '📄';
                         
+                        const docInfo = document.createElement('div');
+                        docInfo.className = 'document-info';
+                        
                         const docName = document.createElement('div');
                         docName.className = 'document-name';
                         docName.textContent = name;
                         
+                        const docTypeElement = document.createElement('div');
+                        docTypeElement.className = 'document-type';
+                        docTypeElement.textContent = '(' + getFileType(url) + ')';
+                        
+                        docInfo.appendChild(docName);
+                        docInfo.appendChild(docTypeElement);
+                        
                         docLink.appendChild(docIcon);
-                        docLink.appendChild(docName);
+                        docLink.appendChild(docInfo);
                         docCard.appendChild(docLink);
                         grid.appendChild(docCard);
                     });
                     
-                    // Afficher le conteneur
-                    container.style.display = 'block';
-                    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    // Afficher la grille
+                    grid.style.display = 'grid';
                 }
                 
                 // Fonction pour cacher la liste des documents
                 function hideDocumentsList() {
-                    document.getElementById('documentsContainer').style.display = 'none';
+                    document.getElementById('documentsGrid').style.display = 'none';
                 }
                 
                 // Ajouter les événements de clic aux cartes de résumé
                 document.addEventListener('DOMContentLoaded', function() {
                     const summaryCards = document.querySelectorAll('.summary-card');
+                    let activeCardType = null;
+                    
                     summaryCards.forEach(card => {
                         const count = parseInt(card.dataset.count);
                         if (count > 0) {
@@ -1864,29 +1942,37 @@ if (!function_exists('doc_download_display')) {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 
+                                // Gérer l'état actif des cartes
+                                summaryCards.forEach(c => c.classList.remove('active'));
+                                this.classList.add('active');
+                                activeCardType = docType;
+                                
                                 // Afficher la liste des documents
                                 showDocumentsList(docType);
                             });
                             
                             // Effets visuels pour les cartes cliquables
-                            if (card.dataset.docType !== 'catalogue') {
-                                card.addEventListener('mousedown', function() {
-                                    this.style.transform = 'translateY(-1px) scale(0.98)';
-                                });
-                                
-                                card.addEventListener('mouseup', function() {
-                                    this.style.transform = 'translateY(-2px) scale(1)';
-                                });
+                            card.addEventListener('mousedown', function() {
+                                this.style.transform = 'translateY(-1px) scale(0.98)';
+                            });
+                            
+                            card.addEventListener('mouseup', function() {
+                                this.style.transform = 'translateY(-2px) scale(1)';
+                            });
                                 
                                 card.addEventListener('mouseleave', function() {
                                     this.style.transform = '';
                                 });
-                            } else {
-                                // Style différent pour le catalogue
-                                card.style.cursor = 'default';
-                            }
                         }
                     });
+                    
+                    // Afficher les catalogues par défaut si disponibles
+                    const catalogueCard = document.querySelector('.summary-card.catalogue');
+                    if (catalogueCard && parseInt(catalogueCard.dataset.count) > 0) {
+                        catalogueCard.classList.add('active');
+                        activeCardType = 'catalogue';
+                        showDocumentsList('catalogue');
+                    }
                 });
             </script>
             <?php endif; ?>
