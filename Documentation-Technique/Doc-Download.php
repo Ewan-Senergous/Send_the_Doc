@@ -1324,8 +1324,6 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .summary-card.active {
-                    border-color: #0066cc;
-                    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
                     transform: translateY(-2px);
                 }
                 
@@ -1333,8 +1331,45 @@ if (!function_exists('doc_download_display')) {
                     width: 6px;
                 }
                 
-                .summary-card.active .summary-count {
+                /* Couleurs actives spécifiques par type */
+                .summary-card.catalogue.active {
+                    border-color: #0066cc;
+                    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+                }
+                .summary-card.catalogue.active .summary-count {
                     color: #0066cc;
+                }
+                
+                .summary-card.vue-eclatee.active {
+                    border-color: #7e22ce;
+                    box-shadow: 0 4px 12px rgba(126, 34, 206, 0.2);
+                }
+                .summary-card.vue-eclatee.active .summary-count {
+                    color: #7e22ce;
+                }
+                
+                .summary-card.manuel-utilisation.active {
+                    border-color: #15803d;
+                    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.2);
+                }
+                .summary-card.manuel-utilisation.active .summary-count {
+                    color: #15803d;
+                }
+                
+                .summary-card.datasheet.active {
+                    border-color: #111827;
+                    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
+                }
+                .summary-card.datasheet.active .summary-count {
+                    color: #111827;
+                }
+                
+                .summary-card.manuel-reparation.active {
+                    border-color: #e31206;
+                    box-shadow: 0 4px 12px rgba(227, 18, 6, 0.2);
+                }
+                .summary-card.manuel-reparation.active .summary-count {
+                    color: #e31206;
                 }
                 
                 @media (max-width: 768px) {
@@ -1392,9 +1427,9 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .document-card:hover {
-                    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
                     transform: translateY(-2px);
-                    border-color: #0066cc;
+                    border-color: var(--doc-color, #0066cc);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 }
                 
                 .document-link {
@@ -1407,7 +1442,7 @@ if (!function_exists('doc_download_display')) {
                 }
                 
                 .document-link:hover {
-                    color: #0066cc;
+                    color: var(--doc-color, #0066cc);
                 }
                 
                 .document-icon {
@@ -1842,6 +1877,14 @@ if (!function_exists('doc_download_display')) {
                     manuel_reparation: <?php echo json_encode($unique_documents['manuel_reparation']); ?>
                 };
                 
+                // Fonction pour convertir hex en rgba
+                function hexToRgba(hex, alpha) {
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                }
+                
                 // Fonction pour détecter le type de fichier
                 function getFileType(url) {
                     const extension = url.split('.').pop().toLowerCase();
@@ -1883,10 +1926,22 @@ if (!function_exists('doc_download_display')) {
                     
                     // Ajouter les documents
                     const docs = uniqueDocuments[docType] || {};
+                    const docColor = colors[docType] || '#0066cc';
+                    
                     Object.entries(docs).forEach(([url, name]) => {
                         const docCard = document.createElement('div');
                         docCard.className = 'document-card';
-                        docCard.style.setProperty('--doc-color', colors[docType] || '#0066cc');
+                        docCard.style.setProperty('--doc-color', docColor);
+                        
+                        // Ajouter l'effet de survol avec la bonne couleur
+                        docCard.addEventListener('mouseenter', function() {
+                            const rgba = hexToRgba(docColor, 0.15);
+                            this.style.boxShadow = `0 4px 12px ${rgba}`;
+                        });
+                        
+                        docCard.addEventListener('mouseleave', function() {
+                            this.style.boxShadow = '';
+                        });
                         
                         const docLink = document.createElement('a');
                         docLink.href = url;
