@@ -1332,7 +1332,7 @@ $hasContentMatch = !empty($decoded_search_for_badge) && stripos(get_the_content(
             const filtered = autocompleteData.filter(item => {
                 const normalizedText = normalizeText(item.text.toLowerCase());
                 return normalizedText.includes(normalizedQuery);
-            }).slice(0, 8); // Limiter à 8 résultats
+            }).slice(0, 12); // Limiter à 12 résultats
 
             showAutocomplete(filtered);
         }
