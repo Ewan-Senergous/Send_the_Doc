@@ -330,6 +330,38 @@ if (!function_exists('articles_page_display')) {
             'order' => 'ASC'
         ));
 
+        // Génération des données d'autocomplétion
+        $autocomplete_data = array();
+        
+        // Priorité 1 : Titres d'articles
+        $all_articles = get_posts(array(
+            'post_type' => 'post',
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+            'fields' => 'ids'
+        ));
+        
+        foreach ($all_articles as $article_id) {
+            $title = get_the_title($article_id);
+            if (!empty($title)) {
+                $autocomplete_data[] = array(
+                    'text' => $title,
+                    'category' => 'Articles',
+                    'url' => get_permalink($article_id),
+                    'type' => 'article'
+                );
+            }
+        }
+        
+        // Priorité 2 : Noms des catégories
+        foreach ($categories as $category) {
+            $autocomplete_data[] = array(
+                'text' => $category->name,
+                'category' => 'Catégories',
+                'type' => 'category'
+            );
+        }
+
         // Filtrer les catégories avec au moins 1 article
         $categories = array_filter($categories, function($category) {
             return $category->count >= 1;
@@ -354,7 +386,9 @@ if (!function_exists('articles_page_display')) {
 
         // Ajout de la recherche si présente
         if (!empty($search_query)) {
-            $theme_args['s'] = $search_query;
+            // Décoder les entités HTML dans la requête de recherche
+            $decoded_search = html_entity_decode($search_query, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $theme_args['s'] = $decoded_search;
             $theme_args['search_columns'] = ['post_title', 'post_content', 'post_excerpt'];
         }
 
@@ -449,6 +483,55 @@ if (!function_exists('articles_page_display')) {
         
         .search-input::placeholder {
             color: #333 !important;
+        }
+        
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #6b7280;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .search-dropdown.show {
+            display: block;
+        }
+        
+        .search-dropdown-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .search-dropdown-item:hover,
+        .search-dropdown-item.highlighted {
+            background-color: #f3f4f6;
+        }
+        
+        .search-dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-dropdown-category {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+        
+        .search-dropdown-text {
+            color: #1f2937;
+            font-size: 0.875rem;
         }
         
         .search-button {
@@ -916,7 +999,8 @@ if (!function_exists('articles_page_display')) {
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                         </svg>
                     </div>
-                    <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" class="search-input" placeholder="Rechercher un article, une référence..." data-placeholder-mobile="Rechercher un article" data-placeholder-desktop="Rechercher un article, une référence..." />
+                    <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" class="search-input" placeholder="Rechercher un article, une référence..." data-placeholder-mobile="Rechercher un article" data-placeholder-desktop="Rechercher un article, une référence..." id="main-search" autocomplete="off" />
+                    <div id="search-dropdown" class="search-dropdown"></div>
                     <button type="submit" class="search-button">
                         <svg style="margin-right:0.4em;vertical-align:middle;" width="16" height="16" fill="none" viewBox="0 0 20 20">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
@@ -936,7 +1020,7 @@ if (!function_exists('articles_page_display')) {
 
             <!-- Bouton réinitialiser la recherche -->
             <div style="text-align:center;">
-                <a href="/articles-ewan/" class="reset-search-btn">
+                <a href="/articles/" class="reset-search-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                     Réinitialiser la page
                 </a>
@@ -1035,9 +1119,10 @@ if (!function_exists('articles_page_display')) {
                                 }
                             ?>
                             <?php 
-// Détection pour badge
-$hasTitleMatch = !empty($search_query) && stripos($current_post_title, $search_query) !== false;
-$hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_query) !== false;
+// Détection pour badge - avec décodage des entités HTML
+$decoded_search_for_badge = !empty($search_query) ? html_entity_decode($search_query, ENT_QUOTES | ENT_HTML5, 'UTF-8') : '';
+$hasTitleMatch = !empty($decoded_search_for_badge) && stripos($current_post_title, $decoded_search_for_badge) !== false;
+$hasContentMatch = !empty($decoded_search_for_badge) && stripos(get_the_content(), $decoded_search_for_badge) !== false;
 ?>
                             <div class="article-card">
                                 <a href="<?php echo esc_url($current_post_permalink); ?>">
@@ -1114,6 +1199,9 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
         </div>
 
         <script>
+        // Données d'autocomplétion
+        const autocompleteData = <?php echo json_encode($autocomplete_data); ?>;
+        
         function toggleDropdown() {
             const dropdown = document.getElementById('dropdownBgHover');
             dropdown.classList.toggle('show');
@@ -1142,6 +1230,113 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
         window.addEventListener('resize', adaptSearchPlaceholder);
         window.addEventListener('DOMContentLoaded', adaptSearchPlaceholder);
 
+        // Autocomplétion
+        const searchInput = document.getElementById('main-search');
+        const searchDropdown = document.getElementById('search-dropdown');
+        let currentFocus = -1;
+
+        function showAutocomplete(results) {
+            searchDropdown.innerHTML = '';
+            if (results.length === 0) {
+                searchDropdown.classList.remove('show');
+                return;
+            }
+
+            results.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'search-dropdown-item';
+                div.innerHTML = `
+                    <div class="search-dropdown-category">${item.category}</div>
+                    <div class="search-dropdown-text">${item.text}</div>
+                `;
+                div.addEventListener('click', function() {
+                    if (item.type === 'article' && item.url) {
+                        // Redirection directe vers l'article
+                        window.location.href = item.url;
+                    } else {
+                        // Recherche normale pour les catégories
+                        searchInput.value = item.text;
+                        searchDropdown.classList.remove('show');
+                        searchInput.form.submit();
+                    }
+                });
+                searchDropdown.appendChild(div);
+            });
+
+            searchDropdown.classList.add('show');
+        }
+
+        function normalizeText(text) {
+            // Créer un élément temporaire pour décoder les entités HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            return tempDiv.textContent || tempDiv.innerText || '';
+        }
+
+        function filterAutocomplete(query) {
+            if (query.length < 2) {
+                searchDropdown.classList.remove('show');
+                return;
+            }
+
+            const normalizedQuery = normalizeText(query.toLowerCase());
+            const filtered = autocompleteData.filter(item => {
+                const normalizedText = normalizeText(item.text.toLowerCase());
+                return normalizedText.includes(normalizedQuery);
+            }).slice(0, 8); // Limiter à 8 résultats
+
+            showAutocomplete(filtered);
+        }
+
+        searchInput.addEventListener('input', function() {
+            currentFocus = -1;
+            filterAutocomplete(this.value);
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            const items = searchDropdown.querySelectorAll('.search-dropdown-item');
+            
+            if (e.key === 'ArrowDown') {
+                currentFocus++;
+                if (currentFocus >= items.length) currentFocus = 0;
+                addActive(items);
+                e.preventDefault();
+            } else if (e.key === 'ArrowUp') {
+                currentFocus--;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                addActive(items);
+                e.preventDefault();
+            } else if (e.key === 'Enter') {
+                if (currentFocus > -1 && items[currentFocus]) {
+                    items[currentFocus].click();
+                    e.preventDefault();
+                } else if (searchDropdown.classList.contains('show')) {
+                    // Si pas de sélection mais dropdown ouvert, prendre le premier résultat
+                    const firstItem = items[0];
+                    if (firstItem) {
+                        firstItem.click();
+                        e.preventDefault();
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                searchDropdown.classList.remove('show');
+                currentFocus = -1;
+            }
+        });
+
+        function addActive(items) {
+            items.forEach(item => item.classList.remove('highlighted'));
+            if (currentFocus >= 0 && items[currentFocus]) {
+                items[currentFocus].classList.add('highlighted');
+            }
+        }
+
+        // Fermer l'autocomplétion si on clique ailleurs
+        document.addEventListener('click', function(event) {
+            if (!searchInput.contains(event.target) && !searchDropdown.contains(event.target)) {
+                searchDropdown.classList.remove('show');
+            }
+        });
 
         </script>
 

@@ -322,16 +322,6 @@ if (!function_exists('articles_page_display')) {
         $theme_page = isset($_GET['theme_page']) ? max(1, intval($_GET['theme_page'])) : 1;
         $per_page = 6;
 
-        // Récupération des 2 derniers articles publiés pour le badge rouge
-        $latest_articles = get_posts(array(
-            'post_type' => 'post',
-            'posts_per_page' => 3,
-            'post_status' => 'publish',
-            'orderby' => 'date',
-            'order' => 'DESC',
-            'fields' => 'ids'
-        ));
-
         // Récupération des catégories d'articles (minimum 1 article)
         $categories = get_categories(array(
             'taxonomy' => 'category',
@@ -445,16 +435,20 @@ if (!function_exists('articles_page_display')) {
         .search-input {
             width: 100%;
             padding: 1rem 1rem 1rem 2.5rem;
-            border: 1px solid #d1d5db;
+            border: 1px solid #6b7280;
             border-radius: 0.5rem;
-            background-color: #f9fafb;
+            background-color: #f3f4f6;
             font-size: 0.875rem;
-            color: #1f2937;
+            color: #000000 !important;
         }
         
         .search-input:focus {
             outline: none;
-            border: 2px solid #3399ff;
+            border: 2px solid #0066cc;
+        }
+        
+        .search-input::placeholder {
+            color: #333 !important;
         }
         
         .search-button {
@@ -467,7 +461,7 @@ if (!function_exists('articles_page_display')) {
             border: none;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -478,7 +472,7 @@ if (!function_exists('articles_page_display')) {
         
         .search-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .main-layout {
@@ -511,7 +505,7 @@ if (!function_exists('articles_page_display')) {
             border: none;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -525,7 +519,7 @@ if (!function_exists('articles_page_display')) {
         
         .dropdown-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .dropdown-menu {
@@ -577,8 +571,20 @@ if (!function_exists('articles_page_display')) {
             width: 1rem;
             height: 1rem;
             margin-right: 0.5rem;
-            accent-color: #3399ff;
             list-style: none;
+            background-color: white;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+        
+        .checkbox-input:checked {
+            background-color: white;
+            border-color: #3399ff;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='%233399ff' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+            background-size: 0.75rem;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         
         .checkbox-input:focus {
@@ -720,7 +726,7 @@ if (!function_exists('articles_page_display')) {
         
         .read-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .read-more-icon {
@@ -745,22 +751,28 @@ if (!function_exists('articles_page_display')) {
         
         .see-more-container {
             text-align: center;
+            margin-top: 30px;
+            padding: 0;
         }
         
         .see-more-button {
             background-color: #0066cc;
             color: white;
-            padding: 0.625rem 1.25rem;
+            padding: 12px 24px;
             border: none;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
-            margin: 0.5rem;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             text-decoration: none;
-            display: inline-block;
-            font-weight: 700;
+        }
+        
+        .see-more-button svg {
+            margin-top: 0.1rem;
         }
         
         .see-more-button:hover {
@@ -771,7 +783,7 @@ if (!function_exists('articles_page_display')) {
         
         .see-more-button:focus {
             outline: none;
-            box-shadow: 0 0 0 4px #3399ff;
+            box-shadow: 0 0 0 4px #93c5fd;
         }
         
         .no-articles {
@@ -840,7 +852,7 @@ if (!function_exists('articles_page_display')) {
             border: none;
             border-radius: 0.5rem;
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
             transition: background 0.2s, box-shadow 0.2s;
             box-shadow: 0 0 0 0 rgba(0,0,0,0);
@@ -849,8 +861,6 @@ if (!function_exists('articles_page_display')) {
         }
         .reset-search-btn svg {
             margin-right: 0.6em;
-            width: 1.5em;
-            height: 1.5em;
         }
         .reset-search-btn:hover {
             background-color: #111827;
@@ -879,20 +889,14 @@ if (!function_exists('articles_page_display')) {
             display: block;
             margin-left: auto;
             margin-right: auto;
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-        .search-badge-bottom:first-of-type {
             margin-top: 1rem;
+            text-align: center;
         }
         .search-badge-green {
             background: #22c55e;
         }
         .search-badge-black {
             background: #000000;
-        }
-        .search-badge-red {
-            background: #e31206;
         }
         </style>
 
@@ -933,7 +937,7 @@ if (!function_exists('articles_page_display')) {
             <!-- Bouton réinitialiser la recherche -->
             <div style="text-align:center;">
                 <a href="/articles-ewan/" class="reset-search-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                     Réinitialiser la page
                 </a>
             </div>
@@ -1031,10 +1035,9 @@ if (!function_exists('articles_page_display')) {
                                 }
                             ?>
                             <?php 
-// Détection pour badges
+// Détection pour badge
 $hasTitleMatch = !empty($search_query) && stripos($current_post_title, $search_query) !== false;
 $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_query) !== false;
-$isLatestArticle = in_array($current_post_id, $latest_articles);
 ?>
                             <div class="article-card">
                                 <a href="<?php echo esc_url($current_post_permalink); ?>">
@@ -1066,9 +1069,6 @@ $isLatestArticle = in_array($current_post_id, $latest_articles);
                                             <?php echo esc_html($current_post_date); ?>
                                         </div>
                                     </div>
-                                    <?php if ($isLatestArticle): ?>
-                                        <div class="search-badge search-badge-red search-badge-bottom">Nouveau</div>
-                                    <?php endif; ?>
                                     <?php if ($hasTitleMatch): ?>
                                         <div class="search-badge search-badge-green search-badge-bottom">Mot trouvé dans le titre</div>
                                     <?php endif; ?>
@@ -1092,6 +1092,11 @@ $isLatestArticle = in_array($current_post_id, $latest_articles);
                                 echo '?' . http_build_query($params);
                             ?>" class="see-more-button">
                                 Voir plus
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M8 12h8"/>
+                                    <path d="M12 8v8"/>
+                                </svg>
                             </a>
                         </div>
                         <?php endif; ?>
