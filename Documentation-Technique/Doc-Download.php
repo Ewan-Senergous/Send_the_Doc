@@ -85,7 +85,7 @@ if (!function_exists('doc_download_display')) {
         $selected_brand = isset($_GET['brand']) ? sanitize_text_field($_GET['brand']) : '';
         
         // Paramètres de pagination - NOUVEAU SYSTÈME VOIR PLUS
-        $initial_display = 2; // Afficher 2 produits au début
+        $initial_display = 12; // Afficher 12 produits au début
         $load_more_count = 12; // Charger 12 produits supplémentaires à chaque clic
         $visible_count = isset($_GET['visible']) ? max($initial_display, intval($_GET['visible'])) : $initial_display;
         
@@ -1686,7 +1686,7 @@ if (!function_exists('doc_download_display')) {
                                         <input type="checkbox" name="doc_types[]" value="vue_eclatee" 
                                                <?php echo in_array('vue_eclatee', $selected_doc_types) ? 'checked' : ''; ?>
                                                style="margin-right: 8px;">
-                                        Vue éclatée <span class="doc-count">(<?php echo $doc_type_counts['vue_eclatee']; ?>)</span>
+                                        Vue éclatée <span class="doc-count">(<?php echo $unique_counts['vue_eclatee']; ?>)</span>
                                     </label>
                                 </div>
                                 <div class="doc-type-option" data-value="manuel_utilisation">
@@ -1694,15 +1694,7 @@ if (!function_exists('doc_download_display')) {
                                         <input type="checkbox" name="doc_types[]" value="manuel_utilisation" 
                                                <?php echo in_array('manuel_utilisation', $selected_doc_types) ? 'checked' : ''; ?>
                                                style="margin-right: 8px;">
-                                        Manuel utilisation <span class="doc-count">(<?php echo $doc_type_counts['manuel_utilisation']; ?>)</span>
-                                    </label>
-                                </div>
-                                <div class="doc-type-option" data-value="datasheet">
-                                    <label class="doc-checkbox-label">
-                                        <input type="checkbox" name="doc_types[]" value="datasheet" 
-                                               <?php echo in_array('datasheet', $selected_doc_types) ? 'checked' : ''; ?>
-                                               style="margin-right: 8px;">
-                                        Datasheet <span class="doc-count">(<?php echo $doc_type_counts['datasheet']; ?>)</span>
+                                        Manuel utilisation <span class="doc-count">(<?php echo $unique_counts['manuel_utilisation']; ?>)</span>
                                     </label>
                                 </div>
                                 <div class="doc-type-option" data-value="manuel_reparation">
@@ -1710,7 +1702,15 @@ if (!function_exists('doc_download_display')) {
                                         <input type="checkbox" name="doc_types[]" value="manuel_reparation" 
                                                <?php echo in_array('manuel_reparation', $selected_doc_types) ? 'checked' : ''; ?>
                                                style="margin-right: 8px;">
-                                        Manuel réparation <span class="doc-count">(<?php echo $doc_type_counts['manuel_reparation']; ?>)</span>
+                                        Manuel réparation <span class="doc-count">(<?php echo $unique_counts['manuel_reparation']; ?>)</span>
+                                    </label>
+                                </div>
+                                <div class="doc-type-option" data-value="datasheet">
+                                    <label class="doc-checkbox-label">
+                                        <input type="checkbox" name="doc_types[]" value="datasheet" 
+                                               <?php echo in_array('datasheet', $selected_doc_types) ? 'checked' : ''; ?>
+                                               style="margin-right: 8px;">
+                                        Datasheet <span class="doc-count">(<?php echo $unique_counts['datasheet']; ?>)</span>
                                     </label>
                                 </div>
                             </div>
@@ -1828,6 +1828,21 @@ if (!function_exists('doc_download_display')) {
                         </div>
                     </div>
                     
+                    <!-- Manuel réparation -->
+                    <div class="summary-card manuel-reparation <?php echo $unique_counts['manuel_reparation'] == 0 ? 'zero' : ''; ?>" 
+                         data-doc-type="manuel_reparation" 
+                         data-count="<?php echo $unique_counts['manuel_reparation']; ?>">
+                        <div class="summary-info">
+                            <div class="summary-label">Manuels réparation</div>
+                            <div class="summary-count"><?php echo $unique_counts['manuel_reparation']; ?></div>
+                        </div>
+                        <div class="summary-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
                     <!-- Datasheet -->
                     <div class="summary-card datasheet <?php echo $unique_counts['datasheet'] == 0 ? 'zero' : ''; ?>" 
                          data-doc-type="datasheet" 
@@ -1842,21 +1857,6 @@ if (!function_exists('doc_download_display')) {
                                 <polyline points="14,2 14,8 20,8"/>
                                 <line x1="9" y1="13" x2="15" y2="13"/>
                                 <line x1="9" y1="17" x2="15" y2="17"/>
-                            </svg>
-                        </div>
-                    </div>
-                    
-                    <!-- Manuel réparation -->
-                    <div class="summary-card manuel-reparation <?php echo $unique_counts['manuel_reparation'] == 0 ? 'zero' : ''; ?>" 
-                         data-doc-type="manuel_reparation" 
-                         data-count="<?php echo $unique_counts['manuel_reparation']; ?>">
-                        <div class="summary-info">
-                            <div class="summary-label">Manuels réparation</div>
-                            <div class="summary-count"><?php echo $unique_counts['manuel_reparation']; ?></div>
-                        </div>
-                        <div class="summary-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                             </svg>
                         </div>
                     </div>
