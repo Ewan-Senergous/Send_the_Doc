@@ -435,16 +435,20 @@ if (!function_exists('articles_page_display')) {
         .search-input {
             width: 100%;
             padding: 1rem 1rem 1rem 2.5rem;
-            border: 1px solid #d1d5db;
+            border: 1px solid #6b7280;
             border-radius: 0.5rem;
-            background-color: #f9fafb;
+            background-color: #f3f4f6;
             font-size: 0.875rem;
-            color: #1f2937;
+            color: #000000 !important;
         }
         
         .search-input:focus {
             outline: none;
-            border: 2px solid #93c5fd;
+            border: 2px solid #0066cc;
+        }
+        
+        .search-input::placeholder {
+            color: #333 !important;
         }
         
         .search-button {
@@ -457,7 +461,7 @@ if (!function_exists('articles_page_display')) {
             border: none;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -501,7 +505,7 @@ if (!function_exists('articles_page_display')) {
             border: none;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -747,22 +751,28 @@ if (!function_exists('articles_page_display')) {
         
         .see-more-container {
             text-align: center;
+            margin-top: 30px;
+            padding: 0;
         }
         
         .see-more-button {
             background-color: #0066cc;
             color: white;
-            padding: 0.625rem 1.25rem;
+            padding: 12px 24px;
             border: none;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
-            margin: 0.5rem;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             text-decoration: none;
-            display: inline-block;
-            font-weight: 700;
+        }
+        
+        .see-more-button svg {
+            margin-top: 0.1rem;
         }
         
         .see-more-button:hover {
@@ -842,7 +852,7 @@ if (!function_exists('articles_page_display')) {
             border: none;
             border-radius: 0.5rem;
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: bold;
             cursor: pointer;
             transition: background 0.2s, box-shadow 0.2s;
             box-shadow: 0 0 0 0 rgba(0,0,0,0);
@@ -929,7 +939,7 @@ if (!function_exists('articles_page_display')) {
             <!-- Bouton réinitialiser la recherche -->
             <div style="text-align:center;">
                 <a href="/articles-ewan/" class="reset-search-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                     Réinitialiser la page
                 </a>
             </div>
@@ -1084,6 +1094,11 @@ $hasContentMatch = !empty($search_query) && stripos(get_the_content(), $search_q
                                 echo '?' . http_build_query($params);
                             ?>" class="see-more-button">
                                 Voir plus
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M8 12h8"/>
+                                    <path d="M12 8v8"/>
+                                </svg>
                             </a>
                         </div>
                         <?php endif; ?>
