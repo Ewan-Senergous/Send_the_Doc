@@ -861,8 +861,6 @@ if (!function_exists('articles_page_display')) {
         }
         .reset-search-btn svg {
             margin-right: 0.6em;
-            width: 1.5em;
-            height: 1.5em;
         }
         .reset-search-btn:hover {
             background-color: #111827;
