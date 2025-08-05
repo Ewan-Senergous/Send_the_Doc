@@ -10,25 +10,6 @@ if (!function_exists('doc_download_display')) {
             return ob_get_clean();
         }
         
-        // FONCTION HELPER : Parser les documents concaténés
-        function parse_documents_concat($concat_string) {
-            if (empty($concat_string)) return [];
-            
-            $documents = [];
-            $items = explode('|||', $concat_string);
-            
-            foreach ($items as $item) {
-                if (!empty($item) && filter_var($item, FILTER_VALIDATE_URL)) {
-                    $documents[] = array(
-                        'url' => $item,
-                        'friendly_name' => extract_friendly_name_from_url($item)
-                    );
-                }
-            }
-            
-            return $documents;
-        }
-
         // NOUVELLE FONCTION : Extraire un nom friendly à partir d'une URL
         function extract_friendly_name_from_url($url) {
             if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
@@ -108,102 +89,190 @@ if (!function_exists('doc_download_display')) {
         $load_more_count = 12; // Charger 12 produits supplémentaires à chaque clic
         $visible_count = isset($_GET['visible']) ? max($initial_display, intval($_GET['visible'])) : $initial_display;
         
-        // SOLUTION OPTIMISÉE : UNE SEULE requête SQL au lieu de milliers
+        // SOLUTION CORRIGÉE : Récupération via taxonomies WooCommerce
         function get_products_with_documentation_optimized() {
             global $wpdb;
             
-            // Cache de 30 minutes avec nouvelle version
-            $cache_key = 'products_with_docs_optimized_v2';
+            // Cache de 30 minutes
+            $cache_key = 'products_with_docs_taxonomies_v1';
             $cached_result = wp_cache_get($cache_key);
             
             if (false !== $cached_result) {
                 return $cached_result;
             }
             
-            // UNE SEULE requête SQL optimisée avec toutes les taxonomies
+            // Requête SQL simplifiée - récupérer seulement les produits avec documentation
             $sql = "
-                SELECT 
-                    p.ID,
+                SELECT DISTINCT 
+                    p.ID as id,
                     p.post_title as name,
                     p.post_name as slug,
                     
-                    -- Documentation principale (catalogue)
-                    MAX(CASE WHEN tt.taxonomy = 'pa_catalogue' THEN t.name END) as documentation_url,
+                    -- Documentation depuis taxonomie pa_catalogue
+                    t_doc.name as documentation_url
                     
-                    -- Toutes les taxonomies en une fois avec GROUP_CONCAT
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_famille' THEN t.name END SEPARATOR '|||') as familles,
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_sous-famille' THEN t.name END SEPARATOR '|||') as sous_familles,
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_sous-sous-famille' THEN t.name END SEPARATOR '|||') as sous_sous_familles,
-                    
-                    -- Documents avec URLs
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_vue-eclatee' AND t.name REGEXP '^https?://' 
-                                          THEN t.name END SEPARATOR '|||') as vues_eclatee,
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_manuel-dutilisation' AND t.name REGEXP '^https?://' 
-                                          THEN t.name END SEPARATOR '|||') as manuels_utilisation,
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_datasheet' AND t.name REGEXP '^https?://' 
-                                          THEN t.name END SEPARATOR '|||') as datasheets,
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_manuel-de-reparation' AND t.name REGEXP '^https?://' 
-                                          THEN t.name END SEPARATOR '|||') as manuels_reparation,
-                    
-                    -- Autres attributs
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pa_reference-fabriquant' THEN t.name END SEPARATOR '|||') as references_fabriquant,
-                    GROUP_CONCAT(DISTINCT CASE WHEN tt.taxonomy = 'pwb-brand' THEN t.name END SEPARATOR '|||') as brands
-
                 FROM {$wpdb->posts} p
-
-                -- JOIN principal pour documentation obligatoire
-                INNER JOIN {$wpdb->term_relationships} tr_main ON p.ID = tr_main.object_id
-                INNER JOIN {$wpdb->term_taxonomy} tt_main ON tr_main.term_taxonomy_id = tt_main.term_taxonomy_id 
-                    AND tt_main.taxonomy = 'pa_catalogue'
-                INNER JOIN {$wpdb->terms} t_main ON tt_main.term_id = t_main.term_id
-                    AND t_main.name IS NOT NULL 
-                    AND t_main.name != ''
-                    AND t_main.name != 'N/A'
-                    AND t_main.name NOT LIKE '%non%'
-                    AND t_main.name REGEXP '^https?://'
-
-                -- JOIN pour toutes les autres taxonomies
-                LEFT JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-                LEFT JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-                LEFT JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
-
+                
+                -- Catalogue (OBLIGATOIRE)
+                INNER JOIN {$wpdb->term_relationships} tr_doc ON p.ID = tr_doc.object_id
+                INNER JOIN {$wpdb->term_taxonomy} tt_doc ON tr_doc.term_taxonomy_id = tt_doc.term_taxonomy_id 
+                    AND tt_doc.taxonomy = 'pa_catalogue'
+                INNER JOIN {$wpdb->terms} t_doc ON tt_doc.term_id = t_doc.term_id
+                
                 WHERE p.post_type = 'product' 
-                  AND p.post_status IN ('publish', 'draft')
-
-                GROUP BY p.ID, p.post_title, p.post_name
+                AND p.post_status IN ('publish', 'draft')
+                AND t_doc.name IS NOT NULL 
+                AND t_doc.name != ''
+                AND t_doc.name != 'N/A'
+                AND t_doc.name NOT LIKE '%non%'
+                
                 ORDER BY p.post_title ASC
             ";
             
             $results = $wpdb->get_results($sql, ARRAY_A);
             
-            // NOUVEAU : Traitement optimisé des résultats - Parsing des données concaténées
+            // Formater les résultats avec récupération des nouveaux attributs
             $products_with_docs = array();
             foreach ($results as $row) {
                 if (!empty($row['documentation_url']) && 
                     filter_var($row['documentation_url'], FILTER_VALIDATE_URL)) {
                     
-                    // Conversion GROUP_CONCAT vers arrays - OPTIMISÉ
-                    $product = array(
-                        'id' => $row['ID'],
+                    $product_id = $row['id'];
+                    
+                    // Récupération de TOUS les attributs avec get_the_terms() - TOUTES les valeurs
+                    $famille = [];
+                    $sous_famille = [];
+                    $sous_sous_famille = [];
+                    $vue_eclatee = [];
+                    $manuel_utilisation = [];
+                    $datasheet = [];
+                    $manuel_reparation = [];
+                    $reference_fabriquant = [];
+                    $brand = [];
+                    
+                    // Récupération des familles - TOUTES les valeurs
+                    if (taxonomy_exists('pa_famille')) {
+                        $terms = get_the_terms($product_id, 'pa_famille');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                $famille[] = $term->name;
+                            }
+                        }
+                    }
+                    
+                    // Récupération des sous-familles - TOUTES les valeurs
+                    if (taxonomy_exists('pa_sous-famille')) {
+                        $terms = get_the_terms($product_id, 'pa_sous-famille');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                $sous_famille[] = $term->name;
+                            }
+                        }
+                    }
+                    
+                    // Récupération des sous-sous-familles - TOUTES les valeurs
+                    if (taxonomy_exists('pa_sous-sous-famille')) {
+                        $terms = get_the_terms($product_id, 'pa_sous-sous-famille');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                $sous_sous_famille[] = $term->name;
+                            }
+                        }
+                    }
+                    
+                    // Récupération avec vérification d'existence des taxonomies - TOUTES les valeurs
+                    if (taxonomy_exists('pa_vue-eclatee')) {
+                        $terms = get_the_terms($product_id, 'pa_vue-eclatee');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $vue_eclatee[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (taxonomy_exists('pa_manuel-dutilisation')) {
+                        $terms = get_the_terms($product_id, 'pa_manuel-dutilisation');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $manuel_utilisation[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (taxonomy_exists('pa_datasheet')) {
+                        $terms = get_the_terms($product_id, 'pa_datasheet');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $datasheet[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (taxonomy_exists('pa_manuel-de-reparation')) {
+                        $terms = get_the_terms($product_id, 'pa_manuel-de-reparation');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                if (filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $manuel_reparation[] = array(
+                                        'url' => $term->name,
+                                        'friendly_name' => $friendly_name
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (taxonomy_exists('pa_reference-fabriquant')) {
+                        $terms = get_the_terms($product_id, 'pa_reference-fabriquant');
+                        if ($terms && !is_wp_error($terms)) {
+                            foreach ($terms as $term) {
+                                $reference_fabriquant[] = $term->name;
+                            }
+                        }
+                    }
+                    
+                    // Marque (Brand) - Taxonomie pwb-brand - TOUTES les valeurs
+                    $terms = get_the_terms($product_id, 'pwb-brand');
+                    if ($terms && !is_wp_error($terms)) {
+                        foreach ($terms as $term) {
+                            $brand[] = $term->name;
+                        }
+                    }
+                    
+                    $products_with_docs[] = array(
+                        'id' => $product_id,
                         'name' => $row['name'],
                         'documentation_url' => $row['documentation_url'],
-                        'permalink' => get_permalink($row['ID']),
-                        
-                        // Conversion des champs concaténés vers arrays
-                        'famille' => !empty($row['familles']) ? explode('|||', $row['familles']) : [],
-                        'sous_famille' => !empty($row['sous_familles']) ? explode('|||', $row['sous_familles']) : [],
-                        'sous_sous_famille' => !empty($row['sous_sous_familles']) ? explode('|||', $row['sous_sous_familles']) : [],
-                        'reference_fabriquant' => !empty($row['references_fabriquant']) ? explode('|||', $row['references_fabriquant']) : [],
-                        'brand' => !empty($row['brands']) ? explode('|||', $row['brands']) : [],
-                        
-                        // Parsing documents avec friendly names
-                        'vue_eclatee' => parse_documents_concat($row['vues_eclatee']),
-                        'manuel_utilisation' => parse_documents_concat($row['manuels_utilisation']),
-                        'datasheet' => parse_documents_concat($row['datasheets']),
-                        'manuel_reparation' => parse_documents_concat($row['manuels_reparation'])
+                        'famille' => $famille,
+                        'sous_famille' => $sous_famille,
+                        'sous_sous_famille' => $sous_sous_famille,
+                        'vue_eclatee' => $vue_eclatee,
+                        'manuel_utilisation' => $manuel_utilisation,
+                        'datasheet' => $datasheet,
+                        'manuel_reparation' => $manuel_reparation,
+                        'reference_fabriquant' => $reference_fabriquant,
+                        'brand' => $brand,
+                        'permalink' => get_permalink($product_id)
                     );
-                    
-                    $products_with_docs[] = $product;
                 }
             }
             
@@ -1803,8 +1872,8 @@ if (!function_exists('doc_download_display')) {
                     catalogue: <?php echo json_encode($unique_documents['catalogue']); ?>,
                     vue_eclatee: <?php echo json_encode($unique_documents['vue_eclatee']); ?>,
                     manuel_utilisation: <?php echo json_encode($unique_documents['manuel_utilisation']); ?>,
-                    datasheet: <?php echo json_encode($unique_documents['datasheet']); ?>,
-                    manuel_reparation: <?php echo json_encode($unique_documents['manuel_reparation']); ?>
+                    manuel_reparation: <?php echo json_encode($unique_documents['manuel_reparation']); ?>,
+                    datasheet: <?php echo json_encode($unique_documents['datasheet']); ?>
                 };
                 
                 // Fonction pour convertir hex en rgba
