@@ -198,6 +198,104 @@ if (!function_exists('get_principal_image_from_content')) {
     }
 }
 
+// Fonction pour extraire le texte entre le premier et deuxième H2
+if (!function_exists('get_text_between_h2')) {
+    function get_text_between_h2($post_id) {
+        $post_content = get_post_field('post_content', $post_id);
+        
+        // Détecter si c'est du contenu Divi
+        $is_divi = strpos($post_content, '[et_pb_') !== false;
+        
+        if ($is_divi) {
+            // Pour Divi, chercher dans les shortcodes et_pb_text ET et_pb_code
+            preg_match_all('/\[et_pb_text[^\]]*\](.*?)\[\/et_pb_text\]/s', $post_content, $all_texts);
+            preg_match_all('/\[et_pb_code[^\]]*\](.*?)\[\/et_pb_code\]/s', $post_content, $all_codes);
+            
+            // Combiner le contenu des modules text et code
+            $combined_content = array();
+            if ($all_texts && isset($all_texts[1])) {
+                $combined_content = array_merge($combined_content, $all_texts[1]);
+            }
+            if ($all_codes && isset($all_codes[1])) {
+                $combined_content = array_merge($combined_content, $all_codes[1]);
+            }
+            
+            if (!empty($combined_content)) {
+                $combined_text = implode(' ', $combined_content);
+                // Chercher les H2 dans le contenu combiné
+                if (preg_match_all('/<h2[^>]*>(.*?)<\/h2>/is', $combined_text, $h2_matches)) {
+                    if (count($h2_matches[0]) >= 2) {
+                        // Extraire le texte entre le premier et deuxième H2
+                        $first_h2_pos = strpos($combined_text, $h2_matches[0][0]) + strlen($h2_matches[0][0]);
+                        $second_h2_pos = strpos($combined_text, $h2_matches[0][1]);
+                        
+                        if ($first_h2_pos !== false && $second_h2_pos !== false && $second_h2_pos > $first_h2_pos) {
+                            $text_between = substr($combined_text, $first_h2_pos, $second_h2_pos - $first_h2_pos);
+                        } else {
+                            $text_between = '';
+                        }
+                    } else {
+                        // Fallback : texte après le premier H2
+                        if (isset($h2_matches[0][0])) {
+                            $first_h2_pos = strpos($combined_text, $h2_matches[0][0]) + strlen($h2_matches[0][0]);
+                            $text_between = substr($combined_text, $first_h2_pos);
+                        } else {
+                            $text_between = '';
+                        }
+                    }
+                } else {
+                    // Pas de H2 trouvé, prendre le premier contenu disponible
+                    $text_between = isset($combined_content[0]) ? $combined_content[0] : '';
+                }
+            } else {
+                $text_between = '';
+            }
+        } else {
+            // HTML standard
+            if (preg_match_all('/<h2[^>]*>(.*?)<\/h2>/is', $post_content, $h2_matches)) {
+                if (count($h2_matches[0]) >= 2) {
+                    // Extraire le texte entre le premier et deuxième H2
+                    $first_h2_pos = strpos($post_content, $h2_matches[0][0]) + strlen($h2_matches[0][0]);
+                    $second_h2_pos = strpos($post_content, $h2_matches[0][1]);
+                    
+                    if ($first_h2_pos !== false && $second_h2_pos !== false && $second_h2_pos > $first_h2_pos) {
+                        $text_between = substr($post_content, $first_h2_pos, $second_h2_pos - $first_h2_pos);
+                    } else {
+                        $text_between = '';
+                    }
+                } else {
+                    // Fallback : texte après le premier H2
+                    $first_h2_pos = strpos($post_content, $h2_matches[0][0]) + strlen($h2_matches[0][0]);
+                    $text_between = substr($post_content, $first_h2_pos);
+                }
+            } else {
+                // Pas de H2, prendre le début du contenu
+                $text_between = $post_content;
+            }
+        }
+        
+        // Nettoyer le HTML et les shortcodes
+        $clean_text = strip_tags($text_between);
+        $clean_text = strip_shortcodes($clean_text);
+        $clean_text = html_entity_decode($clean_text);
+        $clean_text = trim($clean_text);
+        
+        // Limiter la longueur (environ 120 caractères)
+        $max_length = 120;
+        if (strlen($clean_text) > $max_length) {
+            $clean_text = substr($clean_text, 0, $max_length);
+            // Couper au dernier espace pour éviter de couper un mot
+            $last_space = strrpos($clean_text, ' ');
+            if ($last_space !== false && $last_space > $max_length * 0.8) {
+                $clean_text = substr($clean_text, 0, $last_space);
+            }
+            $clean_text .= '...';
+        }
+        
+        return $clean_text;
+    }
+}
+
 // Fonction pour extraire un extrait intelligent du contenu
 if (!function_exists('get_smart_excerpt')) {
     function get_smart_excerpt($post_id) {
@@ -808,7 +906,7 @@ if (!function_exists('articles_page_display')) {
             font-size: 1.25rem;
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             text-decoration: none;
             display: block;
         }
@@ -826,6 +924,13 @@ if (!function_exists('articles_page_display')) {
             color: #6b7280;
             margin-bottom: 0.75rem;
             line-height: 1.5;
+        }
+        
+        .article-h2-excerpt {
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+            font-size: 0.875rem;
         }
         
         .article-footer {
@@ -1158,6 +1263,7 @@ if (!function_exists('articles_page_display')) {
                                 $current_post_permalink = get_permalink($current_post_id);
                                 
                                 $featured_image_data = get_principal_image_from_content($current_post_id);
+                                $h2_text_excerpt = get_text_between_h2($current_post_id);
                                 if ($featured_image_data) {
                                     $featured_image = $featured_image_data['url'];
                                     $image_class = $featured_image_data['class'];
@@ -1182,9 +1288,11 @@ $hasContentMatch = !empty($decoded_search_for_badge) && stripos(get_the_content(
                                 <?php endif; ?>
                                 <div class="article-content">
                                     <a href="<?php echo esc_url($current_post_permalink); ?>" class="article-title <?php echo $hasTitleMatch ? 'search-match' : ''; ?>"><?php echo esc_html($current_post_title); ?></a>
-                                    <p class="article-excerpt">
-                                        <?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?>
+                                    <?php if (!empty($h2_text_excerpt)): ?>
+                                    <p class="article-h2-excerpt">
+                                        <?php echo esc_html($h2_text_excerpt); ?>
                                     </p>
+                                    <?php endif; ?>
                                     <div class="article-footer">
                                         <a href="<?php echo esc_url($current_post_permalink); ?>" class="read-more-button">
                                             Lire la suite
