@@ -309,6 +309,40 @@ if (!function_exists('get_smart_excerpt')) {
     }
 }
 
+// Fonction pour tri personnalisé par pertinence de recherche
+if (!function_exists('custom_search_orderby')) {
+    function custom_search_orderby($orderby, $query) {
+        global $wpdb;
+        
+        if (!is_admin() && $query->is_search()) {
+            $search_term = $query->get('s');
+            
+            if (!empty($search_term)) {
+                // Décoder les entités HTML
+                $decoded_search = html_entity_decode($search_term, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $escaped_search = esc_sql($decoded_search);
+                
+                // Ordre de priorité :
+                // 1. Titre contient le terme exact (badge vert)
+                // 2. Contenu contient le terme exact (badge noir)  
+                // 3. Tri par date selon préférence utilisateur
+                $custom_orderby = "
+                    CASE 
+                        WHEN {$wpdb->posts}.post_title LIKE '%{$escaped_search}%' THEN 1
+                        WHEN {$wpdb->posts}.post_content LIKE '%{$escaped_search}%' THEN 2
+                        ELSE 3
+                    END ASC,
+                    {$wpdb->posts}.post_date DESC
+                ";
+                
+                return $custom_orderby;
+            }
+        }
+        
+        return $orderby;
+    }
+}
+
 if (!function_exists('articles_page_display')) {
     function articles_page_display() {
         ob_start();
@@ -333,7 +367,16 @@ if (!function_exists('articles_page_display')) {
         // Génération des données d'autocomplétion
         $autocomplete_data = array();
         
-        // Priorité 1 : Titres d'articles
+        // Priorité 1 : Noms des catégories
+        foreach ($categories as $category) {
+            $autocomplete_data[] = array(
+                'text' => $category->name,
+                'category' => 'Catégories',
+                'type' => 'category'
+            );
+        }
+        
+        // Priorité 2 : Titres d'articles
         $all_articles = get_posts(array(
             'post_type' => 'post',
             'posts_per_page' => -1,
@@ -351,15 +394,6 @@ if (!function_exists('articles_page_display')) {
                     'type' => 'article'
                 );
             }
-        }
-        
-        // Priorité 2 : Noms des catégories
-        foreach ($categories as $category) {
-            $autocomplete_data[] = array(
-                'text' => $category->name,
-                'category' => 'Catégories',
-                'type' => 'category'
-            );
         }
 
         // Filtrer les catégories avec au moins 1 article
@@ -390,6 +424,15 @@ if (!function_exists('articles_page_display')) {
             $decoded_search = html_entity_decode($search_query, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $theme_args['s'] = $decoded_search;
             $theme_args['search_columns'] = ['post_title', 'post_content', 'post_excerpt'];
+            
+            // Modifier l'ordre pour prioriser les résultats pertinents
+            $theme_args['orderby'] = array(
+                'relevance' => 'DESC',
+                'date' => $sort_desc ? 'DESC' : 'ASC'
+            );
+            
+            // Hook personnalisé pour le tri par pertinence
+            add_filter('posts_orderby', 'custom_search_orderby', 10, 2);
         }
 
         // Ajout des filtres de catégories si sélectionnées
@@ -404,6 +447,11 @@ if (!function_exists('articles_page_display')) {
 
         // Requête pour les articles par thèmes
         $theme_articles = new WP_Query($theme_args);
+        
+        // Supprimer le filtre après la requête
+        if (!empty($search_query)) {
+            remove_filter('posts_orderby', 'custom_search_orderby', 10);
+        }
         
         // Calculer les compteurs de catégories basés sur les articles visibles
         $category_counts = array();
@@ -1123,6 +1171,7 @@ if (!function_exists('articles_page_display')) {
 $decoded_search_for_badge = !empty($search_query) ? html_entity_decode($search_query, ENT_QUOTES | ENT_HTML5, 'UTF-8') : '';
 $hasTitleMatch = !empty($decoded_search_for_badge) && stripos($current_post_title, $decoded_search_for_badge) !== false;
 $hasContentMatch = !empty($decoded_search_for_badge) && stripos(get_the_content(), $decoded_search_for_badge) !== false;
+
 ?>
                             <div class="article-card">
                                 <a href="<?php echo esc_url($current_post_permalink); ?>">
