@@ -1002,20 +1002,54 @@ if (!function_exists('doc_download_display')) {
                     border-radius: 5px 5px 0 0;
                     border: 1px solid #6b7280;
                     border-bottom: 2px solid #0066cc;
-                    display: flex;
-                    justify-content: space-between;
+                    display: grid;
+                    grid-template-columns: 1fr auto 1fr;
                     align-items: center;
+                    gap: 15px;
+                }
+
+                .voir-tout-button {
+                    background-color: #0066cc;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 0.5rem;
+                    text-decoration: none;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: background-color 0.3s;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .voir-tout-button:hover {
+                    background-color: #0052a3;
+                    color: white;
+                    text-decoration: none;
+                    transform: translateY(-1px);
+                }
+
+                .voir-tout-button:focus {
+                    outline: none;
+                    box-shadow: 0 0 0 4px #93c5fd;
                 }
                 
                 .results-count {
                     font-weight: bold;
                     color: #0066cc;
                     font-size: 1.1em;
+                    justify-self: start;
                 }
-                
+
+                .voir-tout-container {
+                    justify-self: center;
+                }
+
                 .pagination-info {
                     color: #333;
                     font-size: 0.9em;
+                    justify-self: end;
                 }
                 
                 .products-grid {
@@ -1170,8 +1204,16 @@ if (!function_exists('doc_download_display')) {
                     }
                     
                     .results-header {
-                        flex-direction: column;
-                        gap: 10px;
+                        grid-template-columns: 1fr;
+                        gap: 15px;
+                        text-align: center;
+                        justify-items: center;
+                    }
+
+                    .results-count,
+                    .voir-tout-container,
+                    .pagination-info {
+                        justify-self: center !important;
                     }
                     
                     .pagination-container {
@@ -2037,6 +2079,24 @@ if (!function_exists('doc_download_display')) {
                     <div class="results-count">
                         <?php echo $total_products; ?> documentation(s) trouvée(s)
                     </div>
+
+                    <?php if ($has_more_products): ?>
+                    <div class="voir-tout-container">
+                        <?php
+                        $current_params = $_GET;
+                        $current_params['visible'] = $total_products;
+                        ?>
+                        <a href="?<?php echo http_build_query($current_params); ?>" class="voir-tout-button">
+                            Voir tout
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-arrow-right">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="m12 16 4-4-4-4"/>
+                                <path d="M8 12h8"/>
+                            </svg>
+                        </a>
+                    </div>
+                    <?php endif; ?>
+
                     <div class="pagination-info">
                         <?php echo count($current_page_products); ?> affichés
                         <?php if ($has_more_products): ?>
