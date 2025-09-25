@@ -24,6 +24,63 @@ if (!function_exists('ajouter_onglet_documentation_technique')) {
     add_filter('woocommerce_product_tabs', 'ajouter_onglet_documentation_technique');
 }
 
+// Fonction pour extraire un titre intelligent depuis une URL de fichier
+if (!function_exists('extraire_titre_document')) {
+    function extraire_titre_document($url, $type_document) {
+        if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return $type_document;
+        }
+
+        // Extraire le nom de fichier depuis l'URL
+        $nom_fichier = basename(parse_url($url, PHP_URL_PATH));
+
+        // Enlever l'extension
+        $nom_sans_extension = preg_replace('/\.[^.]+$/', '', $nom_fichier);
+
+        // Supprimer les dates en fin de nom (format jour.mois.année)
+        $nom_sans_extension = preg_replace('/_Em-\d{2}\.\d{2}\.\d{4}$/', '', $nom_sans_extension);
+        $nom_sans_extension = preg_replace('/_Em$/', '', $nom_sans_extension);
+
+        // Garder les codes de langue car ils sont informatifs
+
+        // Détecter si le type de document est déjà dans le nom de fichier
+        $types_detectes = [
+            'catalogue' => 'Catalogue',
+            'datasheet' => 'Datasheet',
+            'manuel' => 'Manuel',
+            'vue-eclatee' => 'Vue éclatée',
+            'reparation' => 'Manuel de réparation'
+        ];
+
+        $nom_nettoye = $nom_sans_extension;
+        $type_detecte = null;
+
+        foreach ($types_detectes as $pattern => $label) {
+            if (stripos(strtolower($nom_sans_extension), $pattern) !== false) {
+                // Retirer le type du nom pour garder seulement la partie principale
+                $nom_nettoye = preg_replace('/[-_]?' . preg_quote($pattern, '/') . '[-_]?/i', '', $nom_sans_extension);
+                $type_detecte = $label;
+                break;
+            }
+        }
+
+        // Nettoyer les caractères indésirables
+        $nom_nettoye = preg_replace('/[-_]+/', '-', $nom_nettoye);
+        $nom_nettoye = trim($nom_nettoye, '-_');
+        $nom_nettoye = str_replace('_', ' ', $nom_nettoye);
+
+        // Si on a détecté un type dans le nom, l'utiliser, sinon utiliser le type par défaut
+        $type_final = $type_detecte ? $type_detecte : $type_document;
+
+        // Retourner le format "Type - Nom" si on a un nom, sinon juste le type
+        if (!empty($nom_nettoye) && strlen($nom_nettoye) > 2) {
+            return $type_final . ' - ' . $nom_nettoye;
+        }
+
+        return $type_final;
+    }
+}
+
 // Contenu de l'onglet Documentation technique
 if (!function_exists('contenu_onglet_documentation_technique')) {
     function contenu_onglet_documentation_technique() {
@@ -46,7 +103,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
                 border-radius: 4px;
             }
             
-            .doc-header h3 {
+            .doc-header h2 {
                 margin: 0 0 8px 0;
                 color: #0066cc;
                 font-size: 1.3em;
@@ -73,7 +130,6 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
                 text-decoration: none;
                 border-radius: 6px;
                 font-weight: bold;
-                font-size: 0.9em;
                 transition: all 0.3s;
                 flex: 1;
                 min-width: 150px;
@@ -148,7 +204,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
         $has_documentation = false;
         
         echo '<div class="doc-header">';
-        echo '<h3>Documentation disponible</h3>';
+        echo '<h2>Documentation disponible – Téléchargement</h2>';
         echo '<p>Téléchargez les documents techniques pour ce produit</p>';
         echo '</div>';
         
@@ -159,7 +215,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
             $has_documentation = true;
             echo '<a href="' . esc_url($documentation_url) . '" target="_blank" class="download-link">';
             echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
-            echo 'Catalogue';
+            echo extraire_titre_document($documentation_url, 'Catalogue');
             echo '</a>';
         }
         
@@ -168,7 +224,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
             $has_documentation = true;
             echo '<a href="' . esc_url($vue_eclatee) . '" target="_blank" class="download-link vue-eclatee-link">';
             echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
-            echo 'Vue éclatée';
+            echo extraire_titre_document($vue_eclatee, 'Vue éclatée');
             echo '</a>';
         }
         
@@ -177,7 +233,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
             $has_documentation = true;
             echo '<a href="' . esc_url($manuel_utilisation) . '" target="_blank" class="download-link manuel-link">';
             echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
-            echo 'Manuel d\'utilisation';
+            echo extraire_titre_document($manuel_utilisation, 'Manuel d\'utilisation');
             echo '</a>';
         }
         
@@ -186,7 +242,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
             $has_documentation = true;
             echo '<a href="' . esc_url($manuel_reparation) . '" target="_blank" class="download-link repair-link">';
             echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
-            echo 'Manuel de réparation';
+            echo extraire_titre_document($manuel_reparation, 'Manuel de réparation');
             echo '</a>';
         }
         
@@ -195,7 +251,7 @@ if (!function_exists('contenu_onglet_documentation_technique')) {
             $has_documentation = true;
             echo '<a href="' . esc_url($datasheet) . '" target="_blank" class="download-link datasheet-link">';
             echo '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="download-icon"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
-            echo 'Datasheet';
+            echo extraire_titre_document($datasheet, 'Datasheet');
             echo '</a>';
         }
         

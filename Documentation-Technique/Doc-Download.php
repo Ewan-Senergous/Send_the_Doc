@@ -10,62 +10,64 @@ if (!function_exists('doc_download_display')) {
             return ob_get_clean();
         }
         
-        // NOUVELLE FONCTION : Extraire un nom friendly à partir d'une URL
-        function extract_friendly_name_from_url($url) {
+        // Fonction pour extraire un titre intelligent depuis une URL de fichier
+        function extraire_titre_document($url, $type_document) {
             if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
-                return '';
+                return $type_document;
             }
-            
-            // Extraire le nom de fichier de l'URL
-            $filename = basename(parse_url($url, PHP_URL_PATH));
-            
-            // Retirer l'extension
-            $name = pathinfo($filename, PATHINFO_FILENAME);
-            
-            // Détecter le type de document
-            $type = '';
-            if (stripos($name, 'vue-eclatee') !== false || stripos($name, 'exploded') !== false) {
-                $type = 'Vue éclatée';
-            } elseif (stripos($name, 'datasheet') !== false) {
-                $type = 'Datasheet';
-            } elseif (stripos($name, 'manuel-utilisation') !== false || stripos($name, 'manual') !== false || stripos($name, 'user-guide') !== false) {
-                $type = 'Manuel utilisation';
-            } elseif (stripos($name, 'manuel-reparation') !== false || stripos($name, 'repair') !== false || stripos($name, 'maintenance') !== false) {
-                $type = 'Manuel réparation';
-            } else {
-                $type = 'Documentation';
+
+            // Extraire le nom de fichier depuis l'URL
+            $nom_fichier = basename(parse_url($url, PHP_URL_PATH));
+
+            // Enlever l'extension
+            $nom_sans_extension = preg_replace('/\.[^.]+$/', '', $nom_fichier);
+
+            // Supprimer les dates en fin de nom (format jour.mois.année)
+            $nom_sans_extension = preg_replace('/_Em-\d{2}\.\d{2}\.\d{4}$/', '', $nom_sans_extension);
+            $nom_sans_extension = preg_replace('/_Em$/', '', $nom_sans_extension);
+
+            // Garder les codes de langue car ils sont informatifs
+
+            // Détecter si le type de document est déjà dans le nom de fichier
+            $types_detectes = [
+                'catalogue' => 'Catalogue',
+                'datasheet' => 'Datasheet',
+                'manuel' => 'Manuel',
+                'vue-eclatee' => 'Vue éclatée',
+                'reparation' => 'Manuel de réparation'
+            ];
+
+            $nom_nettoye = $nom_sans_extension;
+            $type_detecte = null;
+
+            foreach ($types_detectes as $pattern => $label) {
+                if (stripos(strtolower($nom_sans_extension), $pattern) !== false) {
+                    // Retirer le type du nom pour garder seulement la partie principale
+                    $nom_nettoye = preg_replace('/[-_]?' . preg_quote($pattern, '/') . '[-_]?/i', '', $nom_sans_extension);
+                    $type_detecte = $label;
+                    break;
+                }
             }
-            
-            // Extraire la référence/modèle (généralement au début du nom)
-            $reference = '';
-            
-            // Patterns pour extraire la référence
-            if (preg_match('/^([A-Z0-9\-_]+)[\-_]/', $name, $matches)) {
-                $reference = $matches[1];
-                // Nettoyer la référence
-                $reference = str_replace(['_', '-'], [' ', '-'], $reference);
-                // Supprimer les doublons de tirets
-                $reference = preg_replace('/-+/', '-', $reference);
-                // Nettoyer les espaces
-                $reference = trim($reference, '- ');
+
+            // Nettoyer les caractères indésirables
+            $nom_nettoye = preg_replace('/[-_]+/', '-', $nom_nettoye);
+            $nom_nettoye = trim($nom_nettoye, '-_');
+            $nom_nettoye = str_replace('_', ' ', $nom_nettoye);
+
+            // Si on a détecté un type dans le nom, l'utiliser, sinon utiliser le type par défaut
+            $type_final = $type_detecte ? $type_detecte : $type_document;
+
+            // Retourner le format "Type - Nom" si on a un nom, sinon juste le type
+            if (!empty($nom_nettoye) && strlen($nom_nettoye) > 2) {
+                return $type_final . ' - ' . $nom_nettoye;
             }
-            
-            // Si on a trouvé une référence, créer le label complet
-            if (!empty($reference)) {
-                return $reference . ' - ' . $type;
-            }
-            
-            // Sinon, essayer d'extraire des infos plus génériques
-            $parts = explode('-', $name);
-            if (count($parts) >= 2) {
-                $first_parts = array_slice($parts, 0, 2);
-                $reference = implode(' ', $first_parts);
-                $reference = strtoupper($reference);
-                return $reference . ' - ' . $type;
-            }
-            
-            // En dernier recours, retourner juste le type
-            return $type;
+
+            return $type_final;
+        }
+
+        // Ancienne fonction conservée pour compatibilité
+        function extract_friendly_name_from_url($url) {
+            return extraire_titre_document($url, 'Catalogue');
         }
         
         // Récupération des paramètres de recherche et pagination
@@ -186,7 +188,7 @@ if (!function_exists('doc_download_display')) {
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
                                 if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $friendly_name = extraire_titre_document($term->name, 'Vue éclatée');
                                     $vue_eclatee[] = array(
                                         'url' => $term->name,
                                         'friendly_name' => $friendly_name
@@ -201,7 +203,7 @@ if (!function_exists('doc_download_display')) {
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
                                 if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $friendly_name = extraire_titre_document($term->name, 'Manuel d\'utilisation');
                                     $manuel_utilisation[] = array(
                                         'url' => $term->name,
                                         'friendly_name' => $friendly_name
@@ -216,7 +218,7 @@ if (!function_exists('doc_download_display')) {
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
                                 if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $friendly_name = extraire_titre_document($term->name, 'Datasheet');
                                     $datasheet[] = array(
                                         'url' => $term->name,
                                         'friendly_name' => $friendly_name
@@ -231,7 +233,7 @@ if (!function_exists('doc_download_display')) {
                         if ($terms && !is_wp_error($terms)) {
                             foreach ($terms as $term) {
                                 if (filter_var($term->name, FILTER_VALIDATE_URL)) {
-                                    $friendly_name = extract_friendly_name_from_url($term->name);
+                                    $friendly_name = extraire_titre_document($term->name, 'Manuel de réparation');
                                     $manuel_reparation[] = array(
                                         'url' => $term->name,
                                         'friendly_name' => $friendly_name
@@ -605,7 +607,7 @@ if (!function_exists('doc_download_display')) {
         foreach ($filtered_products as $product) {
             // Catalogue
             if (!empty($product['documentation_url']) && filter_var($product['documentation_url'], FILTER_VALIDATE_URL)) {
-                $unique_documents['catalogue'][$product['documentation_url']] = 'Catalogue';
+                $unique_documents['catalogue'][$product['documentation_url']] = extraire_titre_document($product['documentation_url'], 'Catalogue');
             }
             
             // Vue éclatée
@@ -663,7 +665,6 @@ if (!function_exists('doc_download_display')) {
         <div class="documentation-center">
             <style>
                 .documentation-center {
-                    font-family: Arial, sans-serif;
                     max-width: 1200px;
                     margin: 0 auto;
                     padding: 30px 0px;
@@ -2088,7 +2089,7 @@ if (!function_exists('doc_download_display')) {
                                    class="download-link" 
                                    target="_blank">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                    Catalogue
+                                    <?php echo extraire_titre_document($product['documentation_url'], 'Catalogue'); ?>
                                 </a>
                                 
                                 <?php if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])): ?>

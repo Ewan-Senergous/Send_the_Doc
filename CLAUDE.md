@@ -177,3 +177,16 @@ The project doesn't use standard WordPress hooks extensively but integrates well
 - Prefer WordPress/WooCommerce built-in functions where possible
 - Use direct SQL only when necessary for performance
 - Implement proper caching for expensive queries
+
+## File Modification Guidelines
+
+### Troubleshooting Edit Issues
+
+If file modifications fail with errors like "File has been unexpectedly modified" or similar:
+
+1. **Use Absolute Paths**: Always use complete absolute paths when modifying files, especially on Windows systems
+2. **Use MultiEdit Tool**: For multiple changes in the same file, prefer the MultiEdit tool over multiple Edit calls
+3. **Re-read Before Edit**: If an edit fails, always re-read the file before attempting the edit again
+4. **Use Backslashes on Windows**: File paths should use backslashes (`\`) on Windows systems
+
+**Example correct path format**: `C:\Users\EwanSenergous\OneDrive - jll.spear\Bureau\Projet\sendTheDoc\Documentation-Technique\Doc-Technique.php`
