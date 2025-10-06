@@ -95,62 +95,73 @@ if (!function_exists('doc_download_display')) {
         function get_products_with_documentation_optimized() {
             global $wpdb;
             
-            // Cache de 30 minutes
-            $cache_key = 'products_with_docs_taxonomies_v1';
+            // Cache de 30 minutes (v2 = catalogue optionnel)
+            $cache_key = 'products_with_docs_taxonomies_v2';
             $cached_result = wp_cache_get($cache_key);
             
             if (false !== $cached_result) {
                 return $cached_result;
             }
             
-            // Requête SQL simplifiée - récupérer seulement les produits avec documentation
+            // Requête SQL - récupérer TOUS les produits avec au moins 1 type de documentation
             $sql = "
-                SELECT DISTINCT 
+                SELECT DISTINCT
                     p.ID as id,
                     p.post_title as name,
-                    p.post_name as slug,
-                    
-                    -- Documentation depuis taxonomie pa_catalogue
-                    t_doc.name as documentation_url
-                    
+                    p.post_name as slug
+
                 FROM {$wpdb->posts} p
-                
-                -- Catalogue (OBLIGATOIRE)
-                INNER JOIN {$wpdb->term_relationships} tr_doc ON p.ID = tr_doc.object_id
-                INNER JOIN {$wpdb->term_taxonomy} tt_doc ON tr_doc.term_taxonomy_id = tt_doc.term_taxonomy_id 
-                    AND tt_doc.taxonomy = 'pa_catalogue'
-                INNER JOIN {$wpdb->terms} t_doc ON tt_doc.term_id = t_doc.term_id
-                
-                WHERE p.post_type = 'product' 
+
+                -- Récupérer les produits ayant AU MOINS un type de documentation
+                WHERE p.post_type = 'product'
                 AND p.post_status IN ('publish', 'draft')
-                AND t_doc.name IS NOT NULL 
-                AND t_doc.name != ''
-                AND t_doc.name != 'N/A'
-                AND t_doc.name NOT LIKE '%non%'
-                
+                AND p.ID IN (
+                    SELECT DISTINCT object_id
+                    FROM {$wpdb->term_relationships} tr
+                    INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+                    WHERE tt.taxonomy IN ('pa_catalogue', 'pa_vue-eclatee', 'pa_manuel-dutilisation', 'pa_datasheet', 'pa_manuel-de-reparation')
+                )
+
                 ORDER BY p.post_title ASC
             ";
             
             $results = $wpdb->get_results($sql, ARRAY_A);
             
-            // Formater les résultats avec récupération des nouveaux attributs
+            // Formater les résultats avec récupération des attributs
             $products_with_docs = array();
             foreach ($results as $row) {
-                if (!empty($row['documentation_url']) && 
-                    filter_var($row['documentation_url'], FILTER_VALIDATE_URL)) {
-                    
-                    $product_id = $row['id'];
-                    
-                    // Récupération de TOUS les attributs avec get_the_terms() - TOUTES les valeurs
-                    $famille = [];
-                    $sous_famille = [];
-                    $sous_sous_famille = [];
-                    $vue_eclatee = [];
-                    $manuel_utilisation = [];
-                    $datasheet = [];
-                    $manuel_reparation = [];
-                    $reference_fabriquant = [];
-                    $brand = [];
+                $product_id = $row['id'];
+
+                // Récupération de TOUS les attributs avec get_the_terms() - TOUTES les valeurs
+                $famille = [];
+                $sous_famille = [];
+                $sous_sous_famille = [];
+                $vue_eclatee = [];
+                $manuel_utilisation = [];
+                $datasheet = [];
+                $manuel_reparation = [];
+                $catalogue = [];
+                $reference_fabriquant = [];
+                $brand = [];
+
+                // Récupération du catalogue (optionnel maintenant)
+                if (taxonomy_exists('pa_catalogue')) {
+                    $terms = get_the_terms($product_id, 'pa_catalogue');
+                    if ($terms && !is_wp_error($terms)) {
+                        foreach ($terms as $term) {
+                            if (!empty($term->name) &&
+                                $term->name != 'N/A' &&
+                                stripos($term->name, 'non') === false &&
+                                filter_var($term->name, FILTER_VALIDATE_URL)) {
+                                $friendly_name = extraire_titre_document($term->name, 'Catalogue');
+                                $catalogue[] = array(
+                                    'url' => $term->name,
+                                    'friendly_name' => $friendly_name
+                                );
+                            }
+                        }
+                    }
+                }
                     
                     // Récupération des familles - TOUTES les valeurs
                     if (taxonomy_exists('pa_famille')) {
@@ -252,18 +263,24 @@ if (!function_exists('doc_download_display')) {
                         }
                     }
                     
-                    // Marque (Brand) - Taxonomie pwb-brand - TOUTES les valeurs
-                    $terms = get_the_terms($product_id, 'pwb-brand');
-                    if ($terms && !is_wp_error($terms)) {
-                        foreach ($terms as $term) {
-                            $brand[] = $term->name;
-                        }
+                // Marque (Brand) - Taxonomie pwb-brand - TOUTES les valeurs
+                $terms = get_the_terms($product_id, 'pwb-brand');
+                if ($terms && !is_wp_error($terms)) {
+                    foreach ($terms as $term) {
+                        $brand[] = $term->name;
                     }
-                    
+                }
+
+                // Vérifier qu'au moins un type de document existe
+                $has_documentation = !empty($catalogue) || !empty($vue_eclatee) ||
+                                   !empty($manuel_utilisation) || !empty($datasheet) ||
+                                   !empty($manuel_reparation);
+
+                if ($has_documentation) {
                     $products_with_docs[] = array(
                         'id' => $product_id,
                         'name' => $row['name'],
-                        'documentation_url' => $row['documentation_url'],
+                        'catalogue' => $catalogue,
                         'famille' => $famille,
                         'sous_famille' => $sous_famille,
                         'sous_sous_famille' => $sous_sous_famille,
@@ -605,9 +622,13 @@ if (!function_exists('doc_download_display')) {
         ];
         
         foreach ($filtered_products as $product) {
-            // Catalogue
-            if (!empty($product['documentation_url']) && filter_var($product['documentation_url'], FILTER_VALIDATE_URL)) {
-                $unique_documents['catalogue'][$product['documentation_url']] = extraire_titre_document($product['documentation_url'], 'Catalogue');
+            // Catalogue (tableau maintenant)
+            if (!empty($product['catalogue']) && is_array($product['catalogue'])) {
+                foreach ($product['catalogue'] as $doc) {
+                    if (isset($doc['url']) && filter_var($doc['url'], FILTER_VALIDATE_URL)) {
+                        $unique_documents['catalogue'][$doc['url']] = $doc['friendly_name'];
+                    }
+                }
             }
             
             // Vue éclatée
@@ -2145,13 +2166,19 @@ if (!function_exists('doc_download_display')) {
                             </div>
                             
                             <div class="download-links">
-                                <a href="<?php echo esc_url($product['documentation_url']); ?>" 
-                                   class="download-link" 
-                                   target="_blank">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-                                    <?php echo extraire_titre_document($product['documentation_url'], 'Catalogue'); ?>
-                                </a>
-                                
+                                <?php if (!empty($product['catalogue']) && is_array($product['catalogue'])): ?>
+                                    <?php foreach ($product['catalogue'] as $cat): ?>
+                                        <?php if (filter_var($cat['url'], FILTER_VALIDATE_URL)): ?>
+                                        <a href="<?php echo esc_url($cat['url']); ?>"
+                                           class="download-link"
+                                           target="_blank">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                                            <?php echo esc_html($cat['friendly_name']); ?>
+                                        </a>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+
                                 <?php if (!empty($product['vue_eclatee']) && is_array($product['vue_eclatee'])): ?>
                                     <?php foreach ($product['vue_eclatee'] as $vue): ?>
                                         <?php if (filter_var($vue['url'], FILTER_VALIDATE_URL)): ?>
