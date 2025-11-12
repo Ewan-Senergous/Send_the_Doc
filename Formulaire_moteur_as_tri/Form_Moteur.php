@@ -4,14 +4,41 @@
 if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     function cenovFormulaireMoteurAsyncDisplay() {
         ob_start();
-        
-        // TODO: Traitement du formulaire (à ajouter plus tard)
-        // if (isset($_POST['submit_moteur'])) {
-        //     // Validation des données
-        //     // Envoi email via Email/FX.php
-        //     // Génération PDF
-        // }
-        
+
+        // Constante pour les champs non renseignés
+        define('CENOV_MOTEUR_NOT_PROVIDED', 'Non renseigné');
+
+        // Variables de résultat
+        $result = '';
+        $form_success = false;
+
+        // ========== TRAITEMENT DU FORMULAIRE ==========
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_moteur'])) {
+
+            // 1. Vérification du nonce WordPress pour la sécurité
+            if (!isset($_POST['cenov_moteur_nonce']) || !wp_verify_nonce($_POST['cenov_moteur_nonce'], 'cenov_moteur_form')) {
+                $result = '<div class="error-message">❌ Erreur de sécurité. Veuillez réessayer.</div>';
+            }
+            // 2. Vérification des champs obligatoires
+            elseif (empty($_POST['societe']) || empty($_POST['nom_prenom']) || empty($_POST['email'])) {
+                $result = '<div class="error-message">❌ Veuillez remplir tous les champs obligatoires : Société, Nom & Prénom, et Email.</div>';
+            }
+            // 3. Validation de l'email
+            elseif (!is_email($_POST['email'])) {
+                $result = '<div class="error-message">❌ Veuillez saisir une adresse email valide.</div>';
+            }
+            // 4. Tout est OK - Traitement à venir dans les prochaines étapes
+            else {
+                // TODO: ÉTAPE 3.2 - prepareMoteurEmailContent()
+                // TODO: ÉTAPE 3.3 - processMoteurUploadedFiles()
+                // TODO: ÉTAPE 3.4 - sendMoteurEmail()
+
+                // Pour l'instant, message de test
+                $form_success = true;
+                $result = '<div class="success-message">✅ Formulaire valide ! (Envoi email à implémenter - étapes 3.2 à 3.4)</div>';
+            }
+        }
+
         ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -1509,6 +1536,15 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <h1 style="color: white;">⚡ Questions Essentielles</h1>
         <p>Pour la vente d'un moteur asynchrone triphasé</p>
       </div>
+
+      <form method="POST" action="" enctype="multipart/form-data" id="formMoteur">
+        <?php wp_nonce_field('cenov_moteur_form', 'cenov_moteur_nonce'); ?>
+
+        <?php if (!empty($result)) : ?>
+        <div style="margin: 20px; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 500; text-align: center; <?php echo $form_success ? 'background: #d4edda; border: 2px solid #28a745; color: #155724;' : 'background: #f8d7da; border: 2px solid #dc3545; color: #721c24;'; ?>">
+            <?php echo $result; ?>
+        </div>
+        <?php endif; ?>
 
       <div class="content">
         <!-- Barre d'options plaque -->
@@ -3011,17 +3047,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
         <!-- Boutons -->
         <div class="button-group">
-          <button class="btn btn-secondary" onclick="window.print()">
+          <button type="button" class="btn btn-secondary" onclick="window.print()">
             🖨️ Imprimer
           </button>
-          <button
-            class="btn btn-primary"
-            onclick="alert('Fonctionnalité à venir : export PDF ou envoi par email')"
-          >
-            📧 Envoyer
+          <button type="submit" name="submit_moteur" class="btn btn-primary">
+            📧 Envoyer ma demande
           </button>
         </div>
       </div>
+
+      </form>
 
       <div class="form-moteur-footer">
         <p>📋 Document technique - Moteurs asynchrones triphasés</p>
