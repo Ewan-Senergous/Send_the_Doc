@@ -32,12 +32,19 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 // ÉTAPE 3.2 : Préparer le contenu de l'email
                 $content = prepareMoteurEmailContent();
 
-                // TODO: ÉTAPE 3.3 - processMoteurUploadedFiles()
+                // ÉTAPE 3.3 : Traiter le fichier uploadé
+                $uploadResult = processMoteurUploadedFiles();
+                $attachments = $uploadResult['attachments'];
+                $fileNames = $uploadResult['fileNames'];
+                $fileWarning = $uploadResult['warning'];
+
                 // TODO: ÉTAPE 3.4 - sendMoteurEmail()
 
-                // Pour l'instant, afficher le contenu préparé (test)
+                // Pour l'instant, afficher le résultat du traitement (test)
                 $form_success = true;
-                $result = '<div class="success-message">✅ Contenu email préparé ! (Envoi à implémenter - étapes 3.3 et 3.4)<br><small>Contenu généré : ' . strlen($content) . ' caractères</small></div>';
+                $result = $fileWarning . '<div class="success-message">✅ Contenu préparé ! Fichier : ' .
+                          (!empty($fileNames) ? $fileNames[0] : 'Aucun') .
+                          '<br><small>Contenu : ' . strlen($content) . ' caractères | Attachements : ' . count($attachments) . '</small></div>';
             }
         }
 
@@ -329,6 +336,117 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             $content .= "\r\n=== FIN DE LA DEMANDE ===\r\n";
 
             return $content;
+        }
+
+        /**
+         * Traite l'upload du fichier plaque signalétique
+         * @return array Tableau avec 'attachments' (chemins) et 'fileNames' (noms) et 'warning' (message)
+         */
+        function processMoteurUploadedFiles() {
+            $attachments = array();
+            $fileNames = array();
+            $warning = '';
+
+            // Vérifier si un fichier a été uploadé
+            if (!isset($_FILES['fichier_plaque']) || empty($_FILES['fichier_plaque']['name'])) {
+                return array(
+                    'attachments' => $attachments,
+                    'fileNames' => $fileNames,
+                    'warning' => ''
+                );
+            }
+
+            $file = $_FILES['fichier_plaque'];
+
+            // Vérifier les erreurs d'upload
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                $error_messages = array(
+                    UPLOAD_ERR_INI_SIZE => 'Le fichier dépasse la taille maximale autorisée par le serveur.',
+                    UPLOAD_ERR_FORM_SIZE => 'Le fichier dépasse la taille maximale autorisée.',
+                    UPLOAD_ERR_PARTIAL => 'Le fichier n\'a été que partiellement téléchargé.',
+                    UPLOAD_ERR_NO_FILE => 'Aucun fichier n\'a été téléchargé.',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant.',
+                    UPLOAD_ERR_CANT_WRITE => 'Échec de l\'écriture du fichier sur le disque.',
+                    UPLOAD_ERR_EXTENSION => 'Une extension PHP a arrêté l\'upload du fichier.'
+                );
+                $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Erreur upload : ' .
+                           (isset($error_messages[$file['error']]) ? $error_messages[$file['error']] : 'Erreur inconnue.') . '</div>';
+
+                return array(
+                    'attachments' => $attachments,
+                    'fileNames' => $fileNames,
+                    'warning' => $warning
+                );
+            }
+
+            // Validation du type de fichier
+            $allowed_types = array(
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'image/heic',
+                'application/pdf'
+            );
+
+            $file_type = $file['type'];
+            // Fallback avec finfo si le type MIME n'est pas fiable
+            if (function_exists('finfo_open')) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $file_type = finfo_file($finfo, $file['tmp_name']);
+                finfo_close($finfo);
+            }
+
+            if (!in_array($file_type, $allowed_types)) {
+                $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Type de fichier non autorisé. Formats acceptés : JPG, PNG, GIF, WEBP, HEIC, PDF.</div>';
+
+                return array(
+                    'attachments' => $attachments,
+                    'fileNames' => $fileNames,
+                    'warning' => $warning
+                );
+            }
+
+            // Validation de la taille (5MB maximum)
+            $max_size = 5 * 1024 * 1024; // 5MB en octets
+            if ($file['size'] > $max_size) {
+                $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Le fichier est trop volumineux. Taille maximale : 5 MB.</div>';
+
+                return array(
+                    'attachments' => $attachments,
+                    'fileNames' => $fileNames,
+                    'warning' => $warning
+                );
+            }
+
+            // Préparer le répertoire de destination (WordPress uploads)
+            $upload_dir = wp_upload_dir();
+            $target_dir = $upload_dir['path'];
+
+            // Créer un nom de fichier unique
+            $filename = sanitize_file_name($file['name']);
+            $file_extension = pathinfo($filename, PATHINFO_EXTENSION);
+            $file_basename = pathinfo($filename, PATHINFO_FILENAME);
+            $unique_filename = $file_basename . '_' . time() . '_' . wp_generate_password(8, false) . '.' . $file_extension;
+            $target_file = $target_dir . '/' . $unique_filename;
+
+            // Déplacer le fichier uploadé
+            if (move_uploaded_file($file['tmp_name'], $target_file)) {
+                $attachments[] = $target_file;
+                $fileNames[] = $filename; // Nom original pour affichage
+
+                // Succès - pas de warning
+                $warning = '';
+            } else {
+                $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Échec de la sauvegarde du fichier. Veuillez réessayer.</div>';
+            }
+
+            return array(
+                'attachments' => $attachments,
+                'fileNames' => $fileNames,
+                'warning' => $warning
+            );
         }
 
         ?>
