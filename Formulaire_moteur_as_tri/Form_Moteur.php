@@ -751,7 +751,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
           <div style="text-align: center; margin: 20px 0">
             <img
-              src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/moteur_IE/moteurs-echeance-2023.webp"
+              src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/moteurs-echeance-2023.webp"
               alt="Échéances réglementaires moteurs IE"
               style="
                 max-width: 100%;
@@ -868,7 +868,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="À pattes B3 (sol, arbre horizontal)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/A%20pattes/fixation-B3-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B3-400x284-1.webp"
                 alt="Montage B3"
               />
               <figcaption>
@@ -884,7 +884,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="À pattes murales B6"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/A%20pattes/fixation-B6-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B6-400x284-1.webp"
                 alt="Montage B6"
               />
               <figcaption>
@@ -900,7 +900,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="À pattes murales B7 (arbre vertical bas)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/A%20pattes/fixation-B7-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B7-400x284-1.webp"
                 alt="Montage B7"
               />
               <figcaption>
@@ -916,7 +916,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="À pattes inversées B8 (plafond)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/A%20pattes/fixation-B8-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B8-400x284-1.webp"
                 alt="Montage B8"
               />
               <figcaption>
@@ -930,7 +930,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V5 (arbre vers le bas)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/A%20pattes/fixation-V5-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V5-400x284-1.webp"
                 alt="Montage V5"
               />
               <figcaption>
@@ -944,7 +944,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V6 (arbre vers le haut)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/A%20pattes/fixation-V6-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V6-400x284-1.webp"
                 alt="Montage V6"
               />
               <figcaption>
@@ -966,7 +966,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="Bride FF B5 (arbre horizontal)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FF/fixation-B5-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B5-400x284-1.webp"
                 alt="Montage B5"
               />
               <figcaption>
@@ -980,7 +980,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="Pattes + Bride FF B35"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FF/fixation-B35-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B35-400x284-1.webp"
                 alt="Montage B35"
               />
               <figcaption>
@@ -994,7 +994,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V3 (arbre vertical haut)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FF/fixation-V3-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V3-400x284-1.webp"
                 alt="Montage V3"
               />
               <figcaption>
@@ -1008,7 +1008,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V1 (arbre vertical bas)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FF/fixation-V1-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V1-400x284-1.webp"
                 alt="Montage V1"
               />
               <figcaption>
@@ -1022,7 +1022,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V15"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FF/fixation-V15-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V15-400x284-1.webp"
                 alt="Montage V15"
               />
               <figcaption>
@@ -1044,7 +1044,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="Bride FT B14 (arbre horizontal)"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FT/fixation-B14-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B14-400x284-1.webp"
                 alt="Montage B14"
               />
               <figcaption>
@@ -1058,7 +1058,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="Pattes + Bride FT B34"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FT/fixation-B34-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-B34-400x284-1.webp"
                 alt="Montage B34"
               />
               <figcaption>
@@ -1072,7 +1072,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V58"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FT/fixation-V58-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V58-400x284-1.webp"
                 alt="Montage V58"
               />
               <figcaption>
@@ -1086,7 +1086,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V19"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FT/fixation-V19-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V19-400x284-1.webp"
                 alt="Montage V19"
               />
               <figcaption>
@@ -1100,7 +1100,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V18"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FT/fixation-V18-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V18-400x284-1.webp"
                 alt="Montage V18"
               />
               <figcaption>
@@ -1114,7 +1114,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               data-description="V69"
             >
               <img
-                src="file:///C:/Users/SoizicMartin/OneDrive%20-%20jll.spear/Bureau/images%20fixation%20moteur/FF/fixation-V69-400x284.webp"
+                src="https://www.cenov-distribution.fr/wp-content/uploads/2025/11/fixation-V69-400x284-1.webp"
                 alt="Montage V69"
               />
               <figcaption>
@@ -1506,7 +1506,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
     <div class="container">
       <div class="form-moteur-header">
-        <h1>⚡ Questions Essentielles</h1>
+        <h1 style="color: white;">⚡ Questions Essentielles</h1>
         <p>Pour la vente d'un moteur asynchrone triphasé</p>
       </div>
 
