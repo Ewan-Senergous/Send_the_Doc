@@ -66,7 +66,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         padding: 8px;
         background: #f8f9fa;
         border-radius: 8px;
-        border-left: 4px solid #667eea;
+        border-left: 4px solid #4338ca;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
       .section:hover {
@@ -75,7 +75,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       }
 
       .category-title {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
         color: #fff;
         padding: 10px 15px;
         margin: -15px -15px 15px -15px;
@@ -89,7 +89,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
       .section-divider {
         height: 2px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(90deg, #4338ca 0%, #764ba2 100%);
         margin: 25px 0;
         border-radius: 2px;
       }
@@ -115,7 +115,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         background: linear-gradient(135deg, #f0f4f8 0%, #e8eaf6 100%);
         border-radius: 12px;
         font-size: 0.85em;
-        color: #5e6c84;
+        color: #3d4752;
         font-weight: 500;
         border: 1px solid #d0d7de;
       }
@@ -132,7 +132,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         background: #fff3cd;
         padding: 3px 8px;
         border-radius: 4px;
-        color: #856404;
+        color: #664d03;
         font-weight: 600;
       }
 
@@ -155,7 +155,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       .answer-field textarea:focus,
       .answer-field select:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: #4338ca;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
       }
       .answer-field textarea {
@@ -181,7 +181,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       .radio-group label:hover,
       .checkbox-group label:hover {
         background: #f8f9fa;
-        border-color: #667eea;
+        border-color: #4338ca;
       }
       .radio-group input[type="radio"],
       .checkbox-group input[type="checkbox"] {
@@ -206,7 +206,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         font-weight: 600;
       }
       .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
         color: #fff;
       }
       .btn-primary:hover {
@@ -215,16 +215,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       }
       .btn-secondary {
         background: #fff;
-        color: #667eea;
-        border: 2px solid #667eea;
+        color: #4338ca;
+        border: 2px solid #4338ca;
       }
       .btn-secondary:hover {
-        background: #667eea;
+        background: #4338ca;
         color: #fff;
       }
 
       .required {
-        color: #dc3545;
+        color: #c92a2a;
         font-weight: bold;
         margin-left: 3px;
       }
@@ -286,13 +286,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         background: #fff;
         border-radius: 20px;
         padding: 40px;
-        max-width: 600px;
+        max-width: 750px;
         width: 90%;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         position: relative;
         animation: slideDown 0.4s ease;
         max-height: 90vh;
         overflow: auto;
+        margin-top: 15rem;
       }
       .popup-close-x {
         position: absolute;
@@ -330,29 +331,37 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         gap: 15px;
       }
       .popup-header p {
-        color: #555;
+        color: #333;
         font-size: 1.1em;
         line-height: 1.6;
       }
       .popup-body {
         margin: 25px 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
       }
       .popup-feature {
         display: flex;
         align-items: flex-start;
         gap: 15px;
-        margin-bottom: 20px;
+        margin-bottom: 0;
         padding: 8px;
         background: #f8f9fa;
         border-radius: 10px;
-        border-left: 4px solid #667eea;
+        border-left: 4px solid #4338ca;
+      }
+      @media (max-width: 600px) {
+        .popup-body {
+          grid-template-columns: 1fr;
+        }
       }
       .popup-feature-icon {
         font-size: 1.3em;
         flex-shrink: 0;
       }
       .popup-close-btn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
         color: #fff;
         border: none;
         padding: 15px 40px;
@@ -430,7 +439,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       .popup-humidite-close,
       .ie4-close,
       .popup-carcasse-close {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
         color: #fff;
         border: none;
         padding: 10px 22px;
@@ -444,7 +453,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       .popup-carcasse-body,
       .popup-humidite-body,
       .popup-ie4-body {
-        color: #555;
+        color: #333;
         line-height: 1.6;
       }
       .popup-carcasse-examples,
@@ -506,7 +515,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       .montage-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 18px rgba(102, 126, 234, 0.25);
-        border-color: #667eea;
+        border-color: #4338ca;
       }
       .montage-card img {
         display: block;
@@ -546,7 +555,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         border-radius: 6px;
         padding: 10px 12px;
       }
-      .options-card h4 {
+      .options-card h3 {
         font-size: 1.02rem;
         margin-bottom: 6px;
         color: #2a2a2a;
@@ -691,7 +700,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         </button>
         <div class="popup-humidite-header">
           <span style="font-size: 1.6em">💧</span>
-          <h3>Humidité relative (HR)</h3>
+          <h2>Humidité relative (HR)</h2>
         </div>
         <div class="popup-humidite-body">
           <p style="margin-bottom: 12px">
@@ -729,7 +738,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <button class="popup-close-x" onclick="closeIE4Popup()">&times;</button>
         <div class="popup-ie4-header">
           <span style="font-size: 1.4em">♻️</span>
-          <h3>IE (indice énérgétique) – Plage de puissance</h3>
+          <h2>IE (indice énérgétique) – Plage de puissance</h2>
         </div>
 
         <div class="popup-ie4-body">
@@ -755,7 +764,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
           <!-- ✅ SECTION AJOUTÉE : explication des plages de puissance -->
           <div class="ie4-details" style="margin: 15px 0">
-            <h4 style="margin-bottom: 8px">Plages de puissance par classe :</h4>
+            <h3 style="margin-bottom: 8px">Plages de puissance par classe :</h3>
             <ul style="margin-left: 18px; margin-bottom: 10px">
               <li>
                 <strong>IE2</strong> → Environ
@@ -791,7 +800,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         </button>
         <div class="popup-carcasse-header">
           <span style="font-size: 1.3em">📐</span>
-          <h3>Comprendre la taille de carcasse</h3>
+          <h2>Comprendre la taille de carcasse</h2>
         </div>
         <div class="popup-carcasse-body">
           <p>
@@ -839,10 +848,10 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         </button>
         <div class="popup-montage-header">
           <span style="font-size: 1.3em">🔩</span>
-          <h3>Types de montage (exemples en photos)</h3>
+          <h2>Types de montage (exemples en photos)</h2>
         </div>
 
-        <p style="color: #555; margin-bottom: 15px; font-size: 0.95em">
+        <p style="color: #333; margin-bottom: 15px; font-size: 0.95em">
           Cliquez sur une photo pour sélectionner le type de montage
           correspondant.<br />
           <small style="color: #888"
@@ -1161,7 +1170,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               <strong>Champs obligatoires</strong>
               <p>
                 Repérés par un
-                <span style="color: #dc3545; font-weight: bold">*</span>
+                <span style="color: #c92a2a; font-weight: bold">*</span>
               </p>
             </div>
           </div>
@@ -1516,9 +1525,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <!-- 1. APPLICATION -->
         <div class="section">
           <div class="category-title">⚙️ CARACTÉRISTIQUES DE L'APPLICATION</div>
-          <h3 style="color: #dc3545; margin-bottom: 10px; font-size: 0.95em">
+          <h2 style="color: #c92a2a; margin-bottom: 10px; font-size: 0.95em">
             Informations obligatoires <span class="required">*</span>
-          </h3>
+          </h2>
 
           <div class="question" data-from-plaque="true">
             <strong
@@ -1593,14 +1602,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <div class="section">
           <div class="category-title">⚡ ALIMENTATION ÉLECTRIQUE</div>
 
-          <h3 style="color: #dc3545; margin-bottom: 10px; font-size: 0.95em">
+          <h2 style="color: #c92a2a; margin-bottom: 10px; font-size: 0.95em">
             Informations obligatoires <span class="required">*</span>
-          </h3>
+          </h2>
 
           <div class="question" data-from-plaque="true">
-            <strong
-              >⚡ Quelle est votre tension d'alimentation ?
-              <span class="required">*</span></strong
+            <label for="tension"
+              ><strong
+                >⚡ Quelle est votre tension d'alimentation ?
+                <span class="required">*</span></strong
+              ></label
             ><span class="annotation">en V</span>
             <div class="info-box">
               <em
@@ -1629,12 +1640,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question" data-from-plaque="true">
-            <strong
-              >📊 Quelle est la fréquence du réseau ?
-              <span class="required">*</span></strong
+            <label for="frequence"
+              ><strong
+                >📊 Quelle est la fréquence du réseau ?
+                <span class="required">*</span></strong
+              ></label
             ><span class="annotation">en Hz</span>
             <div class="answer-field">
-              <select required>
+              <select id="frequence" name="frequence" required>
                 <option value="">-- Sélectionnez --</option>
                 <option value="50" selected>50 Hz</option>
                 <option value="60">60 Hz</option>
@@ -1647,9 +1660,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <div class="section">
           <div class="category-title">🔧 INSTALLATION TECHNIQUE</div>
 
-          <h3 style="color: #dc3545; margin-bottom: 10px; font-size: 0.95em">
+          <h2 style="color: #c92a2a; margin-bottom: 10px; font-size: 0.95em">
             Informations obligatoires <span class="required">*</span>
-          </h3>
+          </h2>
 
           <div class="question" data-from-plaque="true">
             <strong
@@ -1771,12 +1784,12 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
           </div>
 
-          <h3 style="color: #667eea; margin: 15px 0 10px; font-size: 0.95em">
+          <h2 style="color: #4338ca; margin: 15px 0 10px; font-size: 0.95em">
             Informations complémentaires
-          </h3>
+          </h2>
 
           <div class="question" data-from-plaque="true">
-            <strong>📏 Contraintes d'encombrement ?</strong>
+            <label for="taille_carcasse"><strong>📏 Contraintes d'encombrement ?</strong></label>
             <div class="info-box">
               <em>Dimensions max autorisées pour l'intégration.</em>
             </div>
@@ -1806,6 +1819,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="answer-field">
               <select
                 id="taille_carcasse"
+                name="taille_carcasse"
                 onchange="document.getElementById('taille_carcasse_autre').style.display = (this.value==='autre') ? 'block' : 'none';"
               >
                 <option value="">-- Taille de carcasse --</option>
@@ -1884,7 +1898,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   value="IC411"
                   checked
                 /><span
-                  ><strong style="color: #667eea"
+                  ><strong style="color: #4338ca"
                     >✓ Standard : IC411 (TEFC, auto-ventilé)</strong
                   ></span
                 ></label
@@ -1923,9 +1937,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <div class="section">
           <div class="category-title">⏱️ CONDITIONS D'UTILISATION</div>
 
-          <h3 style="color: #dc3545; margin-bottom: 10px; font-size: 0.95em">
+          <h2 style="color: #c92a2a; margin-bottom: 10px; font-size: 0.95em">
             Informations obligatoires <span class="required">*</span>
-          </h3>
+          </h2>
 
           <div class="question" data-from-plaque="true">
             <strong
@@ -1938,7 +1952,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="radio-group inline-one-line">
               <label
                 ><input type="radio" name="regime" value="S1" checked /><span
-                  ><strong style="color: #667eea"
+                  ><strong style="color: #4338ca"
                     >✓ Standard : S1 (continu)</strong
                   ></span
                 ></label
@@ -1961,9 +1975,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <div class="section">
           <div class="category-title">🌍 ENVIRONNEMENT D'INSTALLATION</div>
 
-          <h3 style="color: #dc3545; margin-bottom: 10px; font-size: 0.95em">
+          <h2 style="color: #c92a2a; margin-bottom: 10px; font-size: 0.95em">
             Informations obligatoires <span class="required">*</span>
-          </h3>
+          </h2>
 
           <div class="question" data-from-plaque="true">
             <strong
@@ -1973,26 +1987,26 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="radio-group inline-one-line">
               <label
                 ><input type="radio" name="ip" value="IP55" checked /><span
-                  ><strong style="color: #667eea"
+                  ><strong style="color: #4338ca"
                     >✓ Standard : IP55
                   </strong></span
                 ></label
               >
               <label
                 ><input type="radio" name="ip" value="IP56" /><span
-                  ><strong style="color: #667eea">IP56</strong> – Forte
+                  ><strong style="color: #4338ca">IP56</strong> – Forte
                   projection d'eau</span
                 ></label
               >
               <label
                 ><input type="radio" name="ip" value="IP65" /><span
-                  ><strong style="color: #667eea">IP65/IP66</strong> – Jets
+                  ><strong style="color: #4338ca">IP65/IP66</strong> – Jets
                   puissants / lavage</span
                 ></label
               >
               <label
                 ><input type="radio" name="ip" value="IP67" /><span
-                  ><strong style="color: #667eea">IP67/IP68</strong> –
+                  ><strong style="color: #4338ca">IP67/IP68</strong> –
                   Immersion</span
                 ></label
               >
@@ -2015,7 +2029,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   value="standard"
                   checked
                 /><span
-                  ><strong style="color: #667eea"
+                  ><strong style="color: #4338ca"
                     >✓ Standard : -20°C à +40°C</strong
                   ></span
                 ></label
@@ -2039,7 +2053,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                     style="
                       display: block;
                       margin-bottom: 5px;
-                      color: #555;
+                      color: #333;
                       font-weight: 500;
                     "
                     >Min (°C) :
@@ -2051,7 +2065,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                     style="
                       display: block;
                       margin-bottom: 5px;
-                      color: #555;
+                      color: #333;
                       font-weight: 500;
                     "
                     >Max (°C) :
@@ -2075,7 +2089,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   value="0-1000"
                   checked
                 /><span
-                  ><strong style="color: #667eea"
+                  ><strong style="color: #4338ca"
                     >✓ Standard : 0 à 1000 m</strong
                   ></span
                 ></label
@@ -2097,7 +2111,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 style="
                   display: block;
                   margin-bottom: 5px;
-                  color: #555;
+                  color: #333;
                   font-weight: 500;
                 "
                 >Altitude précise (m) :
@@ -2234,11 +2248,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   border-left: 4px solid #2196f3;
                 "
               >
-                <h4
+                <h3
                   style="color: #1565c0; margin-bottom: 15px; font-size: 1.1em"
                 >
                   ⚡ Configuration pour atmosphère GAZ
-                </h4>
+                </h3>
 
                 <div style="margin-bottom: 15px">
                   <strong
@@ -2274,12 +2288,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 </div>
 
                 <div style="margin-bottom: 15px">
-                  <strong
-                    style="color: #1e3c72; display: block; margin-bottom: 10px"
-                    >⚗️ Groupe de gaz</strong
+                  <label for="atex_groupe_gaz"
+                    ><strong
+                      style="color: #1e3c72; display: block; margin-bottom: 10px"
+                      >⚗️ Groupe de gaz</strong
+                    ></label
                   >
                   <div class="answer-field">
-                    <select id="atex_groupe_gaz">
+                    <select id="atex_groupe_gaz" name="atex_groupe_gaz">
                       <option value="">-- Sélectionnez --</option>
                       <option value="IIA">IIA (propane, butane...)</option>
                       <option value="IIB">IIB (éthylène...)</option>
@@ -2289,12 +2305,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 </div>
 
                 <div style="margin-bottom: 15px">
-                  <strong
-                    style="color: #1e3c72; display: block; margin-bottom: 10px"
-                    >🌡️ Classe de température (T)</strong
+                  <label for="atex_temp_gaz"
+                    ><strong
+                      style="color: #1e3c72; display: block; margin-bottom: 10px"
+                      >🌡️ Classe de température (T)</strong
+                    ></label
                   >
                   <div class="answer-field">
-                    <select id="atex_temp_gaz">
+                    <select id="atex_temp_gaz" name="atex_temp_gaz">
                       <option value="">-- Sélectionnez --</option>
                       <option value="T1">T1 (≤ 450°C)</option>
                       <option value="T2">T2 (≤ 300°C)</option>
@@ -2307,12 +2325,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 </div>
 
                 <div>
-                  <strong
-                    style="color: #1e3c72; display: block; margin-bottom: 10px"
-                    >🛡️ Type de protection (Gaz)</strong
+                  <label for="atex_protection_gaz"
+                    ><strong
+                      style="color: #1e3c72; display: block; margin-bottom: 10px"
+                      >🛡️ Type de protection (Gaz)</strong
+                    ></label
                   >
                   <div class="answer-field">
-                    <select id="atex_protection_gaz">
+                    <select id="atex_protection_gaz" name="atex_protection_gaz">
                       <option value="">-- Sélectionnez --</option>
                       <option value="Ex d">
                         Ex d (enveloppe antidéflagrante)
@@ -2338,11 +2358,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   border-left: 4px solid #ff9800;
                 "
               >
-                <h4
+                <h3
                   style="color: #e65100; margin-bottom: 15px; font-size: 1.1em"
                 >
                   💨 Configuration pour atmosphère POUSSIÈRES
-                </h4>
+                </h3>
 
                 <div style="margin-bottom: 15px">
                   <strong
@@ -2378,12 +2398,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 </div>
 
                 <div style="margin-bottom: 15px">
-                  <strong
-                    style="color: #1e3c72; display: block; margin-bottom: 10px"
-                    >⚗️ Type de poussières</strong
+                  <label for="atex_type_poussieres"
+                    ><strong
+                      style="color: #1e3c72; display: block; margin-bottom: 10px"
+                      >⚗️ Type de poussières</strong
+                    ></label
                   >
                   <div class="answer-field">
-                    <select id="atex_type_poussieres">
+                    <select id="atex_type_poussieres" name="atex_type_poussieres">
                       <option value="">-- Sélectionnez --</option>
                       <option value="IIIB">
                         IIIB (poussières conductrices)
@@ -2396,12 +2418,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 </div>
 
                 <div style="margin-bottom: 15px">
-                  <strong
-                    style="color: #1e3c72; display: block; margin-bottom: 10px"
-                    >🌡️ Température maximale de surface</strong
+                  <label for="atex_temp_poussieres"
+                    ><strong
+                      style="color: #1e3c72; display: block; margin-bottom: 10px"
+                      >🌡️ Température maximale de surface</strong
+                    ></label
                   >
                   <div class="answer-field">
-                    <select id="atex_temp_poussieres">
+                    <select id="atex_temp_poussieres" name="atex_temp_poussieres">
                       <option value="">-- Sélectionnez --</option>
                       <option value="T1">T1 (≤ 450°C)</option>
                       <option value="T2">T2 (≤ 300°C)</option>
@@ -2414,12 +2438,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 </div>
 
                 <div>
-                  <strong
-                    style="color: #1e3c72; display: block; margin-bottom: 10px"
-                    >🛡️ Type de protection (Poussières)</strong
+                  <label for="atex_protection_poussieres"
+                    ><strong
+                      style="color: #1e3c72; display: block; margin-bottom: 10px"
+                      >🛡️ Type de protection (Poussières)</strong
+                    ></label
                   >
                   <div class="answer-field">
-                    <select id="atex_protection_poussieres">
+                    <select id="atex_protection_poussieres" name="atex_protection_poussieres">
                       <option value="">-- Sélectionnez --</option>
                       <option value="Ex t">
                         Ex t (protection contre poussières)
@@ -2450,7 +2476,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   <span style="font-size: 1.2em">📚</span>
                   <span>Besoin d'aide ?</span>
                 </strong>
-                <p style="margin: 0; font-size: 0.9em; color: #555">
+                <p style="margin: 0; font-size: 0.9em; color: #333">
                   <a
                     href="https://www.cenov-distribution.fr/moteur-atex-guide-de-selection/"
                     target="_blank"
@@ -2573,7 +2599,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <div class="options-grid">
             <!-- Équipements électriques -->
             <div class="options-card">
-              <h4>Équipements électriques</h4>
+              <h3>Équipements électriques</h3>
               <ul class="options-list">
                 <li>
                   <input type="checkbox" id="rechauf" /><label for="rechauf"
@@ -2590,7 +2616,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             <!-- Équipements mécaniques -->
             <div class="options-card">
-              <h4>Équipements mécaniques</h4>
+              <h3>Équipements mécaniques</h3>
               <ul class="options-list">
                 <li style="display: block; width: 100%">
                   <strong>Frein à intégrer ?</strong>
@@ -2797,7 +2823,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             <!-- Protection & revêtement -->
             <div class="options-card">
-              <h4>Protection et revêtement</h4>
+              <h3>Protection et revêtement</h3>
               <ul class="options-list">
                 <li>
                   <input type="checkbox" id="tropical" /><label for="tropical"
@@ -2817,7 +2843,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             <!-- Normes & certifications -->
             <div class="options-card">
-              <h4>Normes et certifications</h4>
+              <h3>Normes et certifications</h3>
               <ul class="options-list">
                 <li>
                   <input type="checkbox" id="CE" checked /><label for="CE"
@@ -2900,9 +2926,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question">
-            <strong>🧑‍💼 Fonction</strong>
+            <label for="fonction"><strong>🧑‍💼 Fonction</strong></label>
             <div class="answer-field">
-              <select>
+              <select id="fonction" name="fonction">
                 <option value="">-- Sélectionnez --</option>
                 <option>Maintenance</option>
                 <option>Bureau d'études</option>
@@ -2914,9 +2940,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question">
-            <strong>🧾 Budget estimatif</strong>
+            <label for="budget"><strong>🧾 Budget estimatif</strong></label>
             <div class="answer-field">
-              <select>
+              <select id="budget" name="budget">
                 <option value="">-- Sélectionnez --</option>
                 <option>&lt; 1 000 €</option>
                 <option>1 000 – 5 000 €</option>
@@ -2974,10 +3000,12 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question">
-            <strong
-              >📎 Joindre un fichier (plaque signalétique par exemple)</strong
+            <label for="fichier_plaque"
+              ><strong
+                >📎 Joindre un fichier (plaque signalétique par exemple)</strong
+              ></label
             >
-            <div class="answer-field"><input type="file" /></div>
+            <div class="answer-field"><input type="file" id="fichier_plaque" name="fichier_plaque" aria-label="Joindre un fichier (plaque signalétique par exemple)" /></div>
           </div>
         </div>
 
