@@ -38,13 +38,25 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 $fileNames = $uploadResult['fileNames'];
                 $fileWarning = $uploadResult['warning'];
 
-                // TODO: ÉTAPE 3.4 - sendMoteurEmail()
+                // ÉTAPE 3.4 : Envoyer l'email
+                $emailSent = sendMoteurEmail($content, $attachments);
 
-                // Pour l'instant, afficher le résultat du traitement (test)
-                $form_success = true;
-                $result = $fileWarning . '<div class="success-message">✅ Contenu préparé ! Fichier : ' .
-                          (!empty($fileNames) ? $fileNames[0] : 'Aucun') .
-                          '<br><small>Contenu : ' . strlen($content) . ' caractères | Attachements : ' . count($attachments) . '</small></div>';
+                // Nettoyer les fichiers temporaires après envoi
+                if (!empty($attachments)) {
+                    foreach ($attachments as $file) {
+                        if (file_exists($file)) {
+                            @unlink($file);
+                        }
+                    }
+                }
+
+                // Afficher le résultat
+                if ($emailSent) {
+                    $form_success = true;
+                    $result = $fileWarning . '<div class="success-message">✅ Votre demande a été envoyée avec succès !<br>Nous vous contacterons rapidement.</div>';
+                } else {
+                    $result = $fileWarning . '<div class="error-message">❌ Une erreur est survenue lors de l\'envoi. Veuillez réessayer ou nous contacter par téléphone.</div>';
+                }
             }
         }
 
@@ -447,6 +459,107 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 'fileNames' => $fileNames,
                 'warning' => $warning
             );
+        }
+
+        /**
+         * Envoie l'email avec le contenu du formulaire
+         * @param string $content Contenu formaté de l'email
+         * @param array $attachments Chemins des fichiers à attacher
+         * @return bool True si envoi réussi, False sinon
+         */
+        function sendMoteurEmail($content, $attachments) {
+            // Récupérer les informations client
+            $client_email = sanitize_email($_POST['email']);
+            $client_name = sanitize_text_field($_POST['nom_prenom']);
+            $societe = sanitize_text_field($_POST['societe']);
+
+            // Préparer le sujet
+            $subject = 'Nouvelle demande - Moteur asynchrone triphasé - ' . $societe;
+
+            // Générer le template HTML
+            $html_content = generateMoteurEmailHtml($content, $client_name, $client_email, $societe);
+
+            // Headers pour l'entreprise
+            $headers = array(
+                'From: Cenov Distribution <ventes@cenov-distribution.fr>',
+                'Reply-To: ' . $client_name . ' <' . $client_email . '>',
+                'Content-Type: text/html; charset=UTF-8'
+            );
+
+            // 1. Envoi à l'entreprise
+            $to_company = 'ventes@cenov-distribution.fr';
+            $sent_to_company = wp_mail($to_company, $subject, $html_content, $headers, $attachments);
+
+            // 2. Envoi copie au client
+            $sent_to_client = false;
+            if (!empty($client_email)) {
+                $client_subject = 'Confirmation de votre demande - Cenov Distribution';
+                $client_headers = array(
+                    'From: Cenov Distribution <ventes@cenov-distribution.fr>',
+                    'Reply-To: Cenov Distribution <ventes@cenov-distribution.fr>',
+                    'Content-Type: text/html; charset=UTF-8'
+                );
+
+                // Template client avec message de remerciement
+                $client_html = str_replace(
+                    '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
+                    '<div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
+                        <p style="margin: 0; color: #155724; font-weight: 500;">✅ Merci pour votre demande ! Nous vous contacterons rapidement.</p>
+                    </div>
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
+                    $html_content
+                );
+
+                $sent_to_client = wp_mail($client_email, $client_subject, $client_html, $client_headers, $attachments);
+            }
+
+            // Considérer l'envoi réussi si l'email entreprise est parti
+            return $sent_to_company && (!empty($client_email) ? $sent_to_client : true);
+        }
+
+        /**
+         * Génère le template HTML de l'email
+         * @param string $content Contenu texte formaté
+         * @param string $client_name Nom du client
+         * @param string $client_email Email du client
+         * @param string $societe Nom de la société
+         * @return string HTML formaté
+         */
+        function generateMoteurEmailHtml($content, $client_name, $client_email, $societe) {
+            $html = '
+            <div style="font-family: Arial, Helvetica, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9;">
+                <!-- En-tête -->
+                <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 600;">⚡ Demande Moteur Asynchrone Triphasé</h1>
+                    <p style="margin: 0; font-size: 16px; opacity: 0.95;">Nouvelle demande reçue de <strong>' . esc_html($societe) . '</strong></p>
+                </div>
+
+                <!-- Corps principal -->
+                <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+
+                    <!-- Informations client -->
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #2196f3;">
+                        <h3 style="margin: 0 0 10px 0; color: #1565c0; font-size: 16px;">👤 Contact</h3>
+                        <p style="margin: 5px 0; font-size: 14px;"><strong>Nom :</strong> ' . esc_html($client_name) . '</p>
+                        <p style="margin: 5px 0; font-size: 14px;"><strong>Email :</strong> <a href="mailto:' . esc_attr($client_email) . '" style="color: #2196f3; text-decoration: none;">' . esc_html($client_email) . '</a></p>
+                        <p style="margin: 5px 0; font-size: 14px;"><strong>Société :</strong> ' . esc_html($societe) . '</p>
+                    </div>
+
+                    <!-- Contenu détaillé -->
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <pre style="white-space: pre-wrap; word-wrap: break-word; font-family: Consolas, Monaco, monospace; font-size: 13px; line-height: 1.6; margin: 0; color: #212529;">' . esc_html($content) . '</pre>
+                    </div>
+
+                </div>
+
+                <!-- Pied de page -->
+                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">
+                    <p style="margin: 5px 0;">© Cenov Distribution - Tous droits réservés</p>
+                    <p style="margin: 5px 0; font-size: 12px; color: #999;">Spécialiste pompes et moteurs industriels</p>
+                </div>
+            </div>';
+
+            return $html;
         }
 
         ?>
