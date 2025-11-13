@@ -27,8 +27,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 $result = '<div class="error-message">❌ Erreur de sécurité. Veuillez réessayer.</div>';
             }
             // 2. Vérification des champs obligatoires
-            elseif (empty($_POST['societe']) || empty($_POST['nom_prenom']) || empty($_POST['email'])) {
-                $result = '<div class="error-message">❌ Veuillez remplir tous les champs obligatoires : Société, Nom & Prénom, et Email.</div>';
+            elseif (empty($_POST['societe']) || empty($_POST['nom_prenom']) || empty($_POST['email']) ||
+                    empty($_POST['puissance_kw']) || empty($_POST['vitesse']) ||
+                    empty($_POST['tension']) || empty($_POST['frequence']) ||
+                    empty($_POST['montage']) || empty($_POST['regime']) || empty($_POST['ip'])) {
+                $result = '<div class="error-message">❌ Veuillez remplir tous les champs obligatoires marqués avec *</div>';
             }
             // 3. Validation de l'email
             elseif (!is_email($_POST['email'])) {
@@ -1635,7 +1638,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
             <div class="radio-group inline-one-line">
               <label class="radio-item"
-                ><input type="radio" name="vitesse" value="2900" /><span
+                ><input type="radio" name="vitesse" value="2900" required /><span
                   >2 pôles → ~3000 tr/min (2900 réels)</span
                 ></label
               >
@@ -1775,7 +1778,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             <div class="radio-group inline-one-line" style="margin-top: 10px">
               <label
-                ><input type="radio" name="montage" value="B3" /><span
+                ><input type="radio" name="montage" value="B3" required /><span
                   >B3</span
                 ></label
               >
@@ -2031,7 +2034,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
             <div class="radio-group inline-one-line">
               <label
-                ><input type="radio" name="regime" value="S1" checked /><span
+                ><input type="radio" name="regime" value="S1" checked required /><span
                   ><strong style="color: #4338ca"
                     >✓ Standard : S1 (continu)</strong
                   ></span
@@ -2066,7 +2069,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             >
             <div class="radio-group inline-one-line">
               <label
-                ><input type="radio" name="ip" value="IP55" checked /><span
+                ><input type="radio" name="ip" value="IP55" checked required /><span
                   ><strong style="color: #4338ca"
                     >✓ Standard : IP55
                   </strong></span
@@ -2674,7 +2677,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
         <!-- 9 & 10. TABLEAU OPTIONS + NORMES -->
         <div class="section">
-          <div class="category-title">📦 OPTIONS / 📜 NORMES</div>
+          <div class="category-title">⚙️ OPTIONS / 📜 NORMES</div>
 
           <div class="options-grid">
             <!-- Équipements électriques -->
@@ -2966,7 +2969,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
         <!-- ========= VOUS CONNAÎTRE DAVANTAGE ========= -->
         <div class="section">
-          <div class="category-title">👤 VOUS CONNAÎTRE DAVANTAGE</div>
+          <div class="category-title">💬 VOUS CONNAÎTRE DAVANTAGE</div>
 
           <div class="question">
             <strong>🏢 Société <span class="required">*</span></strong>
