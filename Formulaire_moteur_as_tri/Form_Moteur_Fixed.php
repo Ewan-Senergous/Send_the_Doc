@@ -3183,97 +3183,90 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     function prepareMoteurEmailContent() {
     $not_provided = CENOV_MOTEUR_NOT_PROVIDED;
 
-    // Constantes pour les labels fréquemment utilisés
-    $label_vitesse = "Vitesse : ";
-    $label_tension = "Tension : ";
-    $label_taille_carcasse = "Taille carcasse : ";
-    $label_refroidissement = "Refroidissement : ";
-    $label_altitude = "Altitude : ";
+    $content = "DEMANDE DE MOTEUR ASYNCHRONE TRIPHASÉ\r\n\r\n";
 
-    $content = "=== DEMANDE DE PRIX - MOTEUR ASYNCHRONE TRIPHASÉ ===\r\n\r\n";
+    // SECTION 1 : CONTACT
+    $content .= "INFORMATIONS DE CONTACT\r\n\r\n";
+    $content .= "<strong>Société :</strong> " . sanitize_text_field($_POST['societe']) . "\r\n";
+    $content .= "<strong>Nom & Prénom :</strong> " . sanitize_text_field($_POST['nom_prenom']) . "\r\n";
+    $content .= "<strong>Email :</strong> " . sanitize_email($_POST['email']) . "\r\n";
+    $content .= "<strong>Téléphone :</strong> " . (isset($_POST['telephone']) && !empty($_POST['telephone']) ? sanitize_text_field($_POST['telephone']) : $not_provided) . "\r\n";
+    $content .= "<strong>Ville/Pays :</strong> " . (isset($_POST['ville_pays']) && !empty($_POST['ville_pays']) ? sanitize_text_field($_POST['ville_pays']) : $not_provided) . "\r\n";
+    $content .= "<strong>Fonction :</strong> " . (isset($_POST['fonction']) && !empty($_POST['fonction']) ? sanitize_text_field($_POST['fonction']) : $not_provided) . "\r\n";
 
-    // === SECTION 1 : CONTACT ===
-    $content .= "--- INFORMATIONS DE CONTACT ---\r\n";
-    $content .= "Société : " . sanitize_text_field($_POST['societe']) . "\r\n";
-    $content .= "Nom & Prénom : " . sanitize_text_field($_POST['nom_prenom']) . "\r\n";
-    $content .= "Email : " . sanitize_email($_POST['email']) . "\r\n";
-    $content .= "Téléphone : " . (isset($_POST['telephone']) && !empty($_POST['telephone']) ? sanitize_text_field($_POST['telephone']) : $not_provided) . "\r\n";
-    $content .= "Ville/Pays : " . (isset($_POST['ville_pays']) && !empty($_POST['ville_pays']) ? sanitize_text_field($_POST['ville_pays']) : $not_provided) . "\r\n";
-    $content .= "Fonction : " . (isset($_POST['fonction']) && !empty($_POST['fonction']) ? sanitize_text_field($_POST['fonction']) : $not_provided) . "\r\n";
+    // SECTION 2 : PROJET
+    $content .= "\r\n\r\nINFORMATIONS PROJET\r\n\r\n";
+    $content .= "<strong>Quantité prévue :</strong> " . (isset($_POST['quantite']) && !empty($_POST['quantite']) ? intval($_POST['quantite']) : $not_provided) . "\r\n";
+    $content .= "<strong>Budget estimatif :</strong> " . (isset($_POST['budget']) && !empty($_POST['budget']) ? sanitize_text_field($_POST['budget']) : $not_provided) . "\r\n";
+    $content .= "<strong>Délai souhaité :</strong> " . (isset($_POST['delai']) ? sanitize_text_field($_POST['delai']) : $not_provided) . "\r\n";
 
-    // === SECTION 2 : PROJET ===
-    $content .= "\r\n--- INFORMATIONS PROJET ---\r\n";
-    $content .= "Quantité prévue : " . (isset($_POST['quantite']) && !empty($_POST['quantite']) ? intval($_POST['quantite']) : $not_provided) . "\r\n";
-    $content .= "Budget estimatif : " . (isset($_POST['budget']) && !empty($_POST['budget']) ? sanitize_text_field($_POST['budget']) : $not_provided) . "\r\n";
-    $content .= "Délai souhaité : " . (isset($_POST['delai']) ? sanitize_text_field($_POST['delai']) : $not_provided) . "\r\n";
-
-    // === SECTION 3 : CARACTÉRISTIQUES APPLICATION ===
-    $content .= "\r\n--- CARACTÉRISTIQUES DE L'APPLICATION ---\r\n";
-    $content .= "Puissance (kW) : " . (isset($_POST['puissance_kw']) && !empty($_POST['puissance_kw']) ? sanitize_text_field($_POST['puissance_kw']) : $not_provided) . "\r\n";
+    // SECTION 3 : CARACTÉRISTIQUES APPLICATION
+    $content .= "\r\n\r\nCARACTÉRISTIQUES DE L'APPLICATION\r\n\r\n";
+    $content .= "<strong>Puissance (kW) :</strong> " . (isset($_POST['puissance_kw']) && !empty($_POST['puissance_kw']) ? sanitize_text_field($_POST['puissance_kw']) : $not_provided) . "\r\n";
 
     // Vitesse avec gestion du champ "autre"
     if (isset($_POST['vitesse'])) {
 $vitesse = sanitize_text_field($_POST['vitesse']);
 if ($vitesse === 'autre' && isset($_POST['vitesse_autre_rpm']) && !empty($_POST['vitesse_autre_rpm'])) {
-    $content .= $label_vitesse . sanitize_text_field($_POST['vitesse_autre_rpm']) . " tr/min (personnalisée)\r\n";
+    $content .= "<strong>Vitesse :</strong> " . sanitize_text_field($_POST['vitesse_autre_rpm']) . " tr/min (personnalisée)\r\n";
 } else {
-    $content .= $label_vitesse . $vitesse . " tr/min\r\n";
+    $content .= "<strong>Vitesse :</strong> " . $vitesse . " tr/min\r\n";
 }
     } else {
-$content .= $label_vitesse . $not_provided . "\r\n";
+$content .= "<strong>Vitesse :</strong> " . $not_provided . "\r\n";
     }
 
-    // === SECTION 4 : ALIMENTATION ÉLECTRIQUE ===
-    $content .= "\r\n--- ALIMENTATION ÉLECTRIQUE ---\r\n";
+    // SECTION 4 : ALIMENTATION ÉLECTRIQUE
+    $content .= "\r\n\r\nALIMENTATION ÉLECTRIQUE\r\n\r\n";
 
     // Tension avec gestion du champ "autre"
     if (isset($_POST['tension'])) {
 $tension = sanitize_text_field($_POST['tension']);
 if ($tension === 'autre' && isset($_POST['tension_autre']) && !empty($_POST['tension_autre'])) {
-    $content .= $label_tension . sanitize_text_field($_POST['tension_autre']) . " (personnalisée)\r\n";
+    $content .= "<strong>Tension :</strong> " . sanitize_text_field($_POST['tension_autre']) . " (personnalisée)\r\n";
 } else {
-    $content .= $label_tension . $tension . "\r\n";
+    $content .= "<strong>Tension :</strong> " . $tension . "\r\n";
 }
     } else {
-$content .= $label_tension . $not_provided . "\r\n";
+$content .= "<strong>Tension :</strong> " . $not_provided . "\r\n";
     }
 
-    $content .= "Fréquence : " . (isset($_POST['frequence']) && !empty($_POST['frequence']) ? sanitize_text_field($_POST['frequence']) : $not_provided) . "\r\n";
+    $content .= "<strong>Fréquence :</strong> " . (isset($_POST['frequence']) && !empty($_POST['frequence']) ? sanitize_text_field($_POST['frequence']) : $not_provided) . "\r\n";
 
-    // === SECTION 5 : INSTALLATION TECHNIQUE ===
-    $content .= "\r\n--- INSTALLATION TECHNIQUE ---\r\n";
-    $content .= "Type de montage : " . (isset($_POST['montage']) ? sanitize_text_field($_POST['montage']) : $not_provided) . "\r\n";
+    // SECTION 5 : INSTALLATION TECHNIQUE
+    $content .= "\r\n\r\nINSTALLATION TECHNIQUE\r\n\r\n";
+    $content .= "<strong>Type de montage :</strong> " . (isset($_POST['montage']) ? sanitize_text_field($_POST['montage']) : $not_provided) . "\r\n";
 
     // Taille carcasse avec gestion du champ "autre"
     if (isset($_POST['taille_carcasse'])) {
 $taille = sanitize_text_field($_POST['taille_carcasse']);
 if ($taille === 'autre' && isset($_POST['taille_carcasse_autre']) && !empty($_POST['taille_carcasse_autre'])) {
-    $content .= $label_taille_carcasse . sanitize_text_field($_POST['taille_carcasse_autre']) . " (personnalisée)\r\n";
+    $content .= "<strong>Taille carcasse :</strong> " . sanitize_text_field($_POST['taille_carcasse_autre']) . " (personnalisée)\r\n";
 } else {
-    $content .= $label_taille_carcasse . $taille . "\r\n";
+    $content .= "<strong>Taille carcasse :</strong> " . $taille . "\r\n";
 }
     } else {
-$content .= $label_taille_carcasse . $not_provided . "\r\n";
+$content .= "<strong>Taille carcasse :</strong> " . $not_provided . "\r\n";
     }
 
-    $content .= "Matière : " . (isset($_POST['matiere']) ? sanitize_text_field($_POST['matiere']) : $not_provided) . "\r\n";
+    $content .= "<strong>Matière :</strong> " . (isset($_POST['matiere']) ? sanitize_text_field($_POST['matiere']) : $not_provided) . "\r\n";
 
     // Refroidissement avec gestion du champ "autre"
     if (isset($_POST['refroidissement'])) {
 $refroidissement = sanitize_text_field($_POST['refroidissement']);
 if ($refroidissement === 'autre' && isset($_POST['refroidissement_autre']) && !empty($_POST['refroidissement_autre'])) {
-    $content .= $label_refroidissement . sanitize_text_field($_POST['refroidissement_autre']) . " (personnalisé)\r\n";
+    $content .= "<strong>Refroidissement :</strong> " . sanitize_text_field($_POST['refroidissement_autre']) . " (personnalisé)\r\n";
 } else {
-    $content .= $label_refroidissement . $refroidissement . "\r\n";
+    $content .= "<strong>Refroidissement :</strong> " . $refroidissement . "\r\n";
 }
     } else {
-$content .= $label_refroidissement . $not_provided . "\r\n";
+$content .= "<strong>Refroidissement :</strong> " . $not_provided . "\r\n";
     }
 
-    // === SECTION 6 : CONDITIONS D'UTILISATION & ENVIRONNEMENT ===
-    $content .= "\r\n--- CONDITIONS D'UTILISATION & ENVIRONNEMENT ---\r\n";
-    $content .= "Régime de service : " . (isset($_POST['regime']) ? sanitize_text_field($_POST['regime']) : $not_provided) . "\r\n";
-    $content .= "Indice de protection : " . (isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : $not_provided) . "\r\n";
+    // SECTION 6 : CONDITIONS D'UTILISATION & ENVIRONNEMENT
+    $content .= "\r\n\r\nCONDITIONS D'UTILISATION & ENVIRONNEMENT\r\n\r\n";
+    $content .= "<strong>Régime de service :</strong> " . (isset($_POST['regime']) ? sanitize_text_field($_POST['regime']) : $not_provided) . "\r\n";
+    $content .= "<strong>Indice de protection :</strong> " . (isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : $not_provided) . "\r\n";
 
     // Température avec gestion personnalisée
     if (isset($_POST['temperature'])) {
@@ -3281,24 +3274,24 @@ $temp = sanitize_text_field($_POST['temperature']);
 if ($temp === 'personnalise' && isset($_POST['temp_min']) && isset($_POST['temp_max'])) {
     $temp_min = sanitize_text_field($_POST['temp_min']);
     $temp_max = sanitize_text_field($_POST['temp_max']);
-    $content .= "Température : Personnalisée (Min: {$temp_min}°C, Max: {$temp_max}°C)\r\n";
+    $content .= "<strong>Température :</strong> Personnalisée (Min: {$temp_min}°C, Max: {$temp_max}°C)\r\n";
 } else {
-    $content .= "Température : " . $temp . "\r\n";
+    $content .= "<strong>Température :</strong> " . $temp . "\r\n";
 }
     } else {
-$content .= "Température : " . $not_provided . "\r\n";
+$content .= "<strong>Température :</strong> " . $not_provided . "\r\n";
     }
 
     // Altitude avec gestion personnalisée
     if (isset($_POST['altitude'])) {
 $altitude = sanitize_text_field($_POST['altitude']);
 if ($altitude === 'personnalise' && isset($_POST['altitude_custom']) && !empty($_POST['altitude_custom'])) {
-    $content .= $label_altitude . sanitize_text_field($_POST['altitude_custom']) . "m (personnalisée)\r\n";
+    $content .= "<strong>Altitude :</strong> " . sanitize_text_field($_POST['altitude_custom']) . "m (personnalisée)\r\n";
 } else {
-    $content .= $label_altitude . $altitude . "\r\n";
+    $content .= "<strong>Altitude :</strong> " . $altitude . "\r\n";
 }
     } else {
-$content .= $label_altitude . $not_provided . "\r\n";
+$content .= "<strong>Altitude :</strong> " . $not_provided . "\r\n";
     }
 
     // Atmosphère (checkboxes multiples)
@@ -3315,41 +3308,41 @@ $atmos[] = 'Chimique';
     if (isset($_POST['atmos_poussiere'])) {
 $atmos[] = 'Poussiéreuse';
     }
-    $content .= "Atmosphère : " . (!empty($atmos) ? implode(', ', $atmos) : $not_provided) . "\r\n";
+    $content .= "<strong>Atmosphère :</strong> " . (!empty($atmos) ? implode(', ', $atmos) : $not_provided) . "\r\n";
 
-    // === SECTION 7 : ATEX (Conditionnel complexe) ===
-    $content .= "\r\n--- CERTIFICATION ATEX ---\r\n";
+    // SECTION 7 : ATEX (Conditionnel complexe)
+    $content .= "\r\n\r\nCERTIFICATION ATEX\r\n\r\n";
     if (isset($_POST['atex']) && $_POST['atex'] === 'oui') {
-$content .= "ATEX : OUI\r\n";
+$content .= "<strong>ATEX :</strong> OUI\r\n";
 
 // ATEX GAZ
 if (isset($_POST['atex_type_gaz'])) {
-    $content .= "\n  >> ATMOSPHÈRES GAZEUSES <<\r\n";
-    $content .= "  Zone : " . (isset($_POST['atex_zone_gaz']) ? sanitize_text_field($_POST['atex_zone_gaz']) : $not_provided) . "\r\n";
-    $content .= "  Groupe : " . (isset($_POST['atex_groupe_gaz']) && !empty($_POST['atex_groupe_gaz']) ? sanitize_text_field($_POST['atex_groupe_gaz']) : $not_provided) . "\r\n";
-    $content .= "  Classe température : T" . (isset($_POST['atex_temp_gaz']) && !empty($_POST['atex_temp_gaz']) ? sanitize_text_field($_POST['atex_temp_gaz']) : $not_provided) . "\r\n";
-    $content .= "  Mode de protection : " . (isset($_POST['atex_protection_gaz']) && !empty($_POST['atex_protection_gaz']) ? sanitize_text_field($_POST['atex_protection_gaz']) : $not_provided) . "\r\n";
+    $content .= "\r\nAtmosphères gazeuses :\r\n";
+    $content .= "  <strong>Zone :</strong> " . (isset($_POST['atex_zone_gaz']) ? sanitize_text_field($_POST['atex_zone_gaz']) : $not_provided) . "\r\n";
+    $content .= "  <strong>Groupe :</strong> " . (isset($_POST['atex_groupe_gaz']) && !empty($_POST['atex_groupe_gaz']) ? sanitize_text_field($_POST['atex_groupe_gaz']) : $not_provided) . "\r\n";
+    $content .= "  <strong>Classe température :</strong> T" . (isset($_POST['atex_temp_gaz']) && !empty($_POST['atex_temp_gaz']) ? sanitize_text_field($_POST['atex_temp_gaz']) : $not_provided) . "\r\n";
+    $content .= "  <strong>Mode de protection :</strong> " . (isset($_POST['atex_protection_gaz']) && !empty($_POST['atex_protection_gaz']) ? sanitize_text_field($_POST['atex_protection_gaz']) : $not_provided) . "\r\n";
 }
 
 // ATEX POUSSIÈRES
 if (isset($_POST['atex_type_poussieres'])) {
-    $content .= "\n  >> ATMOSPHÈRES POUSSIÉREUSES <<\r\n";
-    $content .= "  Zone : " . (isset($_POST['atex_zone_poussieres']) ? sanitize_text_field($_POST['atex_zone_poussieres']) : $not_provided) . "\r\n";
-    $content .= "  Type poussières : " . (isset($_POST['atex_type_poussieres']) && !empty($_POST['atex_type_poussieres']) ? sanitize_text_field($_POST['atex_type_poussieres']) : $not_provided) . "\r\n";
-    $content .= "  Classe température : T" . (isset($_POST['atex_temp_poussieres']) && !empty($_POST['atex_temp_poussieres']) ? sanitize_text_field($_POST['atex_temp_poussieres']) : $not_provided) . "\r\n";
-    $content .= "  Mode de protection : " . (isset($_POST['atex_protection_poussieres']) && !empty($_POST['atex_protection_poussieres']) ? sanitize_text_field($_POST['atex_protection_poussieres']) : $not_provided) . "\r\n";
+    $content .= "\r\nAtmosphères poussiéreuses :\r\n";
+    $content .= "  <strong>Zone :</strong> " . (isset($_POST['atex_zone_poussieres']) ? sanitize_text_field($_POST['atex_zone_poussieres']) : $not_provided) . "\r\n";
+    $content .= "  <strong>Type poussières :</strong> " . (isset($_POST['atex_type_poussieres']) && !empty($_POST['atex_type_poussieres']) ? sanitize_text_field($_POST['atex_type_poussieres']) : $not_provided) . "\r\n";
+    $content .= "  <strong>Classe température :</strong> T" . (isset($_POST['atex_temp_poussieres']) && !empty($_POST['atex_temp_poussieres']) ? sanitize_text_field($_POST['atex_temp_poussieres']) : $not_provided) . "\r\n";
+    $content .= "  <strong>Mode de protection :</strong> " . (isset($_POST['atex_protection_poussieres']) && !empty($_POST['atex_protection_poussieres']) ? sanitize_text_field($_POST['atex_protection_poussieres']) : $not_provided) . "\r\n";
 }
     } else {
-$content .= "ATEX : NON\r\n";
+$content .= "<strong>ATEX :</strong> NON\r\n";
     }
 
-    // === SECTION 8 : PERFORMANCES ÉNERGÉTIQUES ===
-    $content .= "\r\n--- PERFORMANCES ÉNERGÉTIQUES ---\r\n";
-    $content .= "Classe de rendement : " . (isset($_POST['rendement']) ? sanitize_text_field($_POST['rendement']) : $not_provided) . "\r\n";
-    $content .= "Classe d'isolation : " . (isset($_POST['isolation']) ? sanitize_text_field($_POST['isolation']) : $not_provided) . "\r\n";
+    // SECTION 8 : PERFORMANCES ÉNERGÉTIQUES
+    $content .= "\r\n\r\nPERFORMANCES ÉNERGÉTIQUES\r\n\r\n";
+    $content .= "<strong>Classe de rendement :</strong> " . (isset($_POST['rendement']) ? sanitize_text_field($_POST['rendement']) : $not_provided) . "\r\n";
+    $content .= "<strong>Classe d'isolation :</strong> " . (isset($_POST['isolation']) ? sanitize_text_field($_POST['isolation']) : $not_provided) . "\r\n";
 
-    // === SECTION 9 : OPTIONS & ACCESSOIRES ===
-    $content .= "\r\n--- OPTIONS & ACCESSOIRES ---\r\n";
+    // SECTION 9 : OPTIONS & ACCESSOIRES
+    $content .= "\r\n\r\nOPTIONS & ACCESSOIRES\r\n\r\n";
 
     $options = array();
 
@@ -3418,8 +3411,8 @@ $options[] = 'Couleur RAL ' . sanitize_text_field($_POST['couleur_ral_code']);
     $content .= !empty($options) ? implode(', ', $options) : $not_provided;
     $content .= "\r\n";
 
-    // === SECTION 10 : NORMES & CERTIFICATIONS ===
-    $content .= "\r\n--- NORMES & CERTIFICATIONS ---\r\n";
+    // SECTION 10 : NORMES & CERTIFICATIONS
+    $content .= "\r\n\r\nNORMES & CERTIFICATIONS\r\n\r\n";
     $certifs = array();
 
     if (isset($_POST['certification_ce'])) {
@@ -3444,22 +3437,17 @@ $certifs[] = 'Autre : ' . sanitize_text_field($_POST['certification_autre_detail
     $content .= !empty($certifs) ? implode(', ', $certifs) : $not_provided;
     $content .= "\r\n";
 
-    // === SECTION 11 : DESCRIPTION DU BESOIN ===
+    // SECTION 11 : DESCRIPTION DU BESOIN
     if (isset($_POST['description_besoin']) && !empty($_POST['description_besoin'])) {
-$content .= "\r\n--- DESCRIPTION DU BESOIN ---\r\n";
+$content .= "\r\n\r\nDESCRIPTION DU BESOIN\r\n\r\n";
 $content .= sanitize_textarea_field($_POST['description_besoin']) . "\r\n";
     }
 
-    // === SECTION 12 : PIÈCE JOINTE ===
+    // SECTION 12 : PIÈCE JOINTE
     if (!empty($_FILES['fichier_plaque']['name'])) {
-$content .= "\r\n--- PIÈCE JOINTE ---\r\n";
-$content .= "Fichier joint : " . sanitize_file_name($_FILES['fichier_plaque']['name']) . "\r\n";
-    } else {
-$content .= "\r\n--- PIÈCE JOINTE ---\r\n";
-$content .= "Aucune plaque signalétique jointe\r\n";
+$content .= "\r\n\r\nPIÈCE JOINTE\r\n\r\n";
+$content .= "<strong>Fichier joint :</strong> " . sanitize_file_name($_FILES['fichier_plaque']['name']) . "\r\n";
     }
-
-    $content .= "\r\n=== FIN DE LA DEMANDE ===\r\n";
 
     return $content;
     }
@@ -3620,31 +3608,32 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
      */
     function generateMoteurEmailHtml($content, $client_name, $client_email, $societe, $orderData) {
         return '
-        <div style="font-family: Arial, Helvetica, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9;">
-            <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0;">
-                <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 600;">⚡ Demande Moteur Asynchrone Triphasé</h1>
-                <p style="margin: 0 0 5px 0; font-size: 16px; opacity: 0.95;">Nouvelle demande reçue de <strong>' . esc_html($societe) . '</strong></p>
-                <p style="margin: 0; font-size: 14px; opacity: 0.9;">Référence : n°' . esc_html($orderData['order_number']) . ' - ' . esc_html($orderData['date_demande']) . '</p>
+        <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #0066cc; margin-bottom: 5px; font-size: 28px;">Demande de moteur asynchrone triphasé</h1>
+                <p style="margin-top: 0; margin-bottom: 5px;">Référence : ' . $orderData['order_number'] . ' - ' . $orderData['date_demande'] . '</p>
+                <p style="margin: 0;"><a href="' . esc_url($orderData['recap_url']) . '" style="color: #0066cc; text-decoration: underline;">[Demande de moteur n°' . $orderData['order_number'] . ']</a></p>
+                <p style="margin: 5px 0; font-size: 12px; color: #6b7280;">Ce lien est valable pendant 30 jours.</p>
             </div>
-            <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #2196f3;">
-                    <h3 style="margin: 0 0 10px 0; color: #1565c0; font-size: 16px;">👤 Contact</h3>
-                    <p style="margin: 5px 0; font-size: 14px;"><strong>Nom :</strong> ' . esc_html($client_name) . '</p>
-                    <p style="margin: 5px 0; font-size: 14px;"><strong>Email :</strong> <a href="mailto:' . esc_attr($client_email) . '" style="color: #2196f3; text-decoration: none;">' . esc_html($client_email) . '</a></p>
-                    <p style="margin: 5px 0; font-size: 14px;"><strong>Société :</strong> ' . esc_html($societe) . '</p>
-                </div>
-                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #ffc107; text-align: center;">
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #856404;"><strong>📋 Accéder au récapitulatif complet</strong></p>
-                    <a href="' . esc_url($orderData['recap_url']) . '" style="display: inline-block; background: #4338ca; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 14px;">Voir la demande n°' . esc_html($orderData['order_number']) . '</a>
-                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #856404;">Ce lien est valable pendant 30 jours</p>
-                </div>
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
-                    <pre style="white-space: pre-wrap; word-wrap: break-word; font-family: Consolas, Monaco, monospace; font-size: 13px; line-height: 1.6; margin: 0; color: #212529;">' . esc_html($content) . '</pre>
+
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Informations de contact :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #0066cc;">
+                    <p style="margin: 5px 0;"><strong>Société :</strong> ' . esc_html($societe) . '</p>
+                    <p style="margin: 5px 0;"><strong>Nom :</strong> ' . esc_html($client_name) . '</p>
+                    <p style="margin: 5px 0;"><strong>Email :</strong> ' . esc_html($client_email) . '</p>
                 </div>
             </div>
+
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 10px;">Détails de la demande :</h3>
+                <div style="background-color: #fff; padding: 15px; border-radius: 6px; border-left: 3px solid #0066cc;">
+                    <div style="font-family: Helvetica, sans-serif; font-size: 14px; line-height: 1.6; margin: 0; color: #374151;">' . nl2br($content) . '</div>
+                </div>
+            </div>
+
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">
-                <p style="margin: 5px 0;">© Cenov Distribution - Tous droits réservés</p>
-                <p style="margin: 5px 0; font-size: 12px; color: #999;">Spécialiste pompes et moteurs industriels</p>
+                <p>© Cenov Distribution - Tous droits réservés</p>
             </div>
         </div>';
     }
