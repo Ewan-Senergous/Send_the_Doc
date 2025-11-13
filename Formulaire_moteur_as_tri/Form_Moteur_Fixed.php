@@ -652,6 +652,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         gap: 6px;
         flex-wrap: wrap;
       }
+      .options-inline-input input[type="checkbox"] {
+        transform: translateY(0px);
+      }
       .options-inline-input input[type="text"] {
         flex: 1 1 160px;
         min-width: 140px;
@@ -2976,7 +2979,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
         <!-- ========= VOUS CONNAÎTRE DAVANTAGE ========= -->
         <div class="section">
-          <div class="category-title">💬 VOUS CONNAÎTRE DAVANTAGE</div>
+          <div class="category-title">💬 VOUS CONNAÎTRE DAVANTAGE :</div>
 
           <div class="question">
             <strong>🏢 Société <span class="required">*</span></strong>
