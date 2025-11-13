@@ -1,5 +1,10 @@
 <?php
- // Questionnaire complet pour la vente de moteurs asynchrones triphasés
+// Questionnaire complet pour la vente de moteurs asynchrones triphasés
+
+// Démarrer la session pour stocker les données du formulaire
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     function cenovFormulaireMoteurAsyncDisplay() {
@@ -10,9 +15,8 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             define('CENOV_MOTEUR_NOT_PROVIDED', 'Non renseigné');
         }
 
-        // Variables de résultat
+        // Variable pour les messages d'erreur (les succès redirigent maintenant)
         $result = '';
-        $form_success = false;
 
         // ========== TRAITEMENT DU FORMULAIRE ==========
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_moteur'])) {
@@ -31,6 +35,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             }
             // 4. Tout est OK - Préparation et envoi
             else {
+                // ÉTAPE 3.1 : Générer le numéro de demande et la clé de sécurité
+                $orderData = generateMoteurOrderData();
+
                 // ÉTAPE 3.2 : Préparer le contenu de l'email
                 $content = prepareMoteurEmailContent();
 
@@ -39,24 +46,32 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 $attachments = $uploadResult['attachments'];
                 $fileWarning = $uploadResult['warning'];
 
-                // ÉTAPE 3.4 : Envoyer l'email
-                $emailSent = sendMoteurEmail($content, $attachments);
+                // ÉTAPE 3.4 : Stocker les données en session et en base de données
+                storeMoteurSessionData($orderData, $uploadResult);
 
-                // Nettoyer les fichiers temporaires après envoi
-                if (!empty($attachments)) {
-                    foreach ($attachments as $file) {
-                        if (file_exists($file)) {
-                            @unlink($file);
+                // ÉTAPE 3.5 : Envoyer l'email
+                $emailSent = sendMoteurEmail($content, $attachments, $orderData);
+
+                // ÉTAPE 3.6 : POST-Redirect-GET - Rediriger vers la page de récapitulatif
+                if ($emailSent) {
+                    // Ne pas nettoyer les fichiers temporaires maintenant
+                    // Ils seront nettoyés par la page RecapMoteur.php
+
+                    // Rediriger vers la page de récapitulatif (résout le problème de page blanche)
+                    wp_redirect($orderData['recap_url']);
+                    exit;
+                } else {
+                    // En cas d'erreur d'envoi, afficher le message d'erreur
+                    $result = $fileWarning . '<div class="error-message">❌ Une erreur est survenue lors de l\'envoi. Veuillez réessayer ou nous contacter par téléphone.</div>';
+
+                    // Nettoyer les fichiers uploadés en cas d'erreur
+                    if (!empty($attachments)) {
+                        foreach ($attachments as $file) {
+                            if (file_exists($file)) {
+                                @unlink($file);
+                            }
                         }
                     }
-                }
-
-                // Afficher le résultat
-                if ($emailSent) {
-                    $form_success = true;
-                    $result = $fileWarning . '<div class="success-message">✅ Votre demande a été envoyée avec succès !<br>Nous vous contacterons rapidement.</div>';
-                } else {
-                    $result = $fileWarning . '<div class="error-message">❌ Une erreur est survenue lors de l\'envoi. Veuillez réessayer ou nous contacter par téléphone.</div>';
                 }
             }
         }
@@ -64,10 +79,104 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         // ========== FONCTIONS DE TRAITEMENT ==========
 
         /**
+         * Génère les données de la demande (numéro, clé, date, URL)
+         * @return array Tableau avec order_number, order_key, date_demande, recap_url
+         */
+        if (!function_exists('generateMoteurOrderData')) {
+            function generateMoteurOrderData() {
+            // Système de numérotation séquentiel
+            $current_number = get_option('cenov_moteur_request_number', 987540000);
+            $order_number = $current_number + 1;
+            update_option('cenov_moteur_request_number', $order_number);
+
+            // Générer une clé unique pour cette demande
+            $order_key = wp_generate_password(12, false);
+
+            // Stocker la clé avec expiration (30 jours)
+            update_option('cenov_moteur_key_' . $order_number, $order_key);
+            update_option('cenov_moteur_key_expires_' . $order_number, time() + (30 * DAY_IN_SECONDS));
+            update_option('cenov_moteur_date_' . $order_number, time());
+
+            // Construire l'URL de récapitulatif
+            $recap_url = add_query_arg(
+                array(
+                    'order' => $order_number,
+                    'key' => $order_key
+                ),
+                home_url('/recap-moteur/')
+            );
+
+            return array(
+                'order_number' => $order_number,
+                'order_key' => $order_key,
+                'date_demande' => date_i18n('j F Y'),
+                'recap_url' => $recap_url
+            );
+            }
+        }
+
+        /**
+         * Stocke les données du formulaire en session et en base de données
+         * @param array $orderData Données de la commande (numéro, clé, date, URL)
+         * @param array $uploadResult Résultat de l'upload (attachments, fileNames, filePaths)
+         */
+        if (!function_exists('storeMoteurSessionData')) {
+            function storeMoteurSessionData($orderData, $uploadResult) {
+            // Démarrer la session si ce n'est pas déjà fait
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            $not_provided = CENOV_MOTEUR_NOT_PROVIDED;
+
+            // Préparer les données pour la session
+            $_SESSION['moteur_data'] = array(
+                'order_number' => $orderData['order_number'],
+                'date_demande' => $orderData['date_demande'],
+                'societe' => sanitize_text_field($_POST['societe']),
+                'nom_prenom' => sanitize_text_field($_POST['nom_prenom']),
+                'email' => sanitize_email($_POST['email']),
+                'telephone' => isset($_POST['telephone']) && !empty($_POST['telephone']) ? sanitize_text_field($_POST['telephone']) : $not_provided,
+                'ville_pays' => isset($_POST['ville_pays']) && !empty($_POST['ville_pays']) ? sanitize_text_field($_POST['ville_pays']) : $not_provided,
+                'fonction' => isset($_POST['fonction']) && !empty($_POST['fonction']) ? sanitize_text_field($_POST['fonction']) : $not_provided,
+                'quantite' => isset($_POST['quantite']) && !empty($_POST['quantite']) ? intval($_POST['quantite']) : $not_provided,
+                'budget' => isset($_POST['budget']) && !empty($_POST['budget']) ? sanitize_text_field($_POST['budget']) : $not_provided,
+                'delai' => isset($_POST['delai']) ? sanitize_text_field($_POST['delai']) : $not_provided,
+                'puissance_kw' => isset($_POST['puissance_kw']) && !empty($_POST['puissance_kw']) ? sanitize_text_field($_POST['puissance_kw']) : $not_provided,
+                'vitesse' => isset($_POST['vitesse']) ? sanitize_text_field($_POST['vitesse']) : $not_provided,
+                'tension' => isset($_POST['tension']) ? sanitize_text_field($_POST['tension']) : $not_provided,
+                'frequence' => isset($_POST['frequence']) && !empty($_POST['frequence']) ? sanitize_text_field($_POST['frequence']) : $not_provided,
+                'montage' => isset($_POST['montage']) ? sanitize_text_field($_POST['montage']) : $not_provided,
+                'file_names' => isset($uploadResult['fileNames']) ? $uploadResult['fileNames'] : array(),
+                'file_paths' => isset($uploadResult['filePaths']) ? $uploadResult['filePaths'] : array(),
+            );
+
+            // Sauvegarder également en base de données pour récupération ultérieure
+            $order_number = $orderData['order_number'];
+            update_option('cenov_moteur_societe_' . $order_number, $_SESSION['moteur_data']['societe']);
+            update_option('cenov_moteur_nom_prenom_' . $order_number, $_SESSION['moteur_data']['nom_prenom']);
+            update_option('cenov_moteur_email_' . $order_number, $_SESSION['moteur_data']['email']);
+            update_option('cenov_moteur_telephone_' . $order_number, $_SESSION['moteur_data']['telephone']);
+            update_option('cenov_moteur_ville_pays_' . $order_number, $_SESSION['moteur_data']['ville_pays']);
+            update_option('cenov_moteur_fonction_' . $order_number, $_SESSION['moteur_data']['fonction']);
+            update_option('cenov_moteur_quantite_' . $order_number, $_SESSION['moteur_data']['quantite']);
+            update_option('cenov_moteur_budget_' . $order_number, $_SESSION['moteur_data']['budget']);
+            update_option('cenov_moteur_delai_' . $order_number, $_SESSION['moteur_data']['delai']);
+            update_option('cenov_moteur_puissance_kw_' . $order_number, $_SESSION['moteur_data']['puissance_kw']);
+            update_option('cenov_moteur_vitesse_' . $order_number, $_SESSION['moteur_data']['vitesse']);
+            update_option('cenov_moteur_tension_' . $order_number, $_SESSION['moteur_data']['tension']);
+            update_option('cenov_moteur_frequence_' . $order_number, $_SESSION['moteur_data']['frequence']);
+            update_option('cenov_moteur_montage_' . $order_number, $_SESSION['moteur_data']['montage']);
+            update_option('cenov_moteur_file_names_' . $order_number, $_SESSION['moteur_data']['file_names']);
+            }
+        }
+
+        /**
          * Prépare le contenu de l'email formaté à partir des données du formulaire
          * @return string Contenu formaté pour l'email
          */
-        function prepareMoteurEmailContent() {
+        if (!function_exists('prepareMoteurEmailContent')) {
+            function prepareMoteurEmailContent() {
             $not_provided = CENOV_MOTEUR_NOT_PROVIDED;
 
             // Constantes pour les labels fréquemment utilisés
@@ -349,13 +458,15 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             $content .= "\r\n=== FIN DE LA DEMANDE ===\r\n";
 
             return $content;
+            }
         }
 
         /**
          * Traite l'upload du fichier plaque signalétique
          * @return array Tableau avec 'attachments' (chemins) et 'fileNames' (noms) et 'warning' (message)
          */
-        function processMoteurUploadedFiles() {
+        if (!function_exists('processMoteurUploadedFiles')) {
+            function processMoteurUploadedFiles() {
             $attachments = array();
             $fileNames = array();
             $warning = '';
@@ -460,25 +571,28 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 'fileNames' => $fileNames,
                 'warning' => $warning
             );
+            }
         }
 
         /**
          * Envoie l'email avec le contenu du formulaire
          * @param string $content Contenu formaté de l'email
          * @param array $attachments Chemins des fichiers à attacher
+         * @param array $orderData Données de la demande (order_number, recap_url, date_demande)
          * @return bool True si envoi réussi, False sinon
          */
-        function sendMoteurEmail($content, $attachments) {
+        if (!function_exists('sendMoteurEmail')) {
+            function sendMoteurEmail($content, $attachments, $orderData) {
             // Récupérer les informations client
             $client_email = sanitize_email($_POST['email']);
             $client_name = sanitize_text_field($_POST['nom_prenom']);
             $societe = sanitize_text_field($_POST['societe']);
 
-            // Préparer le sujet
-            $subject = 'Nouvelle demande - Moteur asynchrone triphasé - ' . $societe;
+            // Préparer le sujet avec le numéro de demande
+            $subject = 'Demande de moteur n°' . $orderData['order_number'] . ' - ' . $societe;
 
             // Générer le template HTML
-            $html_content = generateMoteurEmailHtml($content, $client_name, $client_email, $societe);
+            $html_content = generateMoteurEmailHtml($content, $client_name, $client_email, $societe, $orderData);
 
             // Headers pour l'entreprise
             $headers = array(
@@ -516,6 +630,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             // Considérer l'envoi réussi si l'email entreprise est parti
             return $sent_to_company && (!empty($client_email) ? $sent_to_client : true);
+            }
         }
 
         /**
@@ -524,15 +639,18 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
          * @param string $client_name Nom du client
          * @param string $client_email Email du client
          * @param string $societe Nom de la société
+         * @param array $orderData Données de la demande (order_number, recap_url, date_demande)
          * @return string HTML formaté
          */
-        function generateMoteurEmailHtml($content, $client_name, $client_email, $societe) {
+        if (!function_exists('generateMoteurEmailHtml')) {
+            function generateMoteurEmailHtml($content, $client_name, $client_email, $societe, $orderData) {
             return '
             <div style="font-family: Arial, Helvetica, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9;">
                 <!-- En-tête -->
                 <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0;">
                     <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 600;">⚡ Demande Moteur Asynchrone Triphasé</h1>
-                    <p style="margin: 0; font-size: 16px; opacity: 0.95;">Nouvelle demande reçue de <strong>' . esc_html($societe) . '</strong></p>
+                    <p style="margin: 0 0 5px 0; font-size: 16px; opacity: 0.95;">Nouvelle demande reçue de <strong>' . esc_html($societe) . '</strong></p>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">Référence : n°' . esc_html($orderData['order_number']) . ' - ' . esc_html($orderData['date_demande']) . '</p>
                 </div>
 
                 <!-- Corps principal -->
@@ -544,6 +662,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                         <p style="margin: 5px 0; font-size: 14px;"><strong>Nom :</strong> ' . esc_html($client_name) . '</p>
                         <p style="margin: 5px 0; font-size: 14px;"><strong>Email :</strong> <a href="mailto:' . esc_attr($client_email) . '" style="color: #2196f3; text-decoration: none;">' . esc_html($client_email) . '</a></p>
                         <p style="margin: 5px 0; font-size: 14px;"><strong>Société :</strong> ' . esc_html($societe) . '</p>
+                    </div>
+
+                    <!-- Lien vers le récapitulatif -->
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #ffc107; text-align: center;">
+                        <p style="margin: 0 0 10px 0; font-size: 14px; color: #856404;"><strong>📋 Accéder au récapitulatif complet</strong></p>
+                        <a href="' . esc_url($orderData['recap_url']) . '" style="display: inline-block; background: #4338ca; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 14px;">Voir la demande n°' . esc_html($orderData['order_number']) . '</a>
+                        <p style="margin: 10px 0 0 0; font-size: 12px; color: #856404;">Ce lien est valable pendant 30 jours</p>
                     </div>
 
                     <!-- Contenu détaillé -->
@@ -559,6 +684,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                     <p style="margin: 5px 0; font-size: 12px; color: #999;">Spécialiste pompes et moteurs industriels</p>
                 </div>
             </div>';
+            }
         }
 
         ?>
@@ -2063,7 +2189,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <?php wp_nonce_field('cenov_moteur_form', 'cenov_moteur_nonce'); ?>
 
         <?php if (!empty($result)) : ?>
-        <div style="margin: 20px; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 500; text-align: center; <?php echo $form_success ? 'background: #d4edda; border: 2px solid #28a745; color: #155724;' : 'background: #f8d7da; border: 2px solid #dc3545; color: #721c24;'; ?>">
+        <div style="margin: 20px; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 500; text-align: center; background: #f8d7da; border: 2px solid #dc3545; color: #721c24;">
             <?php echo $result; ?>
         </div>
         <?php endif; ?>
@@ -3597,11 +3723,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         
         return ob_get_clean();
     }
-    
-    // Enregistrement du shortcode WordPress
-    add_shortcode('formulaire_moteur_async', 'cenovFormulaireMoteurAsyncDisplay');
 }
 
-// Affichage direct (pour test)
+// Appel de la fonction pour l'extension Insert PHP Code Snippet (xyz-ips)
+// Utilisé via le shortcode: [xyz-ips snippet="FormMoteur"]
 echo cenovFormulaireMoteurAsyncDisplay();
 ?>

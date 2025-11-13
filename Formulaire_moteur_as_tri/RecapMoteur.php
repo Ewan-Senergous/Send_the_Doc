@@ -1,6 +1,8 @@
 <?php
 // Page de récapitulatif pour les demandes de moteurs asynchrones triphasés
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Définir une constante pour les champs non renseignés
 define('MOTEUR_NOT_PROVIDED', 'Non renseigné');
@@ -47,7 +49,7 @@ if (isset($_GET['order']) && isset($_GET['key'])) {
     }
 } elseif (!isset($_SESSION['moteur_data']) || empty($_SESSION['moteur_data'])) {
     // Si pas de paramètres d'URL et pas de données en session, rediriger vers la page du formulaire
-    wp_redirect(home_url('/formulaire-moteur-asynch/'));
+    wp_redirect(home_url('/formulaire-moteur/'));
     exit;
 }
 
