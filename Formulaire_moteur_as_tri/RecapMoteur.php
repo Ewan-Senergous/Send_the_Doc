@@ -21,26 +21,60 @@ if (isset($_GET['order']) && isset($_GET['key'])) {
         // Récupérer les données de session si elles existent
         if (!isset($_SESSION['moteur_data']) || empty($_SESSION['moteur_data']) || $_SESSION['moteur_data']['order_number'] != $order_number) {
             // Tenter de reconstruire les données complètes depuis la base de données
+            // Liste de TOUS les champs à récupérer
+            $fields = array(
+                // Métadonnées
+                'order_number', 'date_demande',
+                // Contact
+                'societe', 'nom_prenom', 'email', 'telephone', 'ville_pays', 'fonction', 'secteur', 'secteur_autre',
+                // Projet
+                'quantite', 'budget', 'delai',
+                // Caractéristiques
+                'puissance_kw', 'vitesse', 'vitesse_autre_rpm',
+                // Alimentation
+                'tension', 'tension_autre', 'frequence',
+                // Installation
+                'montage', 'taille_carcasse', 'taille_carcasse_autre', 'matiere', 'refroidissement', 'refroidissement_autre',
+                // Conditions
+                'regime',
+                // Environnement
+                'ip', 'temperature', 'temp_min', 'temp_max', 'altitude', 'altitude_custom',
+                'atmos_saline', 'atmos_humide', 'atmos_chimique', 'atmos_poussiere',
+                // ATEX
+                'atex', 'atex_type_gaz', 'atex_zone_gaz', 'atex_groupe_gaz', 'atex_temp_gaz', 'atex_protection_gaz',
+                'atex_type_poussieres', 'atex_zone_poussieres', 'atex_temp_poussieres', 'atex_protection_poussieres',
+                // Performances
+                'rendement', 'isolation',
+                // Options
+                'rechaufage', 'sonde_thermique_ptc', 'has_frein', 'frein_type', 'frein_tension', 'frein_tension_autre',
+                'codeur_incremental', 'codeur_incremental_resolution', 'codeur_absolu', 'ventilation_forcee',
+                'roulements_renforces', 'roulements_nu', 'graissage_permanent', 'autres_accessoires', 'autres_accessoires_details',
+                // Protection
+                'traitement_tropical', 'couleur_ral', 'couleur_ral_code',
+                // Normes
+                'certification_ce', 'certification_ul', 'certification_eac', 'certification_ccc',
+                'certification_marine', 'certification_autre', 'certification_autre_details',
+                // Description
+                'description_besoin'
+            );
+
+            // Initialiser le tableau de données
             $_SESSION['moteur_data'] = array(
                 'order_number' => $order_number,
-                'date_demande' => date_i18n('j F Y', get_option('cenov_moteur_date_' . $order_number, time())),
-                'societe' => get_option('cenov_moteur_societe_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'nom_prenom' => get_option('cenov_moteur_nom_prenom_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'email' => get_option('cenov_moteur_email_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'telephone' => get_option('cenov_moteur_telephone_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'ville_pays' => get_option('cenov_moteur_ville_pays_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'fonction' => get_option('cenov_moteur_fonction_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'quantite' => get_option('cenov_moteur_quantite_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'budget' => get_option('cenov_moteur_budget_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'delai' => get_option('cenov_moteur_delai_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'puissance_kw' => get_option('cenov_moteur_puissance_kw_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'vitesse' => get_option('cenov_moteur_vitesse_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'tension' => get_option('cenov_moteur_tension_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'frequence' => get_option('cenov_moteur_frequence_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'montage' => get_option('cenov_moteur_montage_' . $order_number, MOTEUR_NOT_PROVIDED),
-                'file_names' => get_option('cenov_moteur_file_names_' . $order_number, array()),
-                'file_images' => get_option('cenov_moteur_file_images_' . $order_number, array()),
+                'date_demande' => date_i18n('j F Y', get_option('cenov_moteur_date_' . $order_number, time()))
             );
+
+            // Récupérer tous les champs depuis la base de données
+            foreach ($fields as $field) {
+                if ($field !== 'order_number' && $field !== 'date_demande') {
+                    $_SESSION['moteur_data'][$field] = get_option('cenov_moteur_' . $field . '_' . $order_number, MOTEUR_NOT_PROVIDED);
+                }
+            }
+
+            // Récupérer les fichiers (arrays)
+            $_SESSION['moteur_data']['file_names'] = get_option('cenov_moteur_file_names_' . $order_number, array());
+            $_SESSION['moteur_data']['file_paths'] = get_option('cenov_moteur_file_paths_' . $order_number, array());
+            $_SESSION['moteur_data']['file_images'] = get_option('cenov_moteur_file_images_' . $order_number, array());
         }
     } else {
         // Si la clé est invalide ou a expiré, rediriger vers la page d'accueil
@@ -96,22 +130,17 @@ $date_demande = isset($data['date_demande']) ? $data['date_demande'] : date_i18n
 // Si nous avons un numéro de demande, sauvegarder les données complètes dans la base de données
 // pour permettre la récupération ultérieure depuis un autre navigateur ou session
 if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
-    // Sauvegarder toutes les données dans la base de données
-    update_option('cenov_moteur_societe_' . $order_number, isset($data['societe']) ? $data['societe'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_nom_prenom_' . $order_number, isset($data['nom_prenom']) ? $data['nom_prenom'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_email_' . $order_number, isset($data['email']) ? $data['email'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_telephone_' . $order_number, isset($data['telephone']) ? $data['telephone'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_ville_pays_' . $order_number, isset($data['ville_pays']) ? $data['ville_pays'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_fonction_' . $order_number, isset($data['fonction']) ? $data['fonction'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_quantite_' . $order_number, isset($data['quantite']) ? $data['quantite'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_budget_' . $order_number, isset($data['budget']) ? $data['budget'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_delai_' . $order_number, isset($data['delai']) ? $data['delai'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_puissance_kw_' . $order_number, isset($data['puissance_kw']) ? $data['puissance_kw'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_vitesse_' . $order_number, isset($data['vitesse']) ? $data['vitesse'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_tension_' . $order_number, isset($data['tension']) ? $data['tension'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_frequence_' . $order_number, isset($data['frequence']) ? $data['frequence'] : MOTEUR_NOT_PROVIDED);
-    update_option('cenov_moteur_montage_' . $order_number, isset($data['montage']) ? $data['montage'] : MOTEUR_NOT_PROVIDED);
+    // Sauvegarder TOUTES les données dans la base de données avec une boucle
+    foreach ($data as $key => $value) {
+        if (!is_array($value) && $key !== 'order_number' && $key !== 'date_demande') {
+            $saved_value = isset($data[$key]) ? $data[$key] : MOTEUR_NOT_PROVIDED;
+            update_option('cenov_moteur_' . $key . '_' . $order_number, $saved_value);
+        }
+    }
+
+    // Sauvegarder les arrays séparément
     update_option('cenov_moteur_file_names_' . $order_number, isset($data['file_names']) ? $data['file_names'] : array());
+    update_option('cenov_moteur_file_paths_' . $order_number, isset($data['file_paths']) ? $data['file_paths'] : array());
 
     // Sauvegarder les images encodées si elles existent
     if (isset($data['file_images'])) {
@@ -202,6 +231,285 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
             </div>
         </div>
     </div>
+
+    <!-- Installation technique -->
+    <div class="recap-section">
+        <h3>🔧 Installation technique</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Taille carcasse :</span>
+                <span class="info-value"><?php
+                    $taille = isset($data['taille_carcasse']) ? esc_html($data['taille_carcasse']) : MOTEUR_NOT_PROVIDED;
+                    if ($taille === 'autre' && isset($data['taille_carcasse_autre']) && $data['taille_carcasse_autre'] !== MOTEUR_NOT_PROVIDED) {
+                        echo esc_html($data['taille_carcasse_autre']);
+                    } else {
+                        echo $taille;
+                    }
+                ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Matière :</span>
+                <span class="info-value"><?php echo isset($data['matiere']) ? esc_html($data['matiere']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item full-width">
+                <span class="info-label">Refroidissement :</span>
+                <span class="info-value"><?php
+                    $refr = isset($data['refroidissement']) ? esc_html($data['refroidissement']) : MOTEUR_NOT_PROVIDED;
+                    if ($refr === 'autre' && isset($data['refroidissement_autre']) && $data['refroidissement_autre'] !== MOTEUR_NOT_PROVIDED) {
+                        echo esc_html($data['refroidissement_autre']);
+                    } else {
+                        echo $refr;
+                    }
+                ?></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conditions d'utilisation & Environnement -->
+    <div class="recap-section">
+        <h3>⏱️ Conditions d'utilisation & Environnement</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Régime de service :</span>
+                <span class="info-value"><?php echo isset($data['regime']) ? esc_html($data['regime']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Indice de protection (IP) :</span>
+                <span class="info-value"><?php echo isset($data['ip']) ? esc_html($data['ip']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Température ambiante :</span>
+                <span class="info-value"><?php
+                    $temp = isset($data['temperature']) ? esc_html($data['temperature']) : MOTEUR_NOT_PROVIDED;
+                    if ($temp === 'personnalise' && isset($data['temp_min']) && isset($data['temp_max'])) {
+                        echo esc_html($data['temp_min']) . '°C à ' . esc_html($data['temp_max']) . '°C';
+                    } else {
+                        echo $temp;
+                    }
+                ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Altitude :</span>
+                <span class="info-value"><?php
+                    $alt = isset($data['altitude']) ? esc_html($data['altitude']) : MOTEUR_NOT_PROVIDED;
+                    if ($alt === 'personnalise' && isset($data['altitude_custom']) && $data['altitude_custom'] !== MOTEUR_NOT_PROVIDED) {
+                        echo esc_html($data['altitude_custom']) . ' m';
+                    } else {
+                        echo $alt;
+                    }
+                ?></span>
+            </div>
+            <div class="info-item full-width">
+                <span class="info-label">Atmosphère :</span>
+                <span class="info-value"><?php
+                    $atmos = array();
+                    if (isset($data['atmos_saline']) && $data['atmos_saline'] === '1') {
+                        $atmos[] = 'Saline';
+                    }
+                    if (isset($data['atmos_humide']) && $data['atmos_humide'] === '1') {
+                        $atmos[] = 'Humide';
+                    }
+                    if (isset($data['atmos_chimique']) && $data['atmos_chimique'] === '1') {
+                        $atmos[] = 'Chimique';
+                    }
+                    if (isset($data['atmos_poussiere']) && $data['atmos_poussiere'] === '1') {
+                        $atmos[] = 'Poussiéreuse';
+                    }
+                    echo !empty($atmos) ? implode(', ', $atmos) : MOTEUR_NOT_PROVIDED;
+                ?></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ATEX -->
+    <?php if (isset($data['atex']) && $data['atex'] === 'oui') : ?>
+    <div class="recap-section">
+        <h3>💥 Certification ATEX</h3>
+        <div class="info-grid">
+            <?php if (isset($data['atex_type_gaz']) && $data['atex_type_gaz'] === '1') : ?>
+            <div class="info-item full-width" style="background: #e3f2fd;">
+                <span class="info-label" style="font-weight: 700; color: #1565c0;">⚡ Atmosphère GAZ</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Zone :</span>
+                <span class="info-value"><?php echo isset($data['atex_zone_gaz']) ? esc_html($data['atex_zone_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Groupe :</span>
+                <span class="info-value"><?php echo isset($data['atex_groupe_gaz']) ? esc_html($data['atex_groupe_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Classe température :</span>
+                <span class="info-value"><?php echo isset($data['atex_temp_gaz']) ? esc_html($data['atex_temp_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Protection :</span>
+                <span class="info-value"><?php echo isset($data['atex_protection_gaz']) ? esc_html($data['atex_protection_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <?php endif; ?>
+
+            <?php if (isset($data['atex_type_poussieres']) && $data['atex_type_poussieres'] === '1') : ?>
+            <div class="info-item full-width" style="background: #fff3e0;">
+                <span class="info-label" style="font-weight: 700; color: #e65100;">💨 Atmosphère POUSSIÈRES</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Zone :</span>
+                <span class="info-value"><?php echo isset($data['atex_zone_poussieres']) ? esc_html($data['atex_zone_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Classe température :</span>
+                <span class="info-value"><?php echo isset($data['atex_temp_poussieres']) ? esc_html($data['atex_temp_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item full-width">
+                <span class="info-label">Protection :</span>
+                <span class="info-value"><?php echo isset($data['atex_protection_poussieres']) ? esc_html($data['atex_protection_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Performances énergétiques -->
+    <div class="recap-section">
+        <h3>♻️ Performances énergétiques</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Classe de rendement :</span>
+                <span class="info-value"><?php echo isset($data['rendement']) ? esc_html($data['rendement']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Classe d'isolation :</span>
+                <span class="info-value"><?php echo isset($data['isolation']) ? esc_html($data['isolation']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Options & Accessoires -->
+    <?php
+    $has_options = false;
+    $options_list = array();
+
+    if (isset($data['rechaufage']) && $data['rechaufage'] === '1') {
+        $options_list[] = 'Réchauffage';
+        $has_options = true;
+    }
+    if (isset($data['sonde_thermique_ptc']) && $data['sonde_thermique_ptc'] === '1') {
+        $options_list[] = 'Sonde thermique PTC';
+        $has_options = true;
+    }
+    if (isset($data['has_frein']) && $data['has_frein'] === 'oui') {
+        $frein_info = 'Frein';
+        if (isset($data['frein_type']) && $data['frein_type'] !== MOTEUR_NOT_PROVIDED) {
+            $frein_info .= ' ' . strtoupper($data['frein_type']);
+        }
+        if (isset($data['frein_tension']) && $data['frein_tension'] !== MOTEUR_NOT_PROVIDED) {
+            $frein_info .= ' - ' . $data['frein_tension'] . 'V';
+        }
+        $options_list[] = $frein_info;
+        $has_options = true;
+    }
+    if (isset($data['codeur_incremental']) && $data['codeur_incremental'] === '1') {
+        $codeur = 'Codeur incrémental';
+        if (isset($data['codeur_incremental_resolution']) && $data['codeur_incremental_resolution'] !== MOTEUR_NOT_PROVIDED) {
+            $codeur .= ' (' . $data['codeur_incremental_resolution'] . ')';
+        }
+        $options_list[] = $codeur;
+        $has_options = true;
+    }
+    if (isset($data['codeur_absolu']) && $data['codeur_absolu'] === '1') {
+        $options_list[] = 'Codeur absolu';
+        $has_options = true;
+    }
+    if (isset($data['ventilation_forcee']) && $data['ventilation_forcee'] === '1') {
+        $options_list[] = 'Ventilation forcée';
+        $has_options = true;
+    }
+    if (isset($data['roulements_renforces']) && $data['roulements_renforces'] === '1') {
+        $options_list[] = 'Roulements renforcés';
+        $has_options = true;
+    }
+    if (isset($data['roulements_nu']) && $data['roulements_nu'] === '1') {
+        $options_list[] = 'Roulements NU';
+        $has_options = true;
+    }
+    if (isset($data['graissage_permanent']) && $data['graissage_permanent'] === '1') {
+        $options_list[] = 'Graissage permanent';
+        $has_options = true;
+    }
+    if (isset($data['autres_accessoires']) && $data['autres_accessoires'] === '1' && isset($data['autres_accessoires_details']) && $data['autres_accessoires_details'] !== MOTEUR_NOT_PROVIDED) {
+        $options_list[] = 'Autres : ' . $data['autres_accessoires_details'];
+        $has_options = true;
+    }
+    if (isset($data['traitement_tropical']) && $data['traitement_tropical'] === '1') {
+        $options_list[] = 'Traitement tropical';
+        $has_options = true;
+    }
+    if (isset($data['couleur_ral']) && $data['couleur_ral'] === '1' && isset($data['couleur_ral_code']) && $data['couleur_ral_code'] !== MOTEUR_NOT_PROVIDED) {
+        $options_list[] = 'Couleur RAL ' . $data['couleur_ral_code'];
+        $has_options = true;
+    }
+
+    if ($has_options) {
+    ?>
+    <div class="recap-section">
+        <h3>📦 Options & Accessoires</h3>
+        <div class="info-grid">
+            <div class="info-item full-width">
+                <span class="info-value"><?php echo implode(' • ', $options_list); ?></span>
+            </div>
+        </div>
+    </div>
+    <?php
+    }
+    ?>
+
+    <!-- Normes & Certifications -->
+    <?php
+    $certifs = array();
+    if (isset($data['certification_ce']) && $data['certification_ce'] === '1') {
+        $certifs[] = 'CE';
+    }
+    if (isset($data['certification_ul']) && $data['certification_ul'] === '1') {
+        $certifs[] = 'UL/CSA';
+    }
+    if (isset($data['certification_eac']) && $data['certification_eac'] === '1') {
+        $certifs[] = 'EAC';
+    }
+    if (isset($data['certification_ccc']) && $data['certification_ccc'] === '1') {
+        $certifs[] = 'CCC';
+    }
+    if (isset($data['certification_marine']) && $data['certification_marine'] === '1') {
+        $certifs[] = 'Marine';
+    }
+    if (isset($data['certification_autre']) && $data['certification_autre'] === '1' && isset($data['certification_autre_details']) && $data['certification_autre_details'] !== MOTEUR_NOT_PROVIDED) {
+        $certifs[] = $data['certification_autre_details'];
+    }
+
+    if (!empty($certifs)) {
+    ?>
+    <div class="recap-section">
+        <h3>📜 Normes & Certifications</h3>
+        <div class="info-grid">
+            <div class="info-item full-width">
+                <span class="info-value"><?php echo implode(' • ', $certifs); ?></span>
+            </div>
+        </div>
+    </div>
+    <?php
+    }
+    ?>
+
+    <!-- Description du besoin -->
+    <?php if (isset($data['description_besoin']) && $data['description_besoin'] !== MOTEUR_NOT_PROVIDED) : ?>
+    <div class="recap-section">
+        <h3>📝 Description du besoin</h3>
+        <div class="info-grid">
+            <div class="info-item full-width">
+                <span class="info-value" style="white-space: pre-wrap;"><?php echo esc_html($data['description_besoin']); ?></span>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="recap-section">
         <h3><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paperclip-icon lucide-paperclip"><path d="M13.234 20.252 21 12.3"/><path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486"/></svg> Pièces jointes</h3>

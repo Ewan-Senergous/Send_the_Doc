@@ -100,11 +100,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         padding: 0;
       }
 
-      .container {
+      .moteur-form-container {
         max-width: 1200px;
         margin: 0 auto;
         background: white;
-        border-radius: 15px;
+        border-radius: 0 0 15px 15px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         overflow: hidden;
       }
@@ -114,6 +114,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         color: #fff;
         padding: 20px;
         text-align: center;
+        margin-top: 0;
       }
       .form-moteur-header h1 {
         font-size: 2em;
@@ -1572,7 +1573,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       });
     </script>
 
-    <div class="container">
+    <div class="moteur-form-container">
       <header class="form-moteur-header">
         <h1 style="color: white;">⚡ Questions Essentielles</h1>
         <p>Pour la vente d'un moteur asynchrone triphasé</p>
@@ -3153,43 +3154,156 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
         $not_provided = CENOV_MOTEUR_NOT_PROVIDED;
 
+        // ===== HELPER FUNCTION =====
+        $get_field = function($field_name, $sanitize_type = 'text') use ($not_provided) {
+            // Vérifier si le champ existe
+            if (!isset($_POST[$field_name])) {
+                return $not_provided;
+            }
+
+            $value = $_POST[$field_name];
+
+            // Vérifier si le champ est vide (sauf '0')
+            if (empty($value) && $value !== '0') {
+                return $not_provided;
+            }
+
+            // Appliquer la sanitization appropriée
+            if ($sanitize_type === 'email') {
+                return sanitize_email($value);
+            } elseif ($sanitize_type === 'textarea') {
+                return sanitize_textarea_field($value);
+            } elseif ($sanitize_type === 'int') {
+                return intval($value);
+            } elseif ($sanitize_type === 'checkbox') {
+                return isset($_POST[$field_name]) ? '1' : '0';
+            }
+
+            return sanitize_text_field($value);
+        };
+
         $_SESSION['moteur_data'] = array(
+            // ===== MÉTADONNÉES =====
             'order_number' => $orderData['order_number'],
             'date_demande' => $orderData['date_demande'],
+
+            // ===== CONTACT (7 champs) =====
             'societe' => sanitize_text_field($_POST['societe']),
             'nom_prenom' => sanitize_text_field($_POST['nom_prenom']),
             'email' => sanitize_email($_POST['email']),
-            'telephone' => isset($_POST['telephone']) && !empty($_POST['telephone']) ? sanitize_text_field($_POST['telephone']) : $not_provided,
-            'ville_pays' => isset($_POST['ville_pays']) && !empty($_POST['ville_pays']) ? sanitize_text_field($_POST['ville_pays']) : $not_provided,
-            'fonction' => isset($_POST['fonction']) && !empty($_POST['fonction']) ? sanitize_text_field($_POST['fonction']) : $not_provided,
-            'quantite' => isset($_POST['quantite']) && !empty($_POST['quantite']) ? intval($_POST['quantite']) : $not_provided,
-            'budget' => isset($_POST['budget']) && !empty($_POST['budget']) ? sanitize_text_field($_POST['budget']) : $not_provided,
-            'delai' => isset($_POST['delai']) ? sanitize_text_field($_POST['delai']) : $not_provided,
-            'puissance_kw' => isset($_POST['puissance_kw']) && !empty($_POST['puissance_kw']) ? sanitize_text_field($_POST['puissance_kw']) : $not_provided,
-            'vitesse' => isset($_POST['vitesse']) ? sanitize_text_field($_POST['vitesse']) : $not_provided,
-            'tension' => isset($_POST['tension']) ? sanitize_text_field($_POST['tension']) : $not_provided,
-            'frequence' => isset($_POST['frequence']) && !empty($_POST['frequence']) ? sanitize_text_field($_POST['frequence']) : $not_provided,
-            'montage' => isset($_POST['montage']) ? sanitize_text_field($_POST['montage']) : $not_provided,
+            'telephone' => $get_field('telephone'),
+            'ville_pays' => $get_field('ville_pays'),
+            'fonction' => $get_field('fonction'),
+            'secteur' => $get_field('secteur'),
+            'secteur_autre' => $get_field('secteur_autre'),
+
+            // ===== PROJET (3 champs) =====
+            'quantite' => $get_field('quantite', 'int'),
+            'budget' => $get_field('budget'),
+            'delai' => $get_field('delai'),
+
+            // ===== CARACTÉRISTIQUES APPLICATION (3 champs) =====
+            'puissance_kw' => $get_field('puissance_kw'),
+            'vitesse' => $get_field('vitesse'),
+            'vitesse_autre_rpm' => $get_field('vitesse_autre_rpm'),
+
+            // ===== ALIMENTATION ÉLECTRIQUE (3 champs) =====
+            'tension' => $get_field('tension'),
+            'tension_autre' => $get_field('tension_autre'),
+            'frequence' => $get_field('frequence'),
+
+            // ===== INSTALLATION TECHNIQUE (5 champs) =====
+            'montage' => $get_field('montage'),
+            'taille_carcasse' => $get_field('taille_carcasse'),
+            'taille_carcasse_autre' => $get_field('taille_carcasse_autre'),
+            'matiere' => $get_field('matiere'),
+            'refroidissement' => $get_field('refroidissement'),
+            'refroidissement_autre' => $get_field('refroidissement_autre'),
+
+            // ===== CONDITIONS D'UTILISATION (1 champ) =====
+            'regime' => $get_field('regime'),
+
+            // ===== ENVIRONNEMENT (10 champs) =====
+            'ip' => $get_field('ip'),
+            'temperature' => $get_field('temperature'),
+            'temp_min' => $get_field('temp_min'),
+            'temp_max' => $get_field('temp_max'),
+            'altitude' => $get_field('altitude'),
+            'altitude_custom' => $get_field('altitude_custom'),
+            'atmos_saline' => $get_field('atmos_saline', 'checkbox'),
+            'atmos_humide' => $get_field('atmos_humide', 'checkbox'),
+            'atmos_chimique' => $get_field('atmos_chimique', 'checkbox'),
+            'atmos_poussiere' => $get_field('atmos_poussiere', 'checkbox'),
+
+            // ===== ATEX (11 champs) =====
+            'atex' => $get_field('atex'),
+            'atex_type_gaz' => $get_field('atex_type_gaz', 'checkbox'),
+            'atex_zone_gaz' => $get_field('atex_zone_gaz'),
+            'atex_groupe_gaz' => $get_field('atex_groupe_gaz'),
+            'atex_temp_gaz' => $get_field('atex_temp_gaz'),
+            'atex_protection_gaz' => $get_field('atex_protection_gaz'),
+            'atex_type_poussieres' => $get_field('atex_type_poussieres', 'checkbox'),
+            'atex_zone_poussieres' => $get_field('atex_zone_poussieres'),
+            'atex_temp_poussieres' => $get_field('atex_temp_poussieres'),
+            'atex_protection_poussieres' => $get_field('atex_protection_poussieres'),
+
+            // ===== PERFORMANCES ÉNERGÉTIQUES (2 champs) =====
+            'rendement' => $get_field('rendement'),
+            'isolation' => $get_field('isolation'),
+
+            // ===== OPTIONS & ACCESSOIRES (15 champs) =====
+            'rechaufage' => $get_field('rechaufage', 'checkbox'),
+            'sonde_thermique_ptc' => $get_field('sonde_thermique_ptc', 'checkbox'),
+            'has_frein' => $get_field('has_frein'),
+            'frein_type' => $get_field('frein_type'),
+            'frein_tension' => $get_field('frein_tension'),
+            'frein_tension_autre' => $get_field('frein_tension_autre'),
+            'codeur_incremental' => $get_field('codeur_incremental', 'checkbox'),
+            'codeur_incremental_resolution' => $get_field('codeur_incremental_resolution'),
+            'codeur_absolu' => $get_field('codeur_absolu', 'checkbox'),
+            'ventilation_forcee' => $get_field('ventilation_forcee', 'checkbox'),
+            'roulements_renforces' => $get_field('roulements_renforces', 'checkbox'),
+            'roulements_nu' => $get_field('roulements_nu', 'checkbox'),
+            'graissage_permanent' => $get_field('graissage_permanent', 'checkbox'),
+            'autres_accessoires' => $get_field('autres_accessoires', 'checkbox'),
+            'autres_accessoires_details' => $get_field('autres_accessoires_details'),
+
+            // ===== PROTECTION & REVÊTEMENT (3 champs) =====
+            'traitement_tropical' => $get_field('traitement_tropical', 'checkbox'),
+            'couleur_ral' => $get_field('couleur_ral', 'checkbox'),
+            'couleur_ral_code' => $get_field('couleur_ral_code'),
+
+            // ===== NORMES & CERTIFICATIONS (7 champs) =====
+            'certification_ce' => $get_field('certification_ce', 'checkbox'),
+            'certification_ul' => $get_field('certification_ul', 'checkbox'),
+            'certification_eac' => $get_field('certification_eac', 'checkbox'),
+            'certification_ccc' => $get_field('certification_ccc', 'checkbox'),
+            'certification_marine' => $get_field('certification_marine', 'checkbox'),
+            'certification_autre' => $get_field('certification_autre', 'checkbox'),
+            'certification_autre_details' => $get_field('certification_autre_details'),
+
+            // ===== DESCRIPTION DU BESOIN (1 champ) =====
+            'description_besoin' => $get_field('description_besoin', 'textarea'),
+
+            // ===== FICHIERS (2 champs) =====
             'file_names' => isset($uploadResult['fileNames']) ? $uploadResult['fileNames'] : array(),
             'file_paths' => isset($uploadResult['filePaths']) ? $uploadResult['filePaths'] : array(),
         );
 
+        // ===== SAUVEGARDE EN BASE DE DONNÉES =====
         $order_number = $orderData['order_number'];
-        update_option('cenov_moteur_societe_' . $order_number, $_SESSION['moteur_data']['societe']);
-        update_option('cenov_moteur_nom_prenom_' . $order_number, $_SESSION['moteur_data']['nom_prenom']);
-        update_option('cenov_moteur_email_' . $order_number, $_SESSION['moteur_data']['email']);
-        update_option('cenov_moteur_telephone_' . $order_number, $_SESSION['moteur_data']['telephone']);
-        update_option('cenov_moteur_ville_pays_' . $order_number, $_SESSION['moteur_data']['ville_pays']);
-        update_option('cenov_moteur_fonction_' . $order_number, $_SESSION['moteur_data']['fonction']);
-        update_option('cenov_moteur_quantite_' . $order_number, $_SESSION['moteur_data']['quantite']);
-        update_option('cenov_moteur_budget_' . $order_number, $_SESSION['moteur_data']['budget']);
-        update_option('cenov_moteur_delai_' . $order_number, $_SESSION['moteur_data']['delai']);
-        update_option('cenov_moteur_puissance_kw_' . $order_number, $_SESSION['moteur_data']['puissance_kw']);
-        update_option('cenov_moteur_vitesse_' . $order_number, $_SESSION['moteur_data']['vitesse']);
-        update_option('cenov_moteur_tension_' . $order_number, $_SESSION['moteur_data']['tension']);
-        update_option('cenov_moteur_frequence_' . $order_number, $_SESSION['moteur_data']['frequence']);
-        update_option('cenov_moteur_montage_' . $order_number, $_SESSION['moteur_data']['montage']);
-        update_option('cenov_moteur_file_names_' . $order_number, $_SESSION['moteur_data']['file_names']);
+        $data = $_SESSION['moteur_data'];
+
+        // Boucle pour sauvegarder toutes les données (sauf les arrays)
+        foreach ($data as $key => $value) {
+            if (!is_array($value)) {
+                update_option('cenov_moteur_' . $key . '_' . $order_number, $value);
+            }
+        }
+
+        // Sauvegarde spéciale pour les arrays
+        update_option('cenov_moteur_file_names_' . $order_number, $data['file_names']);
+        update_option('cenov_moteur_file_paths_' . $order_number, $data['file_paths']);
     }
 
     function prepareMoteurEmailContent() {
