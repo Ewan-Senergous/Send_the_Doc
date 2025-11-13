@@ -1570,12 +1570,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     </script>
 
     <div class="container">
-      <div class="form-moteur-header">
+      <header class="form-moteur-header">
         <h1 style="color: white;">⚡ Questions Essentielles</h1>
         <p>Pour la vente d'un moteur asynchrone triphasé</p>
-      </div>
+      </header>
 
-      <form method="POST" action="" enctype="multipart/form-data" id="formMoteur">
+      <main>
+        <form method="POST" action="" enctype="multipart/form-data" id="formMoteur">
         <?php wp_nonce_field('cenov_moteur_form', 'cenov_moteur_nonce'); ?>
 
         <?php if (!empty($result)) : ?>
@@ -3101,7 +3102,8 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         </div>
       </div>
     </form>
-  </div>
+      </main>
+    </div>
         <?php
         
         return ob_get_clean();
