@@ -132,24 +132,20 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         background: #f8f9fa;
         border-radius: 8px;
         border-left: 4px solid #4338ca;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      .section:hover {
-        transform: translateX(5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       }
 
       .category-title {
         background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
         color: #fff;
         padding: 10px 15px;
-        margin: -15px -15px 15px -15px;
+        margin: -15px -15px 15px -12px;
         border-radius: 8px 8px 0 0;
         font-size: 1.1em;
         font-weight: 600;
         display: flex;
         gap: 8px;
         align-items: center;
+        max-width: 101.75%;
       }
 
       .section-divider {
@@ -254,38 +250,42 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         cursor: pointer;
       }
 
-      /* === Boutons === */
+      /* === Bouton d'envoi === */
       .button-group {
         margin-top: 30px;
         display: flex;
-        gap: 15px;
         justify-content: center;
       }
-      .btn {
-        padding: 12px 30px;
+      .btn-submit {
+        width: auto;
+        max-width: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: white;
+        background-color: #0066cc;
         border: none;
-        border-radius: 8px;
-        font-size: 1.1em;
+        font-weight: 600;
+        border-radius: 6px;
+        font-size: 1rem;
+        padding: 12px 24px;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
       }
-      .btn-primary {
-        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
-        color: #fff;
-      }
-      .btn-primary:hover {
+      .btn-submit:hover {
+        background-color: #2563eb;
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
       }
-      .btn-secondary {
-        background: #fff;
-        color: #4338ca;
-        border: 2px solid #4338ca;
+      .btn-submit:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
       }
-      .btn-secondary:hover {
-        background: #4338ca;
-        color: #fff;
+      .btn-submit svg {
+        width: 16px;
+        height: 16px;
       }
 
       .required {
@@ -3089,12 +3089,19 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
         </div>
 
-        <!-- Boutons -->
+        <!-- Bouton d'envoi -->
         <div class="button-group">
-          <button type="button" class="btn btn-secondary" onclick="window.print()">
-            🖨️ Imprimer
+          <button type="submit" name="submit_moteur" value="1" class="btn-submit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/>
+              <path d="M6 12h16"/>
+            </svg>
+            Envoyer
           </button>
-          <button type="submit" name="submit_moteur" value="1" class="btn btn-primary">
+        </div>
+      </div>
+    </form>
+  </div>
         <?php
         
         return ob_get_clean();
