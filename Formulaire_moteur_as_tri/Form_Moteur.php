@@ -5,8 +5,10 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     function cenovFormulaireMoteurAsyncDisplay() {
         ob_start();
 
-        // Constante pour les champs non renseignés
-        define('CENOV_MOTEUR_NOT_PROVIDED', 'Non renseigné');
+        // Constante pour les champs non renseignés (vérifier si existe déjà)
+        if (!defined('CENOV_MOTEUR_NOT_PROVIDED')) {
+            define('CENOV_MOTEUR_NOT_PROVIDED', 'Non renseigné');
+        }
 
         // Variables de résultat
         $result = '';
@@ -35,7 +37,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 // ÉTAPE 3.3 : Traiter le fichier uploadé
                 $uploadResult = processMoteurUploadedFiles();
                 $attachments = $uploadResult['attachments'];
-                $fileNames = $uploadResult['fileNames'];
                 $fileWarning = $uploadResult['warning'];
 
                 // ÉTAPE 3.4 : Envoyer l'email
@@ -526,7 +527,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
          * @return string HTML formaté
          */
         function generateMoteurEmailHtml($content, $client_name, $client_email, $societe) {
-            $html = '
+            return '
             <div style="font-family: Arial, Helvetica, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9;">
                 <!-- En-tête -->
                 <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -558,8 +559,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                     <p style="margin: 5px 0; font-size: 12px; color: #999;">Spécialiste pompes et moteurs industriels</p>
                 </div>
             </div>';
-
-            return $html;
         }
 
         ?>
@@ -2100,6 +2099,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="answer-field">
               <input
                 type="number"
+                name="puissance_kw"
                 step="0.1"
                 placeholder="Entrez la puissance en kW..."
                 required
@@ -2151,6 +2151,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             >
               <input
                 type="number"
+                name="vitesse_autre_rpm"
                 placeholder="Entrez la vitesse en tr/min..."
               />
             </div>
@@ -2180,6 +2181,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="answer-field">
               <select
                 id="tension"
+                name="tension"
                 required
                 onchange="document.getElementById('tension_autre').style.display = (this.value==='autre') ? 'block' : 'none';"
               >
@@ -2194,7 +2196,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               id="tension_autre"
               style="display: none; margin-top: 10px"
             >
-              <input type="text" placeholder="Précisez la tension..." />
+              <input type="text" name="tension_autre" placeholder="Précisez la tension..." />
             </div>
           </div>
 
@@ -2415,6 +2417,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             >
               <input
                 type="text"
+                name="taille_carcasse_autre"
                 placeholder="Précisez la taille de la carcasse..."
               />
             </div>
@@ -2484,6 +2487,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             >
               <input
                 type="text"
+                name="refroidissement_autre"
                 placeholder="Précisez le mode de refroidissement..."
               />
             </div>
@@ -2616,7 +2620,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                       font-weight: 500;
                     "
                     >Min (°C) :
-                    <input type="number" placeholder="Ex: -25" />
+                    <input type="number" name="temp_min" placeholder="Ex: -25" />
                   </label>
                 </div>
                 <div>
@@ -2628,7 +2632,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                       font-weight: 500;
                     "
                     >Max (°C) :
-                    <input type="number" placeholder="Ex: +45" />
+                    <input type="number" name="temp_max" placeholder="Ex: +45" />
                   </label>
                 </div>
               </div>
@@ -2674,7 +2678,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   font-weight: 500;
                 "
                 >Altitude précise (m) :
-                <input type="number" placeholder="Ex : 1500" />
+                <input type="number" name="altitude_custom" placeholder="Ex : 1500" />
               </label>
             </div>
           </div>
@@ -2686,22 +2690,22 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
             <div class="checkbox-group inline-one-line">
               <label
-                ><input type="checkbox" name="atmos" value="saline" /><span
+                ><input type="checkbox" name="atmos_saline" value="1" /><span
                   >Saline (bord de mer, offshore)</span
                 ></label
               >
               <label
-                ><input type="checkbox" name="atmos" value="humide" /><span
+                ><input type="checkbox" name="atmos_humide" value="1" /><span
                   >Humide : &gt;95% HR</span
                 ></label
               >
               <label
-                ><input type="checkbox" name="atmos" value="chimique" /><span
+                ><input type="checkbox" name="atmos_chimique" value="1" /><span
                   >Chimique (vapeurs corrosives)</span
                 ></label
               >
               <label
-                ><input type="checkbox" name="atmos" value="poussiere" /><span
+                ><input type="checkbox" name="atmos_poussiere" value="1" /><span
                   >Poussiéreuse</span
                 ></label
               >
@@ -2779,16 +2783,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   <label
                     ><input
                       type="checkbox"
-                      name="atex_type"
-                      value="gaz"
+                      name="atex_type_gaz"
+                      value="1"
                       id="atex_gaz"
                     /><span>Gaz (Zone 1 ou 2)</span></label
                   >
                   <label
                     ><input
                       type="checkbox"
-                      name="atex_type"
-                      value="poussieres"
+                      name="atex_type_poussieres"
+                      value="1"
                       id="atex_poussieres"
                     /><span>Poussières (Zone 21 ou 22)</span></label
                   >
@@ -3161,12 +3165,12 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               <h3>Équipements électriques</h3>
               <ul class="options-list">
                 <li>
-                  <input type="checkbox" id="rechauf" /><label for="rechauf"
+                  <input type="checkbox" id="rechauf" name="rechaufage" value="1" /><label for="rechauf"
                     >Résistances de réchauffage</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="ptc" /><label for="ptc"
+                  <input type="checkbox" id="ptc" name="sonde_thermique_ptc" value="1" /><label for="ptc"
                     >Sondes thermiques PTC/PT100</label
                   >
                 </li>
@@ -3327,54 +3331,54 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                       id="frein_tension_autre_input"
                       style="display: none; margin-top: 10px"
                     >
-                      <input type="text" placeholder="Précisez la tension…" />
+                      <input type="text" name="frein_tension_autre" placeholder="Précisez la tension…" />
                     </div>
                   </div>
                 </li>
 
                 <li>
                   <div class="options-inline-input">
-                    <input type="checkbox" id="codeurInc" /><label
+                    <input type="checkbox" id="codeurInc" name="codeur_incremental" value="1" /><label
                       for="codeurInc"
                       >Codeur incrémental (résolution :
                     </label>
-                    <input type="text" placeholder="_______" aria-label="Résolution du codeur incrémental" /><span>)</span>
+                    <input type="text" name="codeur_incremental_resolution" placeholder="_______" aria-label="Résolution du codeur incrémental" /><span>)</span>
                   </div>
                 </li>
                 <li>
-                  <input type="checkbox" id="codeurAbs" /><label for="codeurAbs"
+                  <input type="checkbox" id="codeurAbs" name="codeur_absolu" value="1" /><label for="codeurAbs"
                     >Codeur absolu</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="ventForcee" /><label
+                  <input type="checkbox" id="ventForcee" name="ventilation_forcee" value="1" /><label
                     for="ventForcee"
                     >Ventilation forcée indépendante</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="roulRenf" /><label for="roulRenf"
+                  <input type="checkbox" id="roulRenf" name="roulements_renforces" value="1" /><label for="roulRenf"
                     >Roulements renforcés / isolés</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="roulnu" /><label for="roulnu"
+                  <input type="checkbox" id="roulnu" name="roulements_nu" value="1" /><label for="roulnu"
                     >Roulements NU (poulie/courroie)</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="graissage" /><label for="graissage"
+                  <input type="checkbox" id="graissage" name="graissage_permanent" value="1" /><label for="graissage"
                     >Graissage permanent</label
                   >
                 </li>
 
                 <li>
                   <div class="options-inline-input">
-                    <input type="checkbox" id="autresAcc" /><label
+                    <input type="checkbox" id="autresAcc" name="autres_accessoires" value="1" /><label
                       for="autresAcc"
                       >Autres accessoires :</label
                     >
-                    <input type="text" placeholder="________________" aria-label="Précisez les autres accessoires" />
+                    <input type="text" name="autres_accessoires_details" placeholder="________________" aria-label="Précisez les autres accessoires" />
                   </div>
                 </li>
               </ul>
@@ -3385,16 +3389,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               <h3>Protection et revêtement</h3>
               <ul class="options-list">
                 <li>
-                  <input type="checkbox" id="tropical" /><label for="tropical"
+                  <input type="checkbox" id="tropical" name="traitement_tropical" value="1" /><label for="tropical"
                     >Traitement tropicalisation</label
                   >
                 </li>
                 <li>
                   <div class="options-inline-input">
-                    <input type="checkbox" id="ral" /><label for="ral"
+                    <input type="checkbox" id="ral" name="couleur_ral" value="1" /><label for="ral"
                       >Couleur spécifique RAL :</label
                     >
-                    <input type="text" placeholder="________" aria-label="Code couleur RAL" />
+                    <input type="text" name="couleur_ral_code" placeholder="________" aria-label="Code couleur RAL" />
                   </div>
                 </li>
               </ul>
@@ -3405,37 +3409,37 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               <h3>Normes et certifications</h3>
               <ul class="options-list">
                 <li>
-                  <input type="checkbox" id="CE" checked /><label for="CE"
+                  <input type="checkbox" id="CE" name="certification_ce" value="1" checked /><label for="CE"
                     >Certification CE</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="UL" /><label for="UL"
+                  <input type="checkbox" id="UL" name="certification_ul" value="1" /><label for="UL"
                     >Certification UL/CSA</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="EAC" /><label for="EAC"
+                  <input type="checkbox" id="EAC" name="certification_eac" value="1" /><label for="EAC"
                     >Certification EAC (Russie)</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="CCC" /><label for="CCC"
+                  <input type="checkbox" id="CCC" name="certification_ccc" value="1" /><label for="CCC"
                     >Certification CCC (Chine)</label
                   >
                 </li>
                 <li>
-                  <input type="checkbox" id="marine" /><label for="marine"
+                  <input type="checkbox" id="marine" name="certification_marine" value="1" /><label for="marine"
                     >Marine (DNV, ABS, Lloyd's…)</label
                   >
                 </li>
                 <li>
                   <div class="options-inline-input">
-                    <input type="checkbox" id="normeAutre" /><label
+                    <input type="checkbox" id="normeAutre" name="certification_autre" value="1" /><label
                       for="normeAutre"
                       >Autre :</label
                     >
-                    <input type="text" placeholder="______________________" aria-label="Précisez l'autre norme ou certification" />
+                    <input type="text" name="certification_autre_details" placeholder="______________________" aria-label="Précisez l'autre norme ou certification" />
                   </div>
                 </li>
               </ul>
@@ -3450,7 +3454,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <div class="question">
             <strong>🏢 Société <span class="required">*</span></strong>
             <div class="answer-field">
-              <input type="text" placeholder="Nom de votre société" required />
+              <input type="text" name="societe" placeholder="Nom de votre société" required />
             </div>
           </div>
 
@@ -3458,13 +3462,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="question">
               <strong>🙍‍♂️ Nom & Prénom <span class="required">*</span></strong>
               <div class="answer-field">
-                <input type="text" placeholder="Ex : Jean Dupont" required />
+                <input type="text" name="nom_prenom" placeholder="Ex : Jean Dupont" required />
               </div>
             </div>
             <div class="question">
               <strong>📧 Email <span class="required">*</span></strong>
               <div class="answer-field">
-                <input type="email" placeholder="nom@domaine.com" required />
+                <input type="email" name="email" placeholder="nom@domaine.com" required />
               </div>
             </div>
           </div>
@@ -3473,13 +3477,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="question">
               <strong>📱 Téléphone</strong>
               <div class="answer-field">
-                <input type="tel" placeholder="+33 ..." />
+                <input type="tel" name="telephone" placeholder="+33 ..." />
               </div>
             </div>
             <div class="question">
               <strong>📍 Ville / Pays</strong>
               <div class="answer-field">
-                <input type="text" placeholder="Ex : Lyon, France" />
+                <input type="text" name="ville_pays" placeholder="Ex : Lyon, France" />
               </div>
             </div>
           </div>
@@ -3514,7 +3518,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <div class="question">
             <strong>🔢 Quantité prévue</strong>
             <div class="answer-field">
-              <input type="number" min="1" step="1" placeholder="Ex : 3" />
+              <input type="number" name="quantite" min="1" step="1" placeholder="Ex : 3" />
             </div>
           </div>
 
@@ -3553,6 +3557,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <strong>📝 Brève description du besoin</strong>
             <div class="answer-field">
               <textarea
+                name="description_besoin"
                 placeholder="Décrivez votre projet, contraintes, normes, documents utiles…"
               ></textarea>
             </div>
@@ -3573,7 +3578,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <button type="button" class="btn btn-secondary" onclick="window.print()">
             🖨️ Imprimer
           </button>
-          <button type="submit" name="submit_moteur" class="btn btn-primary">
+          <button type="submit" name="submit_moteur" value="1" class="btn btn-primary">
             📧 Envoyer ma demande
           </button>
         </div>
