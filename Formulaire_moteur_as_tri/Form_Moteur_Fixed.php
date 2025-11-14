@@ -3216,6 +3216,50 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         'H' => 'Classe H'
     );
 
+    // Mappings ATEX
+    $atex_zone_gaz_labels = array(
+        '1' => 'Zone 1 (2G)',
+        '2' => 'Zone 2 (3G)'
+    );
+
+    $atex_groupe_gaz_labels = array(
+        'IIA' => 'IIA (propane, butane...)',
+        'IIB' => 'IIB (éthylène...)',
+        'IIC' => 'IIC (hydrogène, acétylène...)'
+    );
+
+    $atex_temp_labels = array(
+        'T1' => 'T1 (≤ 450°C)',
+        'T2' => 'T2 (≤ 300°C)',
+        'T3' => 'T3 (≤ 200°C)',
+        'T4' => 'T4 (≤ 135°C)',
+        'T5' => 'T5 (≤ 100°C)',
+        'T6' => 'T6 (≤ 85°C)'
+    );
+
+    $atex_protection_gaz_labels = array(
+        'Ex d' => 'Ex d (enveloppe antidéflagrante)',
+        'Ex e' => 'Ex e (sécurité augmentée)',
+        'Ex de' => 'Ex de (combinaison d + e)',
+        'Ex n' => 'Ex n (non étincelant)',
+        'Ex p' => 'Ex p (surpression interne)'
+    );
+
+    $atex_zone_poussieres_labels = array(
+        '21' => 'Zone 21',
+        '22' => 'Zone 22'
+    );
+
+    $atex_type_poussieres_labels = array(
+        'IIIB' => 'IIIB (poussières conductrices)',
+        'IIIC' => 'IIIC (poussières non conductrices)'
+    );
+
+    $atex_protection_poussieres_labels = array(
+        'Ex t' => 'Ex t (protection contre poussières)',
+        'Ex p' => 'Ex p (surpression interne)'
+    );
+
     $content = "";
 
     // SECTION 1 : VOUS CONNAÎTRE DAVANTAGE (Contact + Projet + Description fusionnés)
@@ -3375,19 +3419,83 @@ $content .= "OUI\r\n";
 // ATEX GAZ
 if (isset($_POST['atex_type_gaz'])) {
     $content .= "\r\nAtmosphères gazeuses :\r\n";
-    $content .= "  <strong>Zone :</strong> " . (isset($_POST['atex_zone_gaz']) ? sanitize_text_field($_POST['atex_zone_gaz']) : $not_provided) . "\r\n";
-    $content .= "  <strong>Groupe :</strong> " . (isset($_POST['atex_groupe_gaz']) && !empty($_POST['atex_groupe_gaz']) ? sanitize_text_field($_POST['atex_groupe_gaz']) : $not_provided) . "\r\n";
-    $content .= "  <strong>Classe température :</strong> T" . (isset($_POST['atex_temp_gaz']) && !empty($_POST['atex_temp_gaz']) ? sanitize_text_field($_POST['atex_temp_gaz']) : $not_provided) . "\r\n";
-    $content .= "  <strong>Mode de protection :</strong> " . (isset($_POST['atex_protection_gaz']) && !empty($_POST['atex_protection_gaz']) ? sanitize_text_field($_POST['atex_protection_gaz']) : $not_provided) . "\r\n";
+
+    // Zone avec mapping
+    if (isset($_POST['atex_zone_gaz'])) {
+        $zone_gaz = sanitize_text_field($_POST['atex_zone_gaz']);
+        $zone_display = isset($atex_zone_gaz_labels[$zone_gaz]) ? $atex_zone_gaz_labels[$zone_gaz] : $zone_gaz;
+        $content .= "  <strong>Zone de classification (Gaz) :</strong> " . $zone_display . "\r\n";
+    } else {
+        $content .= "  <strong>Zone de classification (Gaz) :</strong> " . $not_provided . "\r\n";
+    }
+
+    // Groupe de gaz avec mapping
+    if (isset($_POST['atex_groupe_gaz']) && !empty($_POST['atex_groupe_gaz'])) {
+        $groupe_gaz = sanitize_text_field($_POST['atex_groupe_gaz']);
+        $groupe_display = isset($atex_groupe_gaz_labels[$groupe_gaz]) ? $atex_groupe_gaz_labels[$groupe_gaz] : $groupe_gaz;
+        $content .= "  <strong>Groupe de gaz :</strong> " . $groupe_display . "\r\n";
+    } else {
+        $content .= "  <strong>Groupe de gaz :</strong> " . $not_provided . "\r\n";
+    }
+
+    // Classe température avec mapping
+    if (isset($_POST['atex_temp_gaz']) && !empty($_POST['atex_temp_gaz'])) {
+        $temp_gaz = sanitize_text_field($_POST['atex_temp_gaz']);
+        $temp_display = isset($atex_temp_labels[$temp_gaz]) ? $atex_temp_labels[$temp_gaz] : $temp_gaz;
+        $content .= "  <strong>Classe de température (T) :</strong> " . $temp_display . "\r\n";
+    } else {
+        $content .= "  <strong>Classe de température (T) :</strong> " . $not_provided . "\r\n";
+    }
+
+    // Mode de protection avec mapping
+    if (isset($_POST['atex_protection_gaz']) && !empty($_POST['atex_protection_gaz'])) {
+        $protection_gaz = sanitize_text_field($_POST['atex_protection_gaz']);
+        $protection_display = isset($atex_protection_gaz_labels[$protection_gaz]) ? $atex_protection_gaz_labels[$protection_gaz] : $protection_gaz;
+        $content .= "  <strong>Type de protection (Gaz) :</strong> " . $protection_display . "\r\n";
+    } else {
+        $content .= "  <strong>Type de protection (Gaz) :</strong> " . $not_provided . "\r\n";
+    }
 }
 
 // ATEX POUSSIÈRES
 if (isset($_POST['atex_type_poussieres'])) {
     $content .= "\r\nAtmosphères poussiéreuses :\r\n";
-    $content .= "  <strong>Zone :</strong> " . (isset($_POST['atex_zone_poussieres']) ? sanitize_text_field($_POST['atex_zone_poussieres']) : $not_provided) . "\r\n";
-    $content .= "  <strong>Type poussières :</strong> " . (isset($_POST['atex_type_poussieres']) && !empty($_POST['atex_type_poussieres']) ? sanitize_text_field($_POST['atex_type_poussieres']) : $not_provided) . "\r\n";
-    $content .= "  <strong>Classe température :</strong> T" . (isset($_POST['atex_temp_poussieres']) && !empty($_POST['atex_temp_poussieres']) ? sanitize_text_field($_POST['atex_temp_poussieres']) : $not_provided) . "\r\n";
-    $content .= "  <strong>Mode de protection :</strong> " . (isset($_POST['atex_protection_poussieres']) && !empty($_POST['atex_protection_poussieres']) ? sanitize_text_field($_POST['atex_protection_poussieres']) : $not_provided) . "\r\n";
+
+    // Zone avec mapping
+    if (isset($_POST['atex_zone_poussieres'])) {
+        $zone_poussieres = sanitize_text_field($_POST['atex_zone_poussieres']);
+        $zone_display = isset($atex_zone_poussieres_labels[$zone_poussieres]) ? $atex_zone_poussieres_labels[$zone_poussieres] : $zone_poussieres;
+        $content .= "  <strong>Zone de classification (Poussières) :</strong> " . $zone_display . "\r\n";
+    } else {
+        $content .= "  <strong>Zone de classification (Poussières) :</strong> " . $not_provided . "\r\n";
+    }
+
+    // Type poussières avec mapping
+    if (isset($_POST['atex_type_poussieres']) && !empty($_POST['atex_type_poussieres'])) {
+        $type_poussieres = sanitize_text_field($_POST['atex_type_poussieres']);
+        $type_display = isset($atex_type_poussieres_labels[$type_poussieres]) ? $atex_type_poussieres_labels[$type_poussieres] : $type_poussieres;
+        $content .= "  <strong>Type de poussières :</strong> " . $type_display . "\r\n";
+    } else {
+        $content .= "  <strong>Type de poussières :</strong> " . $not_provided . "\r\n";
+    }
+
+    // Température avec mapping
+    if (isset($_POST['atex_temp_poussieres']) && !empty($_POST['atex_temp_poussieres'])) {
+        $temp_poussieres = sanitize_text_field($_POST['atex_temp_poussieres']);
+        $temp_display = isset($atex_temp_labels[$temp_poussieres]) ? $atex_temp_labels[$temp_poussieres] : $temp_poussieres;
+        $content .= "  <strong>Température maximale de surface :</strong> " . $temp_display . "\r\n";
+    } else {
+        $content .= "  <strong>Température maximale de surface :</strong> " . $not_provided . "\r\n";
+    }
+
+    // Mode de protection avec mapping
+    if (isset($_POST['atex_protection_poussieres']) && !empty($_POST['atex_protection_poussieres'])) {
+        $protection_poussieres = sanitize_text_field($_POST['atex_protection_poussieres']);
+        $protection_display = isset($atex_protection_poussieres_labels[$protection_poussieres]) ? $atex_protection_poussieres_labels[$protection_poussieres] : $protection_poussieres;
+        $content .= "  <strong>Type de protection (Poussières) :</strong> " . $protection_display . "\r\n";
+    } else {
+        $content .= "  <strong>Type de protection (Poussières) :</strong> " . $not_provided . "\r\n";
+    }
 }
     } else {
 $content .= "NON\r\n";
@@ -3414,99 +3522,111 @@ $content .= "NON\r\n";
         $content .= "<strong>Classe d'isolation thermique :</strong> " . $not_provided . "\r\n";
     }
 
-    // SECTION 8 : OPTIONS / NORMES (fusionnées)
+    // SECTION 8 : OPTIONS / NORMES (4 sous-sections)
     $content .= "\r\n\r\n⚙️ OPTIONS / 📜 NORMES :\r\n\r\n";
 
-    $options = array();
-
-    // Équipements électriques
+    // === SOUS-SECTION 1 : Équipements électriques ===
+    $equipements_elec = array();
     if (isset($_POST['rechaufage'])) {
-$options[] = 'Réchauffage';
+        $equipements_elec[] = 'Résistances de réchauffage';
     }
     if (isset($_POST['sonde_thermique_ptc'])) {
-$options[] = 'Sonde thermique PTC';
+        $equipements_elec[] = 'Sondes thermiques PTC/PT100';
     }
+    $content .= "<strong>Équipements électriques :</strong> " . (!empty($equipements_elec) ? implode(', ', $equipements_elec) : $not_provided) . "\r\n";
+
+    // === SOUS-SECTION 2 : Équipements mécaniques ===
+    $content .= "\r\n<strong>Équipements mécaniques :</strong>\r\n";
+    $equipements_meca = array();
 
     // FREIN (conditionnel complexe)
     if (isset($_POST['has_frein']) && $_POST['has_frein'] === 'oui') {
-$frein_type = isset($_POST['frein_type']) ? strtoupper(sanitize_text_field($_POST['frein_type'])) : 'Non spécifié';
-$frein_tension = $not_provided;
+        $frein_type = isset($_POST['frein_type']) ? strtoupper(sanitize_text_field($_POST['frein_type'])) : 'Non spécifié';
+        $frein_tension = $not_provided;
 
-if (isset($_POST['frein_tension'])) {
-    $tension_val = sanitize_text_field($_POST['frein_tension']);
-    if (in_array($tension_val, ['autre_ca', 'autre_cc']) && isset($_POST['frein_tension_autre']) && !empty($_POST['frein_tension_autre'])) {
-        $frein_tension = sanitize_text_field($_POST['frein_tension_autre']);
-    } else {
-        $frein_tension = $tension_val;
-    }
-}
+        if (isset($_POST['frein_tension'])) {
+            $tension_val = sanitize_text_field($_POST['frein_tension']);
+            if (in_array($tension_val, ['autre_ca', 'autre_cc']) && isset($_POST['frein_tension_autre']) && !empty($_POST['frein_tension_autre'])) {
+                $frein_tension = '<strong>' . sanitize_text_field($_POST['frein_tension_autre']) . '</strong>';
+            } else {
+                $frein_tension = $tension_val;
+            }
+        }
 
-$options[] = "Frein {$frein_type} - {$frein_tension}";
+        $equipements_meca[] = "Frein à intégrer : {$frein_type} - {$frein_tension}";
     }
 
     // Codeurs
     if (isset($_POST['codeur_incremental'])) {
-$codeur_info = 'Codeur incrémental';
-if (isset($_POST['codeur_incremental_resolution']) && !empty($_POST['codeur_incremental_resolution'])) {
-    $codeur_info .= ' (' . sanitize_text_field($_POST['codeur_incremental_resolution']) . ')';
-}
-$options[] = $codeur_info;
+        $codeur_info = 'Codeur incrémental (résolution : ';
+        if (isset($_POST['codeur_incremental_resolution']) && !empty($_POST['codeur_incremental_resolution'])) {
+            $codeur_info .= '<strong>' . sanitize_text_field($_POST['codeur_incremental_resolution']) . '</strong>';
+        } else {
+            $codeur_info .= $not_provided;
+        }
+        $codeur_info .= ')';
+        $equipements_meca[] = $codeur_info;
     }
     if (isset($_POST['codeur_absolu'])) {
-$options[] = 'Codeur absolu';
+        $equipements_meca[] = 'Codeur absolu';
     }
 
     // Autres accessoires mécaniques
     if (isset($_POST['ventilation_forcee'])) {
-$options[] = 'Ventilation forcée';
+        $equipements_meca[] = 'Ventilation forcée indépendante';
     }
     if (isset($_POST['roulements_renforces'])) {
-$options[] = 'Roulements renforcés';
+        $equipements_meca[] = 'Roulements renforcés / isolés';
     }
     if (isset($_POST['roulements_nu'])) {
-$options[] = 'Roulements NU';
+        $equipements_meca[] = 'Roulements NU (poulie/courroie)';
     }
     if (isset($_POST['graissage_permanent'])) {
-$options[] = 'Graissage permanent';
+        $equipements_meca[] = 'Graissage permanent';
     }
     if (isset($_POST['autres_accessoires']) && isset($_POST['autres_accessoires_details']) && !empty($_POST['autres_accessoires_details'])) {
-$options[] = 'Autres accessoires : ' . sanitize_text_field($_POST['autres_accessoires_details']);
+        $equipements_meca[] = 'Autres accessoires : <strong>' . sanitize_text_field($_POST['autres_accessoires_details']) . '</strong>';
     }
 
-    // Protection et revêtement
+    $content .= (!empty($equipements_meca) ? implode(', ', $equipements_meca) : $not_provided) . "\r\n";
+
+    // === SOUS-SECTION 3 : Protection et revêtement ===
+    $content .= "\r\n<strong>Protection et revêtement :</strong>\r\n";
+    $protection = array();
+
     if (isset($_POST['traitement_tropical'])) {
-$options[] = 'Traitement tropical';
+        $protection[] = 'Traitement tropicalisation';
     }
     if (isset($_POST['couleur_ral']) && isset($_POST['couleur_ral_code']) && !empty($_POST['couleur_ral_code'])) {
-$options[] = 'Couleur RAL ' . sanitize_text_field($_POST['couleur_ral_code']);
+        $protection[] = 'Couleur spécifique RAL : <strong>' . sanitize_text_field($_POST['couleur_ral_code']) . '</strong>';
     }
 
-    $content .= "<strong>Options & Accessoires :</strong> " . (!empty($options) ? implode(', ', $options) : $not_provided) . "\r\n";
+    $content .= (!empty($protection) ? implode(', ', $protection) : $not_provided) . "\r\n";
 
-    // NORMES (dans la même section)
-    $content .= "\r\n";
+    // === SOUS-SECTION 4 : Normes et certifications ===
+    $content .= "\r\n<strong>Normes et certifications :</strong>\r\n";
     $certifs = array();
 
     if (isset($_POST['certification_ce'])) {
-$certifs[] = 'CE';
+        $certifs[] = 'Certification CE';
     }
     if (isset($_POST['certification_ul'])) {
-$certifs[] = 'UL/CSA';
+        $certifs[] = 'Certification UL/CSA';
     }
     if (isset($_POST['certification_eac'])) {
-$certifs[] = 'EAC (Russie)';
+        $certifs[] = 'Certification EAC (Russie)';
     }
     if (isset($_POST['certification_ccc'])) {
-$certifs[] = 'CCC (Chine)';
+        $certifs[] = 'Certification CCC (Chine)';
     }
     if (isset($_POST['certification_marine'])) {
-$certifs[] = 'Marine (DNV, ABS, Lloyd\'s)';
+        $certifs[] = 'Marine (DNV, ABS, Lloyd\'s…)';
     }
     if (isset($_POST['certification_autre']) && isset($_POST['certification_autre_details']) && !empty($_POST['certification_autre_details'])) {
-$certifs[] = 'Autre : ' . sanitize_text_field($_POST['certification_autre_details']);
+        $certifs[] = 'Autre : <strong>' . sanitize_text_field($_POST['certification_autre_details']) . '</strong>';
     }
 
-    $content .= "<strong>Normes & Certifications :</strong> " . (!empty($certifs) ? implode(', ', $certifs) : $not_provided) . "\r\n";
+    $content .= (!empty($certifs) ? implode(', ', $certifs) : $not_provided) . "\r\n";
 
     return $content;
     }
@@ -3672,6 +3792,9 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
         $in_section = false;
 
         foreach ($lines as $line) {
+            // Supprimer les backslashes d'échappement
+            $line = stripslashes($line);
+
             // Détection titre de section (emoji + texte + ":")
             if (preg_match('/^([💬⚙️⚡🔧⏱️🌍♻️📜].+):$/u', $line, $matches)) {
                 // Fermer la section précédente si ouverte
@@ -3698,7 +3821,7 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
         }
 
         return '
-        <div style="font-family: Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="font-family: Helvetica, sans-serif; margin: 0 auto;">
             <div style="text-align: center; margin-bottom: 30px;">
                 <h1 style="color: #0066cc; margin-bottom: 5px; font-size: 28px;">⚡ Demande de moteur asynchrone triphasé</h1>
                 <p style="margin-top: 0; margin-bottom: 5px; font-weight: 600;">Référence : ' . $orderData['order_number'] . ' - ' . $orderData['date_demande'] . '</p>
