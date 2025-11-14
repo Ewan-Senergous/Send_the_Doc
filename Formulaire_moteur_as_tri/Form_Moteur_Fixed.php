@@ -612,7 +612,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       }
       .options-card {
         background: #fff;
-        border: 1px solid #d9d9d9;
+        border: 1px solid #6b7280 !important;
         border-radius: 6px;
         padding: 10px 12px;
       }
@@ -771,7 +771,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           &times;
         </button>
         <div class="popup-humidite-header">
-          <h2>💧 Humidité relative (HR)</h2>
+          <h2>💧 Humidité relative (HR) :</h2>
         </div>
         <div class="popup-humidite-body">
           <p style="margin-bottom: 12px">
@@ -804,7 +804,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       <div class="popup-ie4-content">
         <button class="popup-close-x" onclick="closeIE4Popup()">&times;</button>
         <div class="popup-ie4-header">
-          <h2>♻️ IE (indice énérgétique) – Plage de puissance</h2>
+          <h2>♻️ IE (indice énérgétique) – Plage de puissance :</h2>
         </div>
 
         <div class="popup-ie4-body">
@@ -865,7 +865,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           &times;
         </button>
         <div class="popup-carcasse-header">
-          <h2>📐 Comprendre la taille de carcasse</h2>
+          <h2>📐 Comprendre la taille de carcasse :</h2>
         </div>
         <div class="popup-carcasse-body">
           <p>
@@ -877,13 +877,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               💡 Exemples :
             </div>
             <div class="popup-carcasse-example">
-              • <strong>90</strong>S = <strong>90 mm</strong> hauteur d'axe, longueur S
+              • <strong>90S</strong> = <strong>90 mm</strong> hauteur d'axe, longueur S
             </div>
             <div class="popup-carcasse-example">
-              • <strong>132</strong>M = <strong>132 mm</strong> hauteur d'axe, longueur M
+              • <strong>132M</strong> = <strong>132 mm</strong> hauteur d'axe, longueur M
             </div>
             <div class="popup-carcasse-example">
-              • <strong>160</strong>L = <strong>160 mm</strong> hauteur d'axe, longueur L
+              • <strong>160L</strong> = <strong>160 mm</strong> hauteur d'axe, longueur L
             </div>
           </div>
         </div>
@@ -1828,6 +1828,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
             <div style="margin-top: 12px">
               <button
+                type="button"
                 onclick="openCarcassePopup()"
                 style="
                   background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
@@ -1915,7 +1916,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question" data-from-plaque="true">
-            <strong>❄️ Mode de refroidissement</strong>
+            <strong>❄️ Mode de refroidissement :</strong>
             <div class="info-box">
               <em>Détermine l'évacuation de la chaleur.</em>
             </div>
@@ -2179,6 +2180,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
             <div style="margin-top: 8px">
               <button
+                type="button"
                 onclick="openHumiditePopup()"
                 style="
                   background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
@@ -2557,6 +2559,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
             <div style="margin-top: 12px">
               <button
+                type="button"
                 onclick="openIE4Popup()"
                 style="
                   background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
@@ -2612,7 +2615,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <div class="options-grid">
             <!-- Équipements électriques -->
             <div class="options-card">
-              <h3>Équipements électriques</h3>
+              <h3>Équipements électriques :</h3>
               <ul class="options-list">
                 <li>
                   <input type="checkbox" id="rechauf" name="rechaufage" value="1" /><label for="rechauf"
@@ -2629,7 +2632,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             <!-- Équipements mécaniques -->
             <div class="options-card">
-              <h3>Équipements mécaniques</h3>
+              <h3>Équipements mécaniques :</h3>
               <ul class="options-list">
                 <li style="display: block; width: 100%">
                   <strong>Frein à intégrer ?</strong>
@@ -2836,7 +2839,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             <!-- Protection & revêtement -->
             <div class="options-card">
-              <h3>Protection et revêtement</h3>
+              <h3>Protection et revêtement :</h3>
               <ul class="options-list">
                 <li>
                   <input type="checkbox" id="tropical" name="traitement_tropical" value="1" /><label for="tropical"
@@ -2856,7 +2859,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
             <!-- Normes & certifications -->
             <div class="options-card">
-              <h3>Normes et certifications</h3>
+              <h3>Normes et certifications :</h3>
               <ul class="options-list">
                 <li>
                   <input type="checkbox" id="CE" name="certification_ce" value="1" checked /><label for="CE"
