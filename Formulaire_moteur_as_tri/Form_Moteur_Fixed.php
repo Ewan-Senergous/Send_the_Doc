@@ -388,10 +388,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         color: #1e3c72;
         font-size: 2em;
         margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
       }
       .popup-header p {
         color: #333;
@@ -471,27 +467,36 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         position: relative;
         animation: slideDown 0.35s ease;
-        max-height: 92vh;
+        max-height: 67vh;
         overflow: auto;
-        margin-top: 25rem;
+        margin-top: 13rem;
       }
 
       .popup-carcasse-header,
       .popup-humidite-header,
       .popup-ie4-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
         margin-bottom: 15px;
         padding-bottom: 12px;
         border-bottom: 2px solid #e8eaf6;
       }
+      .popup-carcasse-header h2,
+      .popup-humidite-header h2,
+      .popup-ie4-header h2 {
+        color: #1e3c72;
+        font-size: 1.5em;
+        margin: 0;
+      }
       .popup-montage-content {
         max-width: 1200px;
       }
-      .popup-montage-header {
-        display: flex;
-        align-items: center;
+      .popup-carcasse-content,
+      .popup-humidite-content {
+        max-width: 650px;
+      }
+      .popup-montage-header h2 {
+        color: #1e3c72;
+        font-size: 1.3em;
+        margin: 0 0 20px 0;
       }
       .popup-montage-close,
       .popup-humidite-close,
@@ -762,12 +767,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     <!-- Popup Humidité -->
     <div class="popup-humidite" id="humiditePopup">
       <div class="popup-humidite-content">
-        <button class="popup-close-x" onclick="closeHumiditePopup">
+        <button class="popup-close-x" onclick="closeHumiditePopup()">
           &times;
         </button>
         <div class="popup-humidite-header">
-          <span style="font-size: 1.6em">💧</span>
-          <h2>Humidité relative (HR)</h2>
+          <h2>💧 Humidité relative (HR)</h2>
         </div>
         <div class="popup-humidite-body">
           <p style="margin-bottom: 12px">
@@ -776,20 +780,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </p>
           <div class="popup-humidite-items">
             <div class="popup-humidite-item">
-              <span>•</span><strong>HR &lt; 60%</strong
-              ><span>Atmosphère sèche</span>
+              •<strong>HR &lt; 60%</strong> : Atmosphère sèche
             </div>
             <div class="popup-humidite-item">
-              <span>•</span><strong>HR 60-80%</strong
-              ><span>Atmosphère normale</span>
+              •<strong>HR 60-80%</strong> : Atmosphère normale
             </div>
             <div class="popup-humidite-item">
-              <span>•</span><strong>HR 80-95%</strong
-              ><span>Atmosphère humide</span>
+              •<strong>HR 80-95%</strong> : Atmosphère humide
             </div>
             <div class="popup-humidite-item">
-              <span>•</span><strong>HR &gt; 95%</strong
-              ><span>Atmosphère très humide</span>
+              •<strong>HR &gt; 95%</strong> : Atmosphère très humide
             </div>
           </div>
         </div>
@@ -804,8 +804,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       <div class="popup-ie4-content">
         <button class="popup-close-x" onclick="closeIE4Popup()">&times;</button>
         <div class="popup-ie4-header">
-          <span style="font-size: 1.4em">♻️</span>
-          <h2>IE (indice énérgétique) – Plage de puissance</h2>
+          <h2>♻️ IE (indice énérgétique) – Plage de puissance</h2>
         </div>
 
         <div class="popup-ie4-body">
@@ -866,8 +865,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           &times;
         </button>
         <div class="popup-carcasse-header">
-          <span style="font-size: 1.3em">📐</span>
-          <h2>Comprendre la taille de carcasse</h2>
+          <h2>📐 Comprendre la taille de carcasse</h2>
         </div>
         <div class="popup-carcasse-body">
           <p>
@@ -876,28 +874,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </p>
           <div class="popup-carcasse-examples">
             <div style="margin-bottom: 10px; font-weight: 600; color: #1e3c72">
-              <span style="font-size: 1.1em">💡</span> Exemples :
+              💡 Exemples :
             </div>
             <div class="popup-carcasse-example">
-              <span>•</span
-              ><span
-                ><strong>90</strong>S = <strong>90 mm</strong> hauteur d'axe,
-                longueur S</span
-              >
+              • <strong>90</strong>S = <strong>90 mm</strong> hauteur d'axe, longueur S
             </div>
             <div class="popup-carcasse-example">
-              <span>•</span
-              ><span
-                ><strong>132</strong>M = <strong>132 mm</strong> hauteur d'axe,
-                longueur M</span
-              >
+              • <strong>132</strong>M = <strong>132 mm</strong> hauteur d'axe, longueur M
             </div>
             <div class="popup-carcasse-example">
-              <span>•</span
-              ><span
-                ><strong>160</strong>L = <strong>160 mm</strong> hauteur d'axe,
-                longueur L</span
-              >
+              • <strong>160</strong>L = <strong>160 mm</strong> hauteur d'axe, longueur L
             </div>
           </div>
         </div>
@@ -1154,8 +1140,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V69"
               />
               <figcaption>
-                <strong>V69</strong><br />
-                <small style="color: #666">fixation</small>
+                <strong>V69</strong> - fixation
               </figcaption>
             </figure>
           </div>
@@ -1172,7 +1157,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       <div class="popup-content">
         <button class="popup-close-x" onclick="closePopup()">&times;</button>
         <div class="popup-header">
-          <h2><span>⚡</span><span>Bienvenue !</span><span>⚙️</span></h2>
+          <h2>⚡ Bienvenue ! ⚙️</h2>
           <p>
             Ce questionnaire vous guide pour choisir le moteur asynchrone
             triphasé adapté à vos besoins.
@@ -1853,14 +1838,10 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   font-size: 0.95em;
                   font-weight: 600;
                   cursor: pointer;
-                  display: inline-flex;
-                  gap: 8px;
-                  align-items: center;
                   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
                 "
               >
-                <span style="font-size: 1.2em">📐</span
-                ><span>Comprendre la taille de carcasse - Hauteur d'axe</span>
+                📐 Comprendre la taille de carcasse - Hauteur d'axe
               </button>
             </div>
             <div class="answer-field">
@@ -2208,14 +2189,10 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   font-size: 0.9em;
                   font-weight: 600;
                   cursor: pointer;
-                  display: inline-flex;
-                  gap: 6px;
-                  align-items: center;
                   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
                 "
               >
-                <span style="font-size: 1.1em">💧</span
-                ><span>Comprendre l'humidité relative (HR)</span>
+                💧 Comprendre l'humidité relative (HR)
               </button>
             </div>
           </div>
@@ -2515,14 +2492,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 <strong
                   style="
                     color: #1565c0;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
                     margin-bottom: 8px;
+                    display: block;
                   "
                 >
-                  <span style="font-size: 1.2em">📚</span>
-                  <span>Besoin d'aide ?</span>
+                  📚 Besoin d'aide ?
                 </strong>
                 <p style="margin: 0; font-size: 0.9em; color: #333">
                   <a
@@ -2593,17 +2567,10 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   font-size: 0.95em;
                   font-weight: 600;
                   cursor: pointer;
-                  display: inline-flex;
-                  gap: 8px;
-                  align-items: center;
                   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
                 "
               >
-                <span style="font-size: 1.2em">♻️</span
-                ><span
-                  >Comprendre les indices énergétiques (IE) – plage de
-                  puissance</span
-                >
+                ♻️ Comprendre les indices énergétiques (IE) – plage de puissance
               </button>
             </div>
           </div>
