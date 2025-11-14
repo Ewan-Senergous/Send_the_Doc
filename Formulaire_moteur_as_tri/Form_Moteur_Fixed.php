@@ -118,8 +118,8 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       }
       .form-moteur-header h1 {
         font-size: 2em;
-        margin-bottom: 5px;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        padding-bottom: 0px !important;
       }
       .form-moteur-header p {
         font-size: 1em;
@@ -135,11 +135,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         padding: 8px;
         background: #f8f9fa;
         border-radius: 8px;
-        border-left: 4px solid #4338ca;
+        border-left: 4px solid #0066cc;
       }
 
       .category-title {
-        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
         color: #fff;
         padding: 10px 15px;
         margin: -15px -15px 15px -12px;
@@ -154,7 +154,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
       .section-divider {
         height: 2px;
-        background: linear-gradient(90deg, #4338ca 0%, #764ba2 100%);
+        background: linear-gradient(90deg, #0066cc 0%, #0099ff 100%);
         margin: 25px 0;
         border-radius: 2px;
       }
@@ -164,7 +164,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         padding: 10px;
         background: #fff;
         border-radius: 6px;
-        border-left: 3px solid #764ba2;
+        border-left: 3px solid #0066cc;
       }
       .question strong {
         color: #2a5298;
@@ -213,13 +213,12 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         border-radius: 6px;
         font-size: 1em;
         font-family: inherit;
-        transition: border-color 0.3s ease;
       }
       .answer-field input:focus,
       .answer-field textarea:focus,
       .answer-field select:focus {
         outline: none;
-        border : 2px solid #4338ca;
+        border : 2px solid #0066cc;
       }
       .answer-field textarea {
         resize: vertical;
@@ -239,12 +238,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         border: 1px solid #6b7280;
         border-radius: 6px;
         cursor: pointer;
-        transition: all 0.3s ease;
       }
       .radio-group label:hover,
       .checkbox-group label:hover {
-        background: #f8f9fa;
-        border-color: #4338ca;
+        background: #eff6ff;
+        border-color:#0066cc;
       }
       .radio-group input[type="radio"],
       .checkbox-group input[type="checkbox"] {
@@ -273,7 +271,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         font-size: 1rem;
         padding: 12px 24px;
         cursor: pointer;
-        transition: all 0.3s ease;
         box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
       }
       .btn-submit:hover {
@@ -377,7 +374,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         align-items: center;
         justify-content: center;
         border-radius: 50%;
-        transition: all 0.3s ease;
       }
       .popup-close-x:hover {
         background: #f0f0f0;
@@ -416,7 +412,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         padding: 8px;
         background: #f8f9fa;
         border-radius: 10px;
-        border-left: 4px solid #4338ca;
+        border-left: 4px solid #0066cc;
       }
       @media (max-width: 600px) {
         .popup-body {
@@ -428,7 +424,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         flex-shrink: 0;
       }
       .popup-close-btn {
-        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
         color: #fff;
         border: none;
         padding: 15px 40px;
@@ -437,7 +433,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         border-radius: 10px;
         cursor: pointer;
         width: 100%;
-        transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
       }
       .popup-close-btn:hover {
@@ -506,7 +501,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       .popup-humidite-close,
       .ie4-close,
       .popup-carcasse-close {
-        background: linear-gradient(135deg, #4338ca 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
         color: #fff;
         border: none;
         padding: 10px 22px;
@@ -530,7 +525,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         padding: 12px;
         border-radius: 10px;
         margin-top: 10px;
-        border-left: 4px solid #4a90e2;
+        border-left: 4px solid #0066cc;
       }
 
       /* Styles pour les catégories de montage */
@@ -576,13 +571,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         border-radius: 12px;
         overflow: hidden;
         cursor: pointer;
-        transition: transform 0.15s ease, box-shadow 0.15s ease,
-          border-color 0.15s ease;
       }
       .montage-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 18px rgba(102, 126, 234, 0.25);
-        border-color: #4338ca;
+        border-color: #0066cc;
       }
       .montage-card img {
         display: block;
@@ -693,7 +686,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       /* ===== Frein à intégrer (détails) ===== */
       .frein-details {
         background: #f7f9ff;
-        border-left: 3px solid #4a90e2;
+        border-left: 3px solid #0066cc;
         padding: 10px;
         border-radius: 6px;
         margin-top: 8px;
@@ -740,7 +733,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         flex-wrap: wrap;
         align-items: center;
         gap: 14px;
-        background: #dcfce7;
+        background: #f0fdf4;
         border: 1px solid #22c55e;
         color: #14532d;
         padding: 10px 12px;
@@ -1584,8 +1577,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
     <div class="moteur-form-container">
       <header class="form-moteur-header">
-        <h1 style="color: white;">⚡ Questions Essentielles :</h1>
-        <p>Pour la vente d'un moteur asynchrone triphasé</p>
+        <h1 style="color: white;">⚡Configurez votre moteur asynchrone triphasé et obtenez un devis sur mesure :</h1>
       </header>
 
       <main>
@@ -1875,7 +1867,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             </div>
           </div>
 
-          <h2 style="color: #4338ca; margin: 15px 0 10px; font-size: 0.95em">
+          <h2 style="color: #2a5298; margin: 15px 0 10px; font-size: 0.95em">
             Informations complémentaires
           </h2>
 
@@ -1899,7 +1891,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   display: inline-flex;
                   gap: 8px;
                   align-items: center;
-                  transition: 0.3s;
                   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
                 "
               >
@@ -1990,7 +1981,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   value="IC411"
                   checked
                 /><span
-                  ><strong style="color: #4338ca"
+                  ><strong style="color: #0066cc"
                     >✓ Standard : IC411 (TEFC, auto-ventilé)</strong
                   ></span
                 ></label
@@ -2045,7 +2036,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="radio-group inline-one-line">
               <label
                 ><input type="radio" name="regime" value="S1" checked required /><span
-                  ><strong style="color: #4338ca"
+                  ><strong style="color: #0066cc"
                     >✓ Standard : S1 (continu)</strong
                   ></span
                 ></label
@@ -2080,26 +2071,26 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="radio-group inline-one-line">
               <label
                 ><input type="radio" name="ip" value="IP55" checked required /><span
-                  ><strong style="color: #4338ca"
+                  ><strong style="color: #0066cc"
                     >✓ Standard : IP55
                   </strong></span
                 ></label
               >
               <label
                 ><input type="radio" name="ip" value="IP56" /><span
-                  ><strong style="color: #4338ca">IP56</strong> – Forte
+                  ><strong style="color: #0066cc">IP56</strong> – Forte
                   projection d'eau</span
                 ></label
               >
               <label
                 ><input type="radio" name="ip" value="IP65" /><span
-                  ><strong style="color: #4338ca">IP65/IP66</strong> – Jets
+                  ><strong style="color: #0066cc">IP65/IP66</strong> – Jets
                   puissants / lavage</span
                 ></label
               >
               <label
                 ><input type="radio" name="ip" value="IP67" /><span
-                  ><strong style="color: #4338ca">IP67/IP68</strong> –
+                  ><strong style="color: #0066cc">IP67/IP68</strong> –
                   Immersion</span
                 ></label
               >
@@ -2122,7 +2113,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   value="standard"
                   checked
                 /><span
-                  ><strong style="color: #4338ca"
+                  ><strong style="color: #0066cc"
                     >✓ Standard : -20°C à +40°C</strong
                   ></span
                 ></label
@@ -2182,7 +2173,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   value="0-1000"
                   checked
                 /><span
-                  ><strong style="color: #4338ca"
+                  ><strong style="color: #0066cc"
                     >✓ Standard : 0 à 1000 m</strong
                   ></span
                 ></label
@@ -2255,7 +2246,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   display: inline-flex;
                   gap: 6px;
                   align-items: center;
-                  transition: 0.3s;
                   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
                 "
               >
@@ -2297,7 +2287,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               <div style="margin-bottom: 20px">
                 <strong
                   style="color: #1e3c72; display: block; margin-bottom: 10px"
-                  >🔥 Type d'atmosphère explosive</strong
+                  >🔥 Type d'atmosphère explosive :</strong
                 >
                 <div
                   class="info-box"
@@ -2344,13 +2334,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 <h3
                   style="color: #1565c0; margin-bottom: 15px; font-size: 1.1em"
                 >
-                  ⚡ Configuration pour atmosphère GAZ
+                  ⚡ Configuration pour atmosphère GAZ :
                 </h3>
 
                 <div style="margin-bottom: 15px">
                   <strong
                     style="color: #1e3c72; display: block; margin-bottom: 10px"
-                    >📍 Zone de classification (Gaz)</strong
+                    >📍 Zone de classification (Gaz) :</strong
                   >
                   <div
                     class="info-box"
@@ -2384,7 +2374,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   <label for="atex_groupe_gaz"
                     ><strong
                       style="color: #1e3c72; display: block; margin-bottom: 10px"
-                      >⚗️ Groupe de gaz</strong
+                      >⚗️ Groupe de gaz :</strong
                     ></label
                   >
                   <div class="answer-field">
@@ -2401,7 +2391,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   <label for="atex_temp_gaz"
                     ><strong
                       style="color: #1e3c72; display: block; margin-bottom: 10px"
-                      >🌡️ Classe de température (T)</strong
+                      >🌡️ Classe de température (T) :</strong
                     ></label
                   >
                   <div class="answer-field">
@@ -2421,7 +2411,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   <label for="atex_protection_gaz"
                     ><strong
                       style="color: #1e3c72; display: block; margin-bottom: 10px"
-                      >🛡️ Type de protection (Gaz)</strong
+                      >🛡️ Type de protection (Gaz) :</strong
                     ></label
                   >
                   <div class="answer-field">
@@ -2579,7 +2569,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                       text-decoration: none;
                       font-weight: 600;
                       border-bottom: 2px solid #2196f3;
-                      transition: all 0.3s ease;
                     "
                   >
                     Consultez notre article détaillé sur ATEX
@@ -2642,7 +2631,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                   display: inline-flex;
                   gap: 8px;
                   align-items: center;
-                  transition: 0.3s;
                   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
                 "
               >
@@ -2982,7 +2970,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <div class="category-title">💬 VOUS CONNAÎTRE DAVANTAGE :</div>
 
           <div class="question">
-            <strong>🏢 Société <span class="required">*</span></strong>
+            <strong>🏢 Société :<span class="required">*</span></strong>
             <div class="answer-field">
               <input type="text" name="societe" placeholder="Nom de votre société" required />
             </div>
@@ -2990,13 +2978,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
           <div class="two-col">
             <div class="question">
-              <strong>🙍‍♂️ Nom & Prénom <span class="required">*</span></strong>
+              <strong>🙍‍♂️ Nom & Prénom :<span class="required">*</span></strong>
               <div class="answer-field">
                 <input type="text" name="nom_prenom" placeholder="Ex : Jean Dupont" required />
               </div>
             </div>
             <div class="question">
-              <strong>📧 Email <span class="required">*</span></strong>
+              <strong>📧 Email :<span class="required">*</span></strong>
               <div class="answer-field">
                 <input type="email" name="email" placeholder="nom@domaine.com" required />
               </div>
@@ -3005,13 +2993,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
           <div class="two-col">
             <div class="question">
-              <strong>📱 Téléphone</strong>
+              <strong>📱 Téléphone :</strong>
               <div class="answer-field">
                 <input type="tel" name="telephone" placeholder="+33 ..." />
               </div>
             </div>
             <div class="question">
-              <strong>📍 Ville / Pays</strong>
+              <strong>📍 Ville / Pays :</strong>
               <div class="answer-field">
                 <input type="text" name="ville_pays" placeholder="Ex : Lyon, France" />
               </div>
@@ -3019,7 +3007,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question">
-            <label for="fonction"><strong>🧑‍💼 Fonction</strong></label>
+            <label for="fonction"><strong>🧑‍💼 Fonction :</strong></label>
             <div class="answer-field">
               <select id="fonction" name="fonction">
                 <option value="">Sélectionnez</option>
@@ -3033,7 +3021,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question">
-            <label for="budget"><strong>🧾 Budget estimatif</strong></label>
+            <label for="budget"><strong>🧾 Budget estimé :</strong></label>
             <div class="answer-field">
               <select id="budget" name="budget">
                 <option value="">Sélectionnez</option>
@@ -3046,14 +3034,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question">
-            <strong>🔢 Quantité prévue</strong>
+            <strong>🔢 Quantité prévue :</strong>
             <div class="answer-field">
               <input type="number" name="quantite" min="1" step="1" placeholder="Ex : 3" />
             </div>
           </div>
 
           <div class="question">
-            <strong>📅 Délai souhaité</strong>
+            <strong>📅 Délai souhaité :</strong>
             <div class="radio-group inline-one-line">
               <label
                 ><input type="radio" name="delai" value="2 jours" /><span>
@@ -3084,7 +3072,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <div class="question">
-            <strong>📝 Brève description du besoin</strong>
+            <strong>📝 Brève description du besoin :</strong>
             <div class="answer-field">
               <textarea
                 name="description_besoin"
@@ -3096,7 +3084,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <div class="question">
             <label for="fichier_plaque"
               ><strong
-                >📎 Joindre un fichier (plaque signalétique par exemple)</strong
+                >📎 Joindre un fichier (plaque signalétique par exemple) :</strong
               ></label
             >
             <div class="answer-field"><input type="file" id="fichier_plaque" name="fichier_plaque" aria-label="Joindre un fichier (plaque signalétique par exemple)" /></div>
