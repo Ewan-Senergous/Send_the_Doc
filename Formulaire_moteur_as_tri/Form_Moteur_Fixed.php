@@ -467,13 +467,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         background: #fff;
         border-radius: 15px;
         padding: 25px;
-        max-width: 520px;
         width: 90%;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         position: relative;
         animation: slideDown 0.35s ease;
         max-height: 92vh;
         overflow: auto;
+        margin-top: 25rem;
       }
 
       .popup-carcasse-header,
@@ -487,15 +487,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         border-bottom: 2px solid #e8eaf6;
       }
       .popup-montage-content {
-        max-width: 980px;
+        max-width: 1200px;
       }
       .popup-montage-header {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 12px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e8eaf6;
       }
       .popup-montage-close,
       .popup-humidite-close,
@@ -918,20 +914,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           &times;
         </button>
         <div class="popup-montage-header">
-          <span style="font-size: 1.3em">🔩</span>
-          <h2>Types de montage (exemples en photos)</h2>
+          <h2>Cliquez sur une photo pour sélectionner (norme IEC 60034-7) :</h2>
         </div>
 
-        <p style="color: #333; margin-bottom: 15px; font-size: 0.95em">
-          Cliquez sur une photo pour sélectionner le type de montage
-          correspondant.<br />
-          <small style="color: #888"
-            >Classification selon norme IEC 60034-7</small
-          >
-        </p>
-
         <div class="montage-category">
-          <div class="montage-category-title">🔧 Montage à pattes</div>
+          <div class="montage-category-title">🔧 Montage à pattes :</div>
           <div class="montage-grid">
             <figure
               class="montage-card"
@@ -943,10 +930,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B3"
               />
               <figcaption>
-                <strong>B3</strong><br />
-                <small style="color: #666"
-                  >Pattes au sol, arbre horizontal</small
-                >
+                <strong>B3</strong> - Pattes au sol, arbre horizontal
               </figcaption>
             </figure>
             <figure
@@ -959,10 +943,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B6"
               />
               <figcaption>
-                <strong>B6</strong><br />
-                <small style="color: #666"
-                  >Pattes murales, arbre horizontal</small
-                >
+                <strong>B6</strong> - Pattes murales, arbre horizontal
               </figcaption>
             </figure>
             <figure
@@ -975,10 +956,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B7"
               />
               <figcaption>
-                <strong>B7</strong><br />
-                <small style="color: #666"
-                  >Pattes murales, arbre vertical ↓</small
-                >
+                <strong>B7</strong> - Pattes murales, arbre vertical ↓
               </figcaption>
             </figure>
             <figure
@@ -991,8 +969,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B8"
               />
               <figcaption>
-                <strong>B8</strong><br />
-                <small style="color: #666">Pattes inversées au plafond</small>
+                <strong>B8</strong> - Pattes inversées au plafond
               </figcaption>
             </figure>
             <figure
@@ -1005,8 +982,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V5"
               />
               <figcaption>
-                <strong>V5</strong><br />
-                <small style="color: #666">Fixation murale, arbre ↓</small>
+                <strong>V5</strong> - Fixation murale, arbre ↓
               </figcaption>
             </figure>
             <figure
@@ -1019,8 +995,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V6"
               />
               <figcaption>
-                <strong>V6</strong><br />
-                <small style="color: #666">Fixation murale, arbre ↑</small>
+                <strong>V6</strong> - Fixation murale, arbre ↑
               </figcaption>
             </figure>
           </div>
@@ -1028,7 +1003,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
         <div class="montage-category">
           <div class="montage-category-title">
-            ⚙️ Montage à bride à trous lisses (FF)
+            ⚙️ Montage à bride à trous lisses (FF) :
           </div>
           <div class="montage-grid">
             <figure
@@ -1041,8 +1016,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B5"
               />
               <figcaption>
-                <strong>B5</strong><br />
-                <small style="color: #666">Bride FF, arbre horizontal</small>
+                <strong>B5</strong> - Bride FF, arbre horizontal
               </figcaption>
             </figure>
             <figure
@@ -1055,8 +1029,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B35"
               />
               <figcaption>
-                <strong>B35</strong><br />
-                <small style="color: #666">Pattes + Bride FF</small>
+                <strong>B35</strong> - Pattes + Bride FF
               </figcaption>
             </figure>
             <figure
@@ -1069,8 +1042,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V3"
               />
               <figcaption>
-                <strong>V3</strong><br />
-                <small style="color: #666">Bride en bas, arbre ↑</small>
+                <strong>V3</strong> - Bride en bas, arbre ↑
               </figcaption>
             </figure>
             <figure
@@ -1083,8 +1055,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V1"
               />
               <figcaption>
-                <strong>V1</strong><br />
-                <small style="color: #666">Bride en haut, arbre ↓</small>
+                <strong>V1</strong> - Bride en haut, arbre ↓
               </figcaption>
             </figure>
             <figure
@@ -1097,8 +1068,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V15"
               />
               <figcaption>
-                <strong>V15</strong><br />
-                <small style="color: #666">fixation</small>
+                <strong>V15</strong> - fixation
               </figcaption>
             </figure>
           </div>
@@ -1106,7 +1076,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
         <div class="montage-category">
           <div class="montage-category-title">
-            🔩 Montage à bride à trous taraudés (FT)
+            🔩 Montage à bride à trous taraudés (FT) :
           </div>
           <div class="montage-grid">
             <figure
@@ -1119,8 +1089,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B14"
               />
               <figcaption>
-                <strong>B14</strong><br />
-                <small style="color: #666">Bride FT, arbre horizontal</small>
+                <strong>B14</strong> - Bride FT, arbre horizontal
               </figcaption>
             </figure>
             <figure
@@ -1133,8 +1102,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage B34"
               />
               <figcaption>
-                <strong>B34</strong><br />
-                <small style="color: #666">Pattes + Bride FT</small>
+                <strong>B34</strong> - Pattes + Bride FT
               </figcaption>
             </figure>
             <figure
@@ -1147,8 +1115,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V58"
               />
               <figcaption>
-                <strong>V58</strong><br />
-                <small style="color: #666">fixation</small>
+                <strong>V58</strong> - fixation
               </figcaption>
             </figure>
             <figure
@@ -1161,8 +1128,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V19"
               />
               <figcaption>
-                <strong>V19</strong><br />
-                <small style="color: #666">fixation</small>
+                <strong>V19</strong> - fixation
               </figcaption>
             </figure>
             <figure
@@ -1175,8 +1141,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 alt="Montage V18"
               />
               <figcaption>
-                <strong>V18</strong><br />
-                <small style="color: #666">fixation</small>
+                <strong>V18</strong> - fixation
               </figcaption>
             </figure>
             <figure
@@ -1868,7 +1833,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           </div>
 
           <h2 style="color: #2a5298; margin: 15px 0 10px; font-size: 0.95em">
-            Informations complémentaires
+            Informations complémentaires :
           </h2>
 
           <div class="question" data-from-plaque="true">
