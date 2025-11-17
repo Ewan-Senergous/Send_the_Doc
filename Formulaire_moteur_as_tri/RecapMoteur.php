@@ -7,6 +7,104 @@ if (session_status() === PHP_SESSION_NONE) {
 // Définir une constante pour les champs non renseignés
 define('MOTEUR_NOT_PROVIDED', 'Non renseigné');
 
+// Fonction helper pour afficher les données sans backslashes d'échappement
+function moteur_display_field($data, $field_name, $default = MOTEUR_NOT_PROVIDED) {
+    if (isset($data[$field_name]) && $data[$field_name] !== MOTEUR_NOT_PROVIDED && !empty($data[$field_name])) {
+        return esc_html(wp_unslash($data[$field_name]));
+    }
+    return $default;
+}
+
+// ===== MAPPINGS POUR AFFICHER LES NOMS COMPLETS =====
+$vitesse_labels = array(
+    '2900' => '2 pôles → ~3000 tr/min (2900 réels)',
+    '1450' => '4 pôles → ~1500 tr/min (1450 réels)',
+    '960' => '6 pôles → ~1000 tr/min (960 réels)',
+    '720' => '8 pôles → ~750 tr/min (720 réels)'
+);
+
+$matiere_labels = array(
+    'alu' => 'Aluminium',
+    'fonte' => 'Fonte',
+    'acier' => 'Acier'
+);
+
+$refroidissement_labels = array(
+    'IC411' => 'IC411 (TEFC, auto-ventilé)',
+    'IC416' => 'IC416 (ventilation forcée)'
+);
+
+$regime_labels = array(
+    'S1' => 'S1 (continu)',
+    'S2' => 'S2 (temporaire)',
+    'S3-S10' => 'S3 à S10 (intermittent)'
+);
+
+$temperature_labels = array(
+    'standard' => '-20°C à +40°C'
+);
+
+$altitude_labels = array(
+    '0-1000' => '0 à 1000 m'
+);
+
+$rendement_labels = array(
+    'IE2' => 'IE2',
+    'IE3' => 'IE3 (minimum Europe)',
+    'IE4' => 'IE4 (super premium)',
+    'IE5' => 'IE5 (ultra premium)'
+);
+
+$isolation_labels = array(
+    'B' => 'Classe B',
+    'F' => 'Classe F',
+    'H' => 'Classe H'
+);
+
+// Mappings ATEX
+$atex_zone_gaz_labels = array(
+    '1' => 'Zone 1 (2G)',
+    '2' => 'Zone 2 (3G)'
+);
+
+$atex_groupe_gaz_labels = array(
+    'IIA' => 'IIA (propane, butane...)',
+    'IIB' => 'IIB (éthylène...)',
+    'IIC' => 'IIC (hydrogène, acétylène...)'
+);
+
+$atex_temp_labels = array(
+    'T1' => 'T1 (≤ 450°C)',
+    'T2' => 'T2 (≤ 300°C)',
+    'T3' => 'T3 (≤ 200°C)',
+    'T4' => 'T4 (≤ 135°C)',
+    'T5' => 'T5 (≤ 100°C)',
+    'T6' => 'T6 (≤ 85°C)'
+);
+
+$atex_protection_gaz_labels = array(
+    'Ex d' => 'Ex d (enveloppe antidéflagrante)',
+    'Ex e' => 'Ex e (sécurité augmentée)',
+    'Ex de' => 'Ex de (combinaison d + e)',
+    'Ex n' => 'Ex n (non étincelant)',
+    'Ex p' => 'Ex p (surpression interne)'
+);
+
+$atex_zone_poussieres_labels = array(
+    '21' => 'Zone 21',
+    '22' => 'Zone 22'
+);
+
+$atex_classe_poussieres_labels = array(
+    'IIIB' => 'IIIB (poussières conductrices)',
+    'IIIC' => 'IIIC (poussières non conductrices)'
+);
+
+$atex_protection_poussieres_labels = array(
+    'Ex t' => 'Ex t (protection contre poussières)',
+    'Ex p' => 'Ex p (surpression interne)'
+);
+
 // Vérifier si nous avons un numéro de demande et une clé dans l'URL
 if (isset($_GET['order']) && isset($_GET['key'])) {
     $order_number = intval($_GET['order']);
@@ -158,90 +256,116 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
         <p class="reference-number">Référence : <strong><?php echo esc_html($order_number); ?></strong> - <?php echo esc_html($date_demande); ?></p>
     </div>
 
+    <!-- SECTION 1 : VOUS CONNAÎTRE DAVANTAGE (Contact + Projet + Description fusionnés) -->
     <div class="recap-section">
-        <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg> Informations de contact</h3>
+        <h3>💬 VOUS CONNAÎTRE DAVANTAGE</h3>
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">Société :</span>
-                <span class="info-value"><?php echo isset($data['societe']) ? esc_html($data['societe']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'societe'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Nom & Prénom :</span>
-                <span class="info-value"><?php echo isset($data['nom_prenom']) ? esc_html($data['nom_prenom']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'nom_prenom'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Email :</span>
-                <span class="info-value"><?php echo isset($data['email']) ? esc_html($data['email']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'email'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Téléphone :</span>
-                <span class="info-value"><?php echo isset($data['telephone']) ? esc_html($data['telephone']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'telephone'); ?></span>
             </div>
             <div class="info-item">
-                <span class="info-label">Ville/Pays :</span>
-                <span class="info-value"><?php echo isset($data['ville_pays']) ? esc_html($data['ville_pays']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-label">Ville / Pays :</span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'ville_pays'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Fonction :</span>
-                <span class="info-value"><?php echo isset($data['fonction']) ? esc_html($data['fonction']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'fonction'); ?></span>
             </div>
-        </div>
-    </div>
-
-    <div class="recap-section">
-        <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Informations projet</h3>
-        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Budget estimé :</span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'budget'); ?></span>
+            </div>
             <div class="info-item">
                 <span class="info-label">Quantité prévue :</span>
-                <span class="info-value"><?php echo isset($data['quantite']) ? esc_html($data['quantite']) : MOTEUR_NOT_PROVIDED; ?></span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Budget estimatif :</span>
-                <span class="info-value"><?php echo isset($data['budget']) ? esc_html($data['budget']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'quantite'); ?></span>
             </div>
             <div class="info-item full-width">
                 <span class="info-label">Délai souhaité :</span>
-                <span class="info-value"><?php echo isset($data['delai']) ? esc_html($data['delai']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'delai'); ?></span>
             </div>
+            <?php if (isset($data['description_besoin']) && $data['description_besoin'] !== MOTEUR_NOT_PROVIDED) : ?>
+            <div class="info-item full-width">
+                <span class="info-label">Description du besoin :</span>
+                <span class="info-value" style="white-space: pre-wrap;"><?php echo esc_html(wp_unslash($data['description_besoin'])); ?></span>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 
+    <!-- SECTION 2 : CARACTÉRISTIQUES DE L'APPLICATION -->
     <div class="recap-section">
-        <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Caractéristiques moteur</h3>
+        <h3>⚙️ CARACTÉRISTIQUES DE L'APPLICATION</h3>
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">Puissance (kW) :</span>
-                <span class="info-value"><?php echo isset($data['puissance_kw']) ? esc_html($data['puissance_kw']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'puissance_kw'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Vitesse :</span>
-                <span class="info-value"><?php echo isset($data['vitesse']) ? esc_html($data['vitesse']) : MOTEUR_NOT_PROVIDED; ?></span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Tension :</span>
-                <span class="info-value"><?php echo isset($data['tension']) ? esc_html($data['tension']) : MOTEUR_NOT_PROVIDED; ?></span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Fréquence :</span>
-                <span class="info-value"><?php echo isset($data['frequence']) ? esc_html($data['frequence']) : MOTEUR_NOT_PROVIDED; ?></span>
-            </div>
-            <div class="info-item full-width">
-                <span class="info-label">Type de montage :</span>
-                <span class="info-value"><?php echo isset($data['montage']) ? esc_html($data['montage']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php
+                    global $vitesse_labels;
+                    $vitesse = moteur_display_field($data, 'vitesse');
+                    if ($vitesse === 'autre' && isset($data['vitesse_autre_rpm']) && $data['vitesse_autre_rpm'] !== MOTEUR_NOT_PROVIDED) {
+                        echo esc_html(wp_unslash($data['vitesse_autre_rpm'])) . ' tr/min (personnalisée)';
+                    } else if (isset($vitesse_labels[$vitesse])) {
+                        echo esc_html($vitesse_labels[$vitesse]);
+                    } else {
+                        echo $vitesse;
+                    }
+                ?></span>
             </div>
         </div>
     </div>
 
-    <!-- Installation technique -->
+    <!-- SECTION 3 : ALIMENTATION ÉLECTRIQUE -->
     <div class="recap-section">
-        <h3>🔧 Installation technique</h3>
+        <h3>⚡ ALIMENTATION ÉLECTRIQUE</h3>
         <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Tension :</span>
+                <span class="info-value"><?php
+                    $tension = moteur_display_field($data, 'tension');
+                    if ($tension === 'autre' && isset($data['tension_autre']) && $data['tension_autre'] !== MOTEUR_NOT_PROVIDED) {
+                        echo esc_html(wp_unslash($data['tension_autre'])) . ' (personnalisée)';
+                    } else {
+                        echo $tension;
+                    }
+                ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Fréquence :</span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'frequence'); ?></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4 : INSTALLATION TECHNIQUE -->
+    <div class="recap-section">
+        <h3>🔧 INSTALLATION TECHNIQUE</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Type de montage :</span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'montage'); ?></span>
+            </div>
             <div class="info-item">
                 <span class="info-label">Taille carcasse :</span>
                 <span class="info-value"><?php
-                    $taille = isset($data['taille_carcasse']) ? esc_html($data['taille_carcasse']) : MOTEUR_NOT_PROVIDED;
+                    $taille = moteur_display_field($data, 'taille_carcasse');
                     if ($taille === 'autre' && isset($data['taille_carcasse_autre']) && $data['taille_carcasse_autre'] !== MOTEUR_NOT_PROVIDED) {
-                        echo esc_html($data['taille_carcasse_autre']);
+                        echo esc_html(wp_unslash($data['taille_carcasse_autre'])) . ' (personnalisée)';
                     } else {
                         echo $taille;
                     }
@@ -249,14 +373,21 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
             </div>
             <div class="info-item">
                 <span class="info-label">Matière :</span>
-                <span class="info-value"><?php echo isset($data['matiere']) ? esc_html($data['matiere']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php
+                    global $matiere_labels;
+                    $matiere = moteur_display_field($data, 'matiere');
+                    echo isset($matiere_labels[$matiere]) ? esc_html($matiere_labels[$matiere]) : $matiere;
+                ?></span>
             </div>
             <div class="info-item full-width">
                 <span class="info-label">Refroidissement :</span>
                 <span class="info-value"><?php
-                    $refr = isset($data['refroidissement']) ? esc_html($data['refroidissement']) : MOTEUR_NOT_PROVIDED;
+                    global $refroidissement_labels;
+                    $refr = moteur_display_field($data, 'refroidissement');
                     if ($refr === 'autre' && isset($data['refroidissement_autre']) && $data['refroidissement_autre'] !== MOTEUR_NOT_PROVIDED) {
-                        echo esc_html($data['refroidissement_autre']);
+                        echo esc_html(wp_unslash($data['refroidissement_autre'])) . ' (personnalisé)';
+                    } else if (isset($refroidissement_labels[$refr])) {
+                        echo esc_html($refroidissement_labels[$refr]);
                     } else {
                         echo $refr;
                     }
@@ -271,18 +402,18 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">Régime de service :</span>
-                <span class="info-value"><?php echo isset($data['regime']) ? esc_html($data['regime']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'regime'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Indice de protection (IP) :</span>
-                <span class="info-value"><?php echo isset($data['ip']) ? esc_html($data['ip']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'ip'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Température ambiante :</span>
                 <span class="info-value"><?php
-                    $temp = isset($data['temperature']) ? esc_html($data['temperature']) : MOTEUR_NOT_PROVIDED;
+                    $temp = moteur_display_field($data, 'temperature');
                     if ($temp === 'personnalise' && isset($data['temp_min']) && isset($data['temp_max'])) {
-                        echo esc_html($data['temp_min']) . '°C à ' . esc_html($data['temp_max']) . '°C';
+                        echo esc_html(wp_unslash($data['temp_min'])) . '°C à ' . esc_html(wp_unslash($data['temp_max'])) . '°C';
                     } else {
                         echo $temp;
                     }
@@ -291,9 +422,9 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
             <div class="info-item">
                 <span class="info-label">Altitude :</span>
                 <span class="info-value"><?php
-                    $alt = isset($data['altitude']) ? esc_html($data['altitude']) : MOTEUR_NOT_PROVIDED;
+                    $alt = moteur_display_field($data, 'altitude');
                     if ($alt === 'personnalise' && isset($data['altitude_custom']) && $data['altitude_custom'] !== MOTEUR_NOT_PROVIDED) {
-                        echo esc_html($data['altitude_custom']) . ' m';
+                        echo esc_html(wp_unslash($data['altitude_custom'])) . ' m';
                     } else {
                         echo $alt;
                     }
@@ -332,19 +463,19 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
             </div>
             <div class="info-item">
                 <span class="info-label">Zone :</span>
-                <span class="info-value"><?php echo isset($data['atex_zone_gaz']) ? esc_html($data['atex_zone_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_zone_gaz'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Groupe :</span>
-                <span class="info-value"><?php echo isset($data['atex_groupe_gaz']) ? esc_html($data['atex_groupe_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_groupe_gaz'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Classe température :</span>
-                <span class="info-value"><?php echo isset($data['atex_temp_gaz']) ? esc_html($data['atex_temp_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_temp_gaz'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Protection :</span>
-                <span class="info-value"><?php echo isset($data['atex_protection_gaz']) ? esc_html($data['atex_protection_gaz']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_protection_gaz'); ?></span>
             </div>
             <?php endif; ?>
 
@@ -354,19 +485,19 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
             </div>
             <div class="info-item">
                 <span class="info-label">Zone :</span>
-                <span class="info-value"><?php echo isset($data['atex_zone_poussieres']) ? esc_html($data['atex_zone_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_zone_poussieres'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Classe de poussières :</span>
-                <span class="info-value"><?php echo isset($data['atex_classe_poussieres']) ? esc_html($data['atex_classe_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_classe_poussieres'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Classe température :</span>
-                <span class="info-value"><?php echo isset($data['atex_temp_poussieres']) ? esc_html($data['atex_temp_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_temp_poussieres'); ?></span>
             </div>
             <div class="info-item full-width">
                 <span class="info-label">Protection :</span>
-                <span class="info-value"><?php echo isset($data['atex_protection_poussieres']) ? esc_html($data['atex_protection_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'atex_protection_poussieres'); ?></span>
             </div>
             <?php endif; ?>
         </div>
@@ -379,11 +510,11 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">Classe de rendement :</span>
-                <span class="info-value"><?php echo isset($data['rendement']) ? esc_html($data['rendement']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'rendement'); ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Classe d'isolation :</span>
-                <span class="info-value"><?php echo isset($data['isolation']) ? esc_html($data['isolation']) : MOTEUR_NOT_PROVIDED; ?></span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'isolation'); ?></span>
             </div>
         </div>
     </div>
@@ -509,7 +640,7 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
         <h3>📝 Description du besoin</h3>
         <div class="info-grid">
             <div class="info-item full-width">
-                <span class="info-value" style="white-space: pre-wrap;"><?php echo esc_html($data['description_besoin']); ?></span>
+                <span class="info-value" style="white-space: pre-wrap;"><?php echo esc_html(wp_unslash($data['description_besoin'])); ?></span>
             </div>
         </div>
     </div>
@@ -587,7 +718,7 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
     </div>
 
     <div class="recap-footer">
-        <p>Un email de confirmation a été envoyé à votre adresse <?php echo isset($data['email']) ? esc_html($data['email']) : MOTEUR_NOT_PROVIDED; ?>.</p>
+        <p>Un email de confirmation a été envoyé à votre adresse <?php echo moteur_display_field($data, 'email'); ?>.</p>
         <p>Notre équipe commerciale vous contactera prochainement.</p>
 
         <div class="action-buttons">

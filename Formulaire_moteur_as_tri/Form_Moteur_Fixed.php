@@ -3654,117 +3654,117 @@ $content .= "NON\r\n";
     }
 
     function processMoteurUploadedFiles() {
-    $attachments = array();
-    $fileNames = array();
-    $filePaths = array(); // Array associatif: nom_original => chemin_complet
-    $warning = '';
+        $attachments = array();
+        $fileNames = array();
+        $filePaths = array(); // Array associatif: nom_original => chemin_complet
+        $warning = '';
 
-    // Vérifier si un fichier a été uploadé
-    if (!isset($_FILES['fichier_plaque']) || empty($_FILES['fichier_plaque']['name'])) {
-return array(
-    'attachments' => $attachments,
-    'fileNames' => $fileNames,
-    'filePaths' => $filePaths,
-    'warning' => ''
-);
-    }
+        // Vérifier si un fichier a été uploadé
+        if (!isset($_FILES['fichier_plaque']) || empty($_FILES['fichier_plaque']['name'])) {
+            return array(
+                'attachments' => $attachments,
+                'fileNames' => $fileNames,
+                'filePaths' => $filePaths,
+                'warning' => ''
+            );
+        }
 
-    $file = $_FILES['fichier_plaque'];
+        $file = $_FILES['fichier_plaque'];
 
-    // Vérifier les erreurs d'upload
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-$error_messages = array(
-    UPLOAD_ERR_INI_SIZE => 'Le fichier dépasse la taille maximale autorisée par le serveur.',
-    UPLOAD_ERR_FORM_SIZE => 'Le fichier dépasse la taille maximale autorisée.',
-    UPLOAD_ERR_PARTIAL => 'Le fichier n\'a été que partiellement téléchargé.',
-    UPLOAD_ERR_NO_FILE => 'Aucun fichier n\'a été téléchargé.',
-    UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant.',
-    UPLOAD_ERR_CANT_WRITE => 'Échec de l\'écriture du fichier sur le disque.',
-    UPLOAD_ERR_EXTENSION => 'Une extension PHP a arrêté l\'upload du fichier.'
-);
-$warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Erreur upload : ' .
-           (isset($error_messages[$file['error']]) ? $error_messages[$file['error']] : 'Erreur inconnue.') . '</div>';
+        // Vérifier les erreurs d'upload
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $error_messages = array(
+                UPLOAD_ERR_INI_SIZE => 'Le fichier dépasse la taille maximale autorisée par le serveur.',
+                UPLOAD_ERR_FORM_SIZE => 'Le fichier dépasse la taille maximale autorisée.',
+                UPLOAD_ERR_PARTIAL => 'Le fichier n\'a été que partiellement téléchargé.',
+                UPLOAD_ERR_NO_FILE => 'Aucun fichier n\'a été téléchargé.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant.',
+                UPLOAD_ERR_CANT_WRITE => 'Échec de l\'écriture du fichier sur le disque.',
+                UPLOAD_ERR_EXTENSION => 'Une extension PHP a arrêté l\'upload du fichier.'
+            );
+            $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Erreur upload : ' .
+                       (isset($error_messages[$file['error']]) ? $error_messages[$file['error']] : 'Erreur inconnue.') . '</div>';
 
-return array(
-    'attachments' => $attachments,
-    'fileNames' => $fileNames,
-    'filePaths' => $filePaths,
-    'warning' => $warning
-);
-    }
+            return array(
+                'attachments' => $attachments,
+                'fileNames' => $fileNames,
+                'filePaths' => $filePaths,
+                'warning' => $warning
+            );
+        }
 
-    // Validation du type de fichier
-    $allowed_types = array(
-'image/jpeg',
-'image/jpg',
-'image/png',
-'image/gif',
-'image/webp',
-'image/heic',
-'application/pdf'
-    );
+        // Validation du type de fichier
+        $allowed_types = array(
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/heic',
+            'application/pdf'
+        );
 
-    $file_type = $file['type'];
-    // Fallback avec finfo si le type MIME n'est pas fiable
-    if (function_exists('finfo_open')) {
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$file_type = finfo_file($finfo, $file['tmp_name']);
-finfo_close($finfo);
-    }
+        $file_type = $file['type'];
+        // Fallback avec finfo si le type MIME n'est pas fiable
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $file_type = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+        }
 
-    if (!in_array($file_type, $allowed_types)) {
-$warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Type de fichier non autorisé. Formats acceptés : JPG, PNG, GIF, WEBP, HEIC, PDF.</div>';
+        if (!in_array($file_type, $allowed_types)) {
+            $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Type de fichier non autorisé. Formats acceptés : JPG, PNG, GIF, WEBP, HEIC, PDF.</div>';
 
-return array(
-    'attachments' => $attachments,
-    'fileNames' => $fileNames,
-    'filePaths' => $filePaths,
-    'warning' => $warning
-);
-    }
+            return array(
+                'attachments' => $attachments,
+                'fileNames' => $fileNames,
+                'filePaths' => $filePaths,
+                'warning' => $warning
+            );
+        }
 
-    // Validation de la taille (5MB maximum)
-    $max_size = 5 * 1024 * 1024; // 5MB en octets
-    if ($file['size'] > $max_size) {
-$warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Le fichier est trop volumineux. Taille maximale : 5 MB.</div>';
+        // Validation de la taille (5MB maximum)
+        $max_size = 5 * 1024 * 1024; // 5MB en octets
+        if ($file['size'] > $max_size) {
+            $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Le fichier est trop volumineux. Taille maximale : 5 MB.</div>';
 
-return array(
-    'attachments' => $attachments,
-    'fileNames' => $fileNames,
-    'filePaths' => $filePaths,
-    'warning' => $warning
-);
-    }
+            return array(
+                'attachments' => $attachments,
+                'fileNames' => $fileNames,
+                'filePaths' => $filePaths,
+                'warning' => $warning
+            );
+        }
 
-    // Préparer le répertoire de destination (WordPress uploads)
-    $upload_dir = wp_upload_dir();
-    $target_dir = $upload_dir['path'];
+        // Préparer le répertoire de destination (WordPress uploads)
+        $upload_dir = wp_upload_dir();
+        $target_dir = $upload_dir['path'];
 
-    // Créer un nom de fichier unique
-    $filename = sanitize_file_name($file['name']);
-    $file_extension = pathinfo($filename, PATHINFO_EXTENSION);
-    $file_basename = pathinfo($filename, PATHINFO_FILENAME);
-    $unique_filename = $file_basename . '_' . time() . '_' . wp_generate_password(8, false) . '.' . $file_extension;
-    $target_file = $target_dir . '/' . $unique_filename;
+        // Créer un nom de fichier unique
+        $filename = sanitize_file_name($file['name']);
+        $file_extension = pathinfo($filename, PATHINFO_EXTENSION);
+        $file_basename = pathinfo($filename, PATHINFO_FILENAME);
+        $unique_filename = $file_basename . '_' . time() . '_' . wp_generate_password(8, false) . '.' . $file_extension;
+        $target_file = $target_dir . '/' . $unique_filename;
 
-    // Déplacer le fichier uploadé
-    if (move_uploaded_file($file['tmp_name'], $target_file)) {
-$attachments[] = $target_file;                     // Pour les emails (array indexé)
-$fileNames[] = $filename;                          // Nom original pour affichage (array indexé)
-$filePaths[$filename] = $target_file;              // Array associatif : nom_original => chemin_complet
+        // Déplacer le fichier uploadé
+        if (move_uploaded_file($file['tmp_name'], $target_file)) {
+            $attachments[] = $target_file;                     // Pour les emails (array indexé)
+            $fileNames[] = $filename;                          // Nom original pour affichage (array indexé)
+            $filePaths[$filename] = $target_file;              // Array associatif : nom_original => chemin_complet
 
-// Succès - pas de warning
-$warning = '';
-    } else {
-$warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Échec de la sauvegarde du fichier. Veuillez réessayer.</div>';
-    }
+            // Succès - pas de warning
+            $warning = '';
+        } else {
+            $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; margin: 10px 0; border-radius: 5px;">⚠️ Échec de la sauvegarde du fichier. Veuillez réessayer.</div>';
+        }
 
-    return array(
-'attachments' => $attachments,
-'fileNames' => $fileNames,
-'filePaths' => $filePaths,
-'warning' => $warning
-    );
+        return array(
+            'attachments' => $attachments,
+            'fileNames' => $fileNames,
+            'filePaths' => $filePaths,
+            'warning' => $warning
+        );
     }
 
     /**
@@ -3787,28 +3787,26 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
         $to_company = 'ventes@cenov-distribution.fr';
         $sent_to_company = wp_mail($to_company, $subject, $html_content, $headers, $attachments);
 
-        $sent_to_client = false;
-        if (!empty($client_email)) {
-            $client_subject = 'Confirmation de votre demande - Cenov Distribution';
-            $client_headers = array(
-                'From: Cenov Distribution <ventes@cenov-distribution.fr>',
-                'Reply-To: Cenov Distribution <ventes@cenov-distribution.fr>',
-                'Content-Type: text/html; charset=UTF-8'
-            );
+        // Envoi de la confirmation au client (email obligatoire)
+        $client_subject = 'Confirmation de votre demande - Cenov Distribution';
+        $client_headers = array(
+            'From: Cenov Distribution <ventes@cenov-distribution.fr>',
+            'Reply-To: Cenov Distribution <ventes@cenov-distribution.fr>',
+            'Content-Type: text/html; charset=UTF-8'
+        );
 
-            $client_html = str_replace(
-                '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
-                '<div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
-                    <p style="margin: 0; color: #155724; font-weight: 500;">✅ Merci pour votre demande ! Nous vous contacterons rapidement.</p>
-                </div>
-                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
-                $html_content
-            );
+        $client_html = str_replace(
+            '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
+            '<div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
+                <p style="margin: 0; color: #155724; font-weight: 500;">✅ Merci pour votre demande ! Nous vous contacterons rapidement.</p>
+            </div>
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
+            $html_content
+        );
 
-            $sent_to_client = wp_mail($client_email, $client_subject, $client_html, $client_headers, $attachments);
-        }
+        $sent_to_client = wp_mail($client_email, $client_subject, $client_html, $client_headers, $attachments);
 
-        return $sent_to_company && (!empty($client_email) ? $sent_to_client : true);
+        return $sent_to_company && $sent_to_client;
     }
 
     /**
