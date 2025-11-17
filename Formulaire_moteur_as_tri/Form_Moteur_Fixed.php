@@ -139,7 +139,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       }
 
       .category-title {
-        background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+        background: #0066cc;
         color: #fff;
         padding: 10px 15px;
         margin: -8px -15px 15px -12px;
@@ -181,7 +181,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         background: #e3f2fd;
         padding: 8px;
         border-radius: 5px;
-        margin-top: 5px;
+        margin-top: 8px;
         border-left: 3px solid #2196f3;
         font-size: 0.85em;
       }
@@ -303,6 +303,17 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         .section {
           padding: 8px;
         }
+        .category-title {
+          margin: -8px -15px 15px -10px !important;
+          max-width: 106% !important;
+        }
+      }
+
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .category-title {
+          margin: -8px -15px 15px -10px;
+          max-width: 102.25%;
+        }
       }
 
       /* ===== Popups (génériques) ===== */
@@ -419,7 +430,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         flex-shrink: 0;
       }
       .popup-close-btn {
-        background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
         color: #fff;
         border: none;
         padding: 15px 40px;
@@ -429,10 +440,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         cursor: pointer;
         width: 100%;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-      }
-      .popup-close-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
       }
 
       /* ===== Popups spécifiques ===== */
@@ -501,7 +508,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       .popup-humidite-close,
       .ie4-close,
       .popup-carcasse-close {
-        background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
         color: #fff;
         border: none;
         padding: 10px 22px;
