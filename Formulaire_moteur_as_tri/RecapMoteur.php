@@ -42,7 +42,7 @@ if (isset($_GET['order']) && isset($_GET['key'])) {
                 'atmos_saline', 'atmos_humide', 'atmos_chimique', 'atmos_poussiere',
                 // ATEX
                 'atex', 'atex_type_gaz', 'atex_zone_gaz', 'atex_groupe_gaz', 'atex_temp_gaz', 'atex_protection_gaz',
-                'atex_type_poussieres', 'atex_zone_poussieres', 'atex_temp_poussieres', 'atex_protection_poussieres',
+                'atex_type_poussieres', 'atex_classe_poussieres', 'atex_zone_poussieres', 'atex_temp_poussieres', 'atex_protection_poussieres',
                 // Performances
                 'rendement', 'isolation',
                 // Options
@@ -355,6 +355,10 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
             <div class="info-item">
                 <span class="info-label">Zone :</span>
                 <span class="info-value"><?php echo isset($data['atex_zone_poussieres']) ? esc_html($data['atex_zone_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Classe de poussières :</span>
+                <span class="info-value"><?php echo isset($data['atex_classe_poussieres']) ? esc_html($data['atex_classe_poussieres']) : MOTEUR_NOT_PROVIDED; ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Classe température :</span>

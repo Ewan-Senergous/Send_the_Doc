@@ -126,6 +126,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         opacity: 0.9;
       }
 
+      /* Surcharge du style Divi pour les h2 */
+      .moteur-form-container h2 {
+        margin-bottom: 5px !important;
+      }
+
       .content {
         padding: 20px;
       }
@@ -312,7 +317,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       @media (min-width: 769px) and (max-width: 1024px) {
         .category-title {
           margin: -8px -15px 15px -10px;
-          max-width: 102.25%;
+          max-width: 102.5%;
         }
       }
 
@@ -2372,14 +2377,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 </div>
 
                 <div style="margin-bottom: 15px">
-                  <label for="atex_type_poussieres"
+                  <label for="atex_classe_poussieres"
                     ><strong
                       style="color: #1e3c72; display: block; margin-bottom: 10px"
-                      >⚗️ Type de poussières :</strong
+                      >⚗️ Classe de poussières :</strong
                     ></label
                   >
                   <div class="answer-field">
-                    <select id="atex_type_poussieres" name="atex_type_poussieres">
+                    <select id="atex_classe_poussieres" name="atex_classe_poussieres">
                       <option value="">Sélectionnez</option>
                       <option value="IIIB">
                         IIIB (poussières conductrices)
@@ -3110,7 +3115,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             'atmos_chimique' => $get_field('atmos_chimique', 'checkbox'),
             'atmos_poussiere' => $get_field('atmos_poussiere', 'checkbox'),
 
-            // ===== ATEX (11 champs) =====
+            // ===== ATEX (12 champs) =====
             'atex' => $get_field('atex'),
             'atex_type_gaz' => $get_field('atex_type_gaz', 'checkbox'),
             'atex_zone_gaz' => $get_field('atex_zone_gaz'),
@@ -3118,6 +3123,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             'atex_temp_gaz' => $get_field('atex_temp_gaz'),
             'atex_protection_gaz' => $get_field('atex_protection_gaz'),
             'atex_type_poussieres' => $get_field('atex_type_poussieres', 'checkbox'),
+            'atex_classe_poussieres' => $get_field('atex_classe_poussieres'),
             'atex_zone_poussieres' => $get_field('atex_zone_poussieres'),
             'atex_temp_poussieres' => $get_field('atex_temp_poussieres'),
             'atex_protection_poussieres' => $get_field('atex_protection_poussieres'),
@@ -3264,7 +3270,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         '22' => 'Zone 22'
     );
 
-    $atex_type_poussieres_labels = array(
+    $atex_classe_poussieres_labels = array(
         'IIIB' => 'IIIB (poussières conductrices)',
         'IIIC' => 'IIIC (poussières non conductrices)'
     );
@@ -3484,13 +3490,13 @@ if (isset($_POST['atex_type_poussieres'])) {
         $content .= "  <strong>Zone de classification (Poussières) :</strong> " . $not_provided . "\r\n";
     }
 
-    // Type poussières avec mapping
-    if (isset($_POST['atex_type_poussieres']) && !empty($_POST['atex_type_poussieres'])) {
-        $type_poussieres = sanitize_text_field($_POST['atex_type_poussieres']);
-        $type_display = isset($atex_type_poussieres_labels[$type_poussieres]) ? $atex_type_poussieres_labels[$type_poussieres] : $type_poussieres;
-        $content .= "  <strong>Type de poussières :</strong> " . $type_display . "\r\n";
+    // Classe de poussières avec mapping
+    if (isset($_POST['atex_classe_poussieres']) && !empty($_POST['atex_classe_poussieres'])) {
+        $classe_poussieres = sanitize_text_field($_POST['atex_classe_poussieres']);
+        $classe_display = isset($atex_classe_poussieres_labels[$classe_poussieres]) ? $atex_classe_poussieres_labels[$classe_poussieres] : $classe_poussieres;
+        $content .= "  <strong>Classe de poussières :</strong> " . $classe_display . "\r\n";
     } else {
-        $content .= "  <strong>Type de poussières :</strong> " . $not_provided . "\r\n";
+        $content .= "  <strong>Classe de poussières :</strong> " . $not_provided . "\r\n";
     }
 
     // Température avec mapping
