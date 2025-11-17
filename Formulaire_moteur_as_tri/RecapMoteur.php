@@ -800,20 +800,20 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
 }
 
 .btn-primary {
-    background-color: #4338ca !important;
+    background-color: #0066cc !important;
     color: white !important;
-    box-shadow: 0 1px 3px rgba(67, 56, 202, 0.2) !important;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2) !important;
 }
 
 .btn-primary:hover {
-    background-color: #3730a3 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(67, 56, 202, 0.3) !important;
+    background-color: #2563eb !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3) !important;
 }
 
 .btn-primary:focus {
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
 }
 
 .btn svg {
@@ -864,20 +864,9 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
 </style>
 
 <?php
-// Nettoyer les fichiers temporaires s'ils existent encore
-if (isset($_SESSION['moteur_data']['file_paths'])) {
-    foreach ($_SESSION['moteur_data']['file_paths'] as $file) {
-        if (file_exists($file)) {
-            @unlink($file);
-        }
-    }
-
-    // Supprimer les chemins de fichiers de la session car ils ne sont plus nécessaires
-    unset($_SESSION['moteur_data']['file_paths']);
-}
-
+// Les fichiers uploadés sont stockés de façon permanente dans le répertoire WordPress uploads
+// Ils sont conservés pour permettre l'affichage ultérieur et sont encodés en base64 pour persistance
 // Ne pas supprimer la session pour préserver les données y compris les images en base64
-// unset($_SESSION['moteur_data']);
 ?>
 
 <script>

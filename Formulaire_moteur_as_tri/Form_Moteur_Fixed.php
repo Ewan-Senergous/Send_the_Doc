@@ -58,8 +58,8 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
 
                 // ÉTAPE 3.6 : POST-Redirect-GET - Rediriger vers la page de récapitulatif
                 if ($emailSent) {
-                    // Ne pas nettoyer les fichiers temporaires maintenant
-                    // Ils seront nettoyés par la page RecapMoteur.php
+                    // Les fichiers sont stockés de façon permanente dans le répertoire WordPress uploads
+                    // Ils seront utilisés pour affichage dans RecapMoteur.php et encodés en base64 pour persistance
 
                     // Rediriger vers la page de récapitulatif (résout le problème de page blanche)
                     wp_redirect($orderData['recap_url']);
@@ -3656,6 +3656,7 @@ $content .= "NON\r\n";
     function processMoteurUploadedFiles() {
     $attachments = array();
     $fileNames = array();
+    $filePaths = array(); // Array associatif: nom_original => chemin_complet
     $warning = '';
 
     // Vérifier si un fichier a été uploadé
@@ -3663,6 +3664,7 @@ $content .= "NON\r\n";
 return array(
     'attachments' => $attachments,
     'fileNames' => $fileNames,
+    'filePaths' => $filePaths,
     'warning' => ''
 );
     }
@@ -3686,6 +3688,7 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
 return array(
     'attachments' => $attachments,
     'fileNames' => $fileNames,
+    'filePaths' => $filePaths,
     'warning' => $warning
 );
     }
@@ -3715,6 +3718,7 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
 return array(
     'attachments' => $attachments,
     'fileNames' => $fileNames,
+    'filePaths' => $filePaths,
     'warning' => $warning
 );
     }
@@ -3727,6 +3731,7 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
 return array(
     'attachments' => $attachments,
     'fileNames' => $fileNames,
+    'filePaths' => $filePaths,
     'warning' => $warning
 );
     }
@@ -3744,8 +3749,9 @@ return array(
 
     // Déplacer le fichier uploadé
     if (move_uploaded_file($file['tmp_name'], $target_file)) {
-$attachments[] = $target_file;
-$fileNames[] = $filename; // Nom original pour affichage
+$attachments[] = $target_file;                     // Pour les emails (array indexé)
+$fileNames[] = $filename;                          // Nom original pour affichage (array indexé)
+$filePaths[$filename] = $target_file;              // Array associatif : nom_original => chemin_complet
 
 // Succès - pas de warning
 $warning = '';
@@ -3756,6 +3762,7 @@ $warning = '<div style="background: #fff3cd; color: #856404; padding: 10px; marg
     return array(
 'attachments' => $attachments,
 'fileNames' => $fileNames,
+'filePaths' => $filePaths,
 'warning' => $warning
     );
     }
