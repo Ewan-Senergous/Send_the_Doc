@@ -154,7 +154,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         display: flex;
         gap: 8px;
         align-items: center;
-        max-width: 101.75%;
+        max-width: 102%;
       }
 
       .question {
@@ -310,14 +310,14 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         }
         .category-title {
           margin: -8px -15px 15px -10px !important;
-          max-width: 106% !important;
+          max-width: 107% !important;
         }
       }
 
       @media (min-width: 769px) and (max-width: 1024px) {
         .category-title {
           margin: -8px -15px 15px -10px;
-          max-width: 102.5%;
+          max-width: 103%;
         }
       }
 
@@ -739,6 +739,8 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       }
 
       /* Reset styles Divi sur les listes du formulaire */
+      #left-area .moteur-form-container ul,
+      .entry-content .moteur-form-container ul,
       .moteur-form-container ul,
       .moteur-form-container .options-list {
         line-height: inherit;
@@ -1527,7 +1529,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 type="number"
                 name="puissance_kw"
                 step="0.1"
-                placeholder="Entrez la puissance en kW..."
+                placeholder="Entrez la puissance kW"
                 required
               />
             </div>
