@@ -407,6 +407,13 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           grid-template-columns: 1fr;
         }
       }
+      @media (max-width: 768px) {
+        .popup-content {
+          margin-top: 17rem;
+          padding: 20px;
+          max-height: 55vh;
+        }
+      }
       .popup-feature-icon {
         font-size: 1.3em;
         flex-shrink: 0;
@@ -1122,7 +1129,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       <div class="popup-content">
         <button class="popup-close-x" onclick="closePopup()">&times;</button>
         <div class="popup-header">
-          <h2>⚡ Bienvenue ! ⚙️</h2>
+          <h2>Bienvenue !</h2>
           <p>
             Ce questionnaire vous guide pour choisir le moteur asynchrone
             triphasé adapté à vos besoins.
@@ -1463,7 +1470,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             b.className = "badge-plaque";
             b.title =
               "Vous trouverez cette information sur la plaque signalétique du moteur.";
-            b.innerHTML = "<i>📇</i> Plaque";
+            b.innerHTML = "<i>📋</i>Plaque";
             const strong = q.querySelector("strong");
             (strong || q).appendChild(b);
           }
