@@ -1286,16 +1286,17 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       /* ==== Sélection par clic image dans popup montage ==== */
       document.addEventListener("DOMContentLoaded", () => {
         const cards = document.querySelectorAll(".montage-card");
+        const selectMontage = document.getElementById("montage");
+
         for (const card of cards) {
           card.addEventListener("click", () => {
             const value = card.dataset.value;
-            const input = document.querySelector(
-              `input[name="montage"][value="${value}"]`
-            );
-            if (input) {
-              input.checked = true;
-              input.dispatchEvent(new Event("change"));
+
+            if (selectMontage) {
+              selectMontage.value = value;
+              selectMontage.dispatchEvent(new Event("change"));
             }
+
             closeMontagePopup();
           });
         }
