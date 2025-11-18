@@ -1350,17 +1350,6 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         }
         refreshRef();
 
-        // Secteur "Autre"
-        const secteurSelect = document.getElementById("secteur");
-        const secteurAutre = document.getElementById("secteur_autre_wrap");
-        if (secteurSelect && secteurAutre) {
-          const toggleSecteur = () =>
-            (secteurAutre.style.display =
-              secteurSelect.value === "autre" ? "block" : "none");
-          secteurSelect.addEventListener("change", toggleSecteur);
-          toggleSecteur();
-        }
-
         // ATEX - Détails si "Oui"
         const atexDetails = document.getElementById("atex_details");
         const refreshAtex = () => {
@@ -2932,7 +2921,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="radio-group inline-one-line">
               <label
                 ><input type="radio" name="delai" value="2 jours" /><span>
-                  &lt; de 2 jours ouvrés</span
+                  &lt; à 2 jours ouvrés</span
                 ></label
               >
               <label
@@ -2947,7 +2936,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               >
               <label
                 ><input type="radio" name="delai" value="2-4 semaines" /><span
-                  >2–4 semaines</span
+                  >3–4 semaines</span
                 ></label
               >
               <label
@@ -2971,16 +2960,19 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
           <div class="question">
             <label for="source"><strong>📣 Comment avez-vous entendu parler de nous ?</strong></label>
             <div class="answer-field">
-              <select id="source" name="source">
+              <select id="source" name="source" onchange="document.getElementById('source_autre_wrap').style.display = (this.value==='Autre') ? 'block' : 'none';">
                 <option value="">Sélectionnez</option>
                 <option>Recherche Google</option>
                 <option>Recommandation professionnelle</option>
-                <option>Ancien client / Déjà travaillé ensemble</option>
-                <option>Réseaux sociaux (LinkedIn, etc.)</option>
+                <option>Déjà client</option>
+                <option>Réseaux sociaux (LinkedIn)</option>
                 <option>Salon / Événement professionnel</option>
                 <option>Publicité en ligne</option>
                 <option>Autre</option>
               </select>
+            </div>
+            <div class="answer-field" id="source_autre_wrap" style="display: none; margin-top: 10px">
+              <input type="text" name="source_autre" placeholder="Précisez comment vous avez entendu parler de nous..." />
             </div>
           </div>
 
@@ -3094,9 +3086,8 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             'telephone' => $get_field('telephone'),
             'ville_pays' => $get_field('ville_pays'),
             'fonction' => $get_field('fonction'),
-            'secteur' => $get_field('secteur'),
-            'secteur_autre' => $get_field('secteur_autre'),
             'source' => $get_field('source'),
+            'source_autre' => $get_field('source_autre'),
 
             // ===== PROJET (3 champs) =====
             'quantite' => $get_field('quantite', 'int'),
@@ -3321,7 +3312,16 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     }
 
     // Source (Comment avez-vous entendu parler de nous ?)
-    $content .= "<strong>Comment avez-vous entendu parler de nous :</strong> " . (isset($_POST['source']) && !empty($_POST['source']) ? sanitize_text_field($_POST['source']) : $not_provided) . "\r\n";
+    if (isset($_POST['source']) && !empty($_POST['source'])) {
+        $source = sanitize_text_field($_POST['source']);
+        if ($source === 'Autre' && isset($_POST['source_autre']) && !empty($_POST['source_autre'])) {
+            $content .= "<strong>Comment avez-vous entendu parler de nous :</strong> Autre - " . sanitize_text_field($_POST['source_autre']) . "\r\n";
+        } else {
+            $content .= "<strong>Comment avez-vous entendu parler de nous :</strong> " . $source . "\r\n";
+        }
+    } else {
+        $content .= "<strong>Comment avez-vous entendu parler de nous :</strong> " . $not_provided . "\r\n";
+    }
 
     // SECTION 2 : CARACTÉRISTIQUES APPLICATION
     $content .= "\r\n\r\n⚙️ CARACTÉRISTIQUES DE L'APPLICATION :\r\n\r\n";

@@ -124,7 +124,7 @@ if (isset($_GET['order']) && isset($_GET['key'])) {
                 // Métadonnées
                 'order_number', 'date_demande',
                 // Contact
-                'societe', 'nom_prenom', 'email', 'telephone', 'ville_pays', 'fonction', 'secteur', 'secteur_autre',
+                'societe', 'nom_prenom', 'email', 'telephone', 'ville_pays', 'fonction', 'source', 'source_autre',
                 // Projet
                 'quantite', 'budget', 'delai',
                 // Caractéristiques
@@ -305,7 +305,14 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
             <?php if (isset($data['source']) && $data['source'] !== MOTEUR_NOT_PROVIDED) : ?>
             <div class="info-item full-width">
                 <span class="info-label">Comment avez-vous entendu parler de nous :</span>
-                <span class="info-value"><?php echo moteur_display_field($data, 'source'); ?></span>
+                <span class="info-value"><?php
+                    $source = moteur_display_field($data, 'source');
+                    if ($source === 'Autre' && isset($data['source_autre']) && $data['source_autre'] !== MOTEUR_NOT_PROVIDED) {
+                        echo 'Autre - ' . esc_html(wp_unslash($data['source_autre']));
+                    } else {
+                        echo $source;
+                    }
+                ?></span>
             </div>
             <?php endif; ?>
         </div>
