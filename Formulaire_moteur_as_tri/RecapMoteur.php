@@ -302,6 +302,12 @@ if ($order_number != 'N/A' && isset($_SESSION['moteur_data'])) {
                 <span class="info-value" style="white-space: pre-wrap;"><?php echo esc_html(wp_unslash($data['description_besoin'])); ?></span>
             </div>
             <?php endif; ?>
+            <?php if (isset($data['source']) && $data['source'] !== MOTEUR_NOT_PROVIDED) : ?>
+            <div class="info-item full-width">
+                <span class="info-label">Comment avez-vous entendu parler de nous :</span>
+                <span class="info-value"><?php echo moteur_display_field($data, 'source'); ?></span>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 

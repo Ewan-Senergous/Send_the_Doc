@@ -2854,74 +2854,76 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         <div class="section">
           <div class="category-title">💬 VOUS CONNAÎTRE DAVANTAGE :</div>
 
-          <div class="question">
-            <strong>🏢 Société :<span class="required">*</span></strong>
-            <div class="answer-field">
-              <input type="text" name="societe" placeholder="Nom de votre société" required />
-            </div>
-          </div>
-
           <div class="two-col">
+            <div class="question">
+              <strong>🏢 Société :<span class="required">*</span></strong>
+              <div class="answer-field">
+                <input type="text" name="societe" placeholder="Nom de votre société" required />
+              </div>
+            </div>
             <div class="question">
               <strong>🙍‍♂️ Nom & Prénom :<span class="required">*</span></strong>
               <div class="answer-field">
                 <input type="text" name="nom_prenom" placeholder="Ex : Jean Dupont" required />
               </div>
             </div>
+          </div>
+
+          <div class="two-col">
             <div class="question">
               <strong>📧 Email :<span class="required">*</span></strong>
               <div class="answer-field">
                 <input type="email" name="email" placeholder="nom@domaine.com" required />
               </div>
             </div>
-          </div>
-
-          <div class="two-col">
             <div class="question">
               <strong>📱 Téléphone :</strong>
               <div class="answer-field">
                 <input type="tel" name="telephone" placeholder="+33 ..." />
               </div>
             </div>
+          </div>
+
+          <div class="two-col">
             <div class="question">
               <strong>📍 Ville / Pays :</strong>
               <div class="answer-field">
                 <input type="text" name="ville_pays" placeholder="Ex : Lyon, France" />
               </div>
             </div>
-          </div>
-
-          <div class="question">
-            <label for="fonction"><strong>🧑‍💼 Fonction :</strong></label>
-            <div class="answer-field">
-              <select id="fonction" name="fonction">
-                <option value="">Sélectionnez</option>
-                <option>Maintenance</option>
-                <option>Bureau d'études</option>
-                <option>Achat</option>
-                <option>Production / Exploitation</option>
-                <option>Direction</option>
-              </select>
+            <div class="question">
+              <label for="fonction"><strong>🧑‍💼 Fonction :</strong></label>
+              <div class="answer-field">
+                <select id="fonction" name="fonction">
+                  <option value="">Sélectionnez</option>
+                  <option>Maintenance</option>
+                  <option>Bureau d'études</option>
+                  <option>Achat</option>
+                  <option>Production / Exploitation</option>
+                  <option>Direction</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div class="question">
-            <label for="budget"><strong>🧾 Budget estimé :</strong></label>
-            <div class="answer-field">
-              <select id="budget" name="budget">
-                <option value="">Sélectionnez</option>
-                <option>&lt; 1 000 €</option>
-                <option>1 000 – 5 000 €</option>
-                <option>5 000 – 20 000 €</option>
-                <option>&gt; 20 000 €</option>
-              </select>
+          <div class="two-col">
+            <div class="question">
+              <label for="budget"><strong>🧾 Budget estimé :</strong></label>
+              <div class="answer-field">
+                <select id="budget" name="budget">
+                  <option value="">Sélectionnez</option>
+                  <option>&lt; 1 000 €</option>
+                  <option>1 000 – 5 000 €</option>
+                  <option>5 000 – 20 000 €</option>
+                  <option>&gt; 20 000 €</option>
+                </select>
+              </div>
             </div>
-          </div>
-
-          <div class="question">
-            <strong>🔢 Quantité prévue :</strong>
-            <div class="answer-field">
-              <input type="number" name="quantite" min="1" step="1" placeholder="Ex : 3" />
+            <div class="question">
+              <strong>🔢 Quantité prévue :</strong>
+              <div class="answer-field">
+                <input type="number" name="quantite" min="1" step="1" placeholder="Ex : 3" />
+              </div>
             </div>
           </div>
 
@@ -2930,12 +2932,12 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="radio-group inline-one-line">
               <label
                 ><input type="radio" name="delai" value="2 jours" /><span>
-                  &gt; de 2 jours ouvrés</span
+                  &lt; de 2 jours ouvrés</span
                 ></label
               >
               <label
                 ><input type="radio" name="delai" value="1 semaine" /><span>
-                  &gt; 1 semaine</span
+                  &lt; 1 semaine</span
                 ></label
               >
               <label
@@ -2963,6 +2965,22 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 name="description_besoin"
                 placeholder="Décrivez votre projet, contraintes, normes, documents utiles…"
               ></textarea>
+            </div>
+          </div>
+
+          <div class="question">
+            <label for="source"><strong>📣 Comment avez-vous entendu parler de nous ?</strong></label>
+            <div class="answer-field">
+              <select id="source" name="source">
+                <option value="">Sélectionnez</option>
+                <option>Recherche Google</option>
+                <option>Recommandation professionnelle</option>
+                <option>Ancien client / Déjà travaillé ensemble</option>
+                <option>Réseaux sociaux (LinkedIn, etc.)</option>
+                <option>Salon / Événement professionnel</option>
+                <option>Publicité en ligne</option>
+                <option>Autre</option>
+              </select>
             </div>
           </div>
 
@@ -3078,6 +3096,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             'fonction' => $get_field('fonction'),
             'secteur' => $get_field('secteur'),
             'secteur_autre' => $get_field('secteur_autre'),
+            'source' => $get_field('source'),
 
             // ===== PROJET (3 champs) =====
             'quantite' => $get_field('quantite', 'int'),
@@ -3300,6 +3319,9 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
     if (isset($_POST['description_besoin']) && !empty($_POST['description_besoin'])) {
         $content .= "<strong>Description du besoin :</strong> " . sanitize_textarea_field($_POST['description_besoin']) . "\r\n";
     }
+
+    // Source (Comment avez-vous entendu parler de nous ?)
+    $content .= "<strong>Comment avez-vous entendu parler de nous :</strong> " . (isset($_POST['source']) && !empty($_POST['source']) ? sanitize_text_field($_POST['source']) : $not_provided) . "\r\n";
 
     // SECTION 2 : CARACTÉRISTIQUES APPLICATION
     $content .= "\r\n\r\n⚙️ CARACTÉRISTIQUES DE L'APPLICATION :\r\n\r\n";
@@ -3796,11 +3818,11 @@ $content .= "NON\r\n";
         );
 
         $client_html = str_replace(
-            '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
+            '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #6b7280; font-size: 14px;">',
             '<div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
                 <p style="margin: 0; color: #155724; font-weight: 500;">✅ Merci pour votre demande ! Nous vous contacterons rapidement.</p>
             </div>
-            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color:rgb(68, 71, 75); font-size: 14px;">',
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #6b7280; font-size: 14px;">',
             $html_content
         );
 
