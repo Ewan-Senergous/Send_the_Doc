@@ -3818,11 +3818,11 @@ $content .= "NON\r\n";
         );
 
         $client_html = str_replace(
-            '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #6b7280; font-size: 14px;">',
-            '<div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
+            '<h1 style="color: #0066cc; margin-bottom: 5px; font-size: 28px;">⚡ Demande de moteur asynchrone triphasé</h1>',
+            '<div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 0 0 20px 0; text-align: center;">
                 <p style="margin: 0; color: #155724; font-weight: 500;">✅ Merci pour votre demande ! Nous vous contacterons rapidement.</p>
             </div>
-            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #6b7280; font-size: 14px;">',
+            <h1 style="color: #0066cc; margin-bottom: 5px; font-size: 28px;">⚡ Demande de moteur asynchrone triphasé</h1>',
             $html_content
         );
 
