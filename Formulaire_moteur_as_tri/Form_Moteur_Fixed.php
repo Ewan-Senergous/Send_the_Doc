@@ -220,7 +220,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       }
       .answer-field textarea {
         resize: vertical;
-        min-height: 60px;
+        min-height: 85px;
       }
 
       .radio-group,
@@ -311,6 +311,15 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
         .category-title {
           margin: -8px -15px 15px -10px !important;
           max-width: 107% !important;
+        }
+        .inline-one-line {
+          flex-direction: column;
+          gap: 8px;
+        }
+        input[type="file"]::file-selector-button {
+          width: 100%;
+          display: block;
+          margin-bottom: 8px;
         }
       }
 
@@ -678,12 +687,8 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       /* ===== Groupes radio/checkbox sur UNE SEULE LIGNE ===== */
       .inline-one-line {
         display: flex;
-        align-items: center;
+        align-items: start;
         gap: 12px;
-        flex-wrap: nowrap;
-        white-space: nowrap;
-        overflow-x: auto;
-        scrollbar-width: thin;
       }
       .inline-one-line label {
         display: inline-flex;
@@ -1300,14 +1305,11 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
       document.addEventListener("DOMContentLoaded", () => {
         // Vitesse "autre"
         const vAutre = document.getElementById("vitesse_autre_input");
+        const vitesseSelect = document.getElementById("vitesse");
         const refreshVitesseAutre = () => {
-          const val = document.querySelector('input[name="vitesse"]:checked');
-          vAutre.style.display =
-            val && val.value === "autre" ? "block" : "none";
+          vAutre.style.display = vitesseSelect.value === "autre" ? "block" : "none";
         };
-        for (const r of document.querySelectorAll('input[name="vitesse"]')) {
-          r.addEventListener("change", refreshVitesseAutre);
-        }
+        vitesseSelect.addEventListener("change", refreshVitesseAutre);
         refreshVitesseAutre();
 
         // Température personnalisée
@@ -1518,7 +1520,7 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
                 type="number"
                 name="puissance_kw"
                 step="0.1"
-                placeholder="Entrez la puissance kW"
+                placeholder="Puissance kW"
                 required
               />
             </div>
@@ -1533,32 +1535,15 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
             <div class="info-box">
               <em>La vitesse dépend du nombre de pôles.</em>
             </div>
-            <div class="radio-group inline-one-line">
-              <label class="radio-item"
-                ><input type="radio" name="vitesse" value="2900" required /><span
-                  >2 pôles → ~3000 tr/min (2900 réels)</span
-                ></label
-              >
-              <label class="radio-item"
-                ><input type="radio" name="vitesse" value="1450" /><span
-                  >4 pôles → ~1500 tr/min (1450 réels)</span
-                ></label
-              >
-              <label class="radio-item"
-                ><input type="radio" name="vitesse" value="960" /><span
-                  >6 pôles → ~1000 tr/min (960 réels)</span
-                ></label
-              >
-              <label class="radio-item"
-                ><input type="radio" name="vitesse" value="720" /><span
-                  >8 pôles → ~750 tr/min (720 réels)</span
-                ></label
-              >
-              <label class="radio-item"
-                ><input type="radio" name="vitesse" value="autre" /><span
-                  >Autre vitesse (à préciser)</span
-                ></label
-              >
+            <div class="answer-field">
+              <select id="vitesse" name="vitesse" required>
+                <option value="">Choisissez une vitesse</option>
+                <option value="2900">2 pôles → ~3000 tr/min (2900 réels)</option>
+                <option value="1450">4 pôles → ~1500 tr/min (1450 réels)</option>
+                <option value="960">6 pôles → ~1000 tr/min (960 réels)</option>
+                <option value="720">8 pôles → ~750 tr/min (720 réels)</option>
+                <option value="autre">Autre vitesse (à préciser)</option>
+              </select>
             </div>
 
             <div
@@ -1673,92 +1658,27 @@ if (!function_exists('cenovFormulaireMoteurAsyncDisplay')) {
               </button>
             </div>
 
-            <div class="radio-group inline-one-line" style="margin-top: 10px">
-              <label
-                ><input type="radio" name="montage" value="B3" required /><span
-                  >B3</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="B5" /><span
-                  >B5</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="B14" /><span
-                  >B14</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="B35" /><span
-                  >B35</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="B34" /><span
-                  >B34</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="B6" /><span
-                  >B6</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="B7" /><span
-                  >B7</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="B8" /><span
-                  >B8</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V5" /><span
-                  >V5</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V58" /><span
-                  >V58</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V3" /><span
-                  >V3</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V6" /><span
-                  >V6</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V1" /><span
-                  >V1</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V15" /><span
-                  >V15</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V19" /><span
-                  >V19</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V18" /><span
-                  >V18</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="montage" value="V69" /><span
-                  >V69</span
-                ></label
-              >
+            <div class="answer-field" style="margin-top: 10px">
+              <select id="montage" name="montage" required>
+                <option value="">Type de montage</option>
+                <option value="B3">B3</option>
+                <option value="B5">B5</option>
+                <option value="B14">B14</option>
+                <option value="B35">B35</option>
+                <option value="B34">B34</option>
+                <option value="B6">B6</option>
+                <option value="B7">B7</option>
+                <option value="B8">B8</option>
+                <option value="V5">V5</option>
+                <option value="V58">V58</option>
+                <option value="V3">V3</option>
+                <option value="V6">V6</option>
+                <option value="V1">V1</option>
+                <option value="V15">V15</option>
+                <option value="V19">V19</option>
+                <option value="V18">V18</option>
+                <option value="V69">V69</option>
+              </select>
             </div>
           </div>
 
